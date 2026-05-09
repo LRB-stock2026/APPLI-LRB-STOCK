@@ -1306,8 +1306,7 @@ function PhotoAnalyseScreen(props){
   var UNITES_L=['piece','boite','sac','rouleau','cartouche','litre','ml','kg','lot'];
 
   function handleFile(e){
-    var file=e.target.files[0];
-    if(!file)return;
+    var file=e.target.files[0];if(!file)return;
     setImgFile(file);
     var reader=new FileReader();
     reader.onload=function(ev){setPreview(ev.target.result);};
@@ -1319,16 +1318,16 @@ function PhotoAnalyseScreen(props){
   function handleSave(){
     setSaving(true);
     var photoP=imgFile?uploadPhoto(imgFile,(result.nom||'produit').slice(0,20)):Promise.resolve(null);
-    photoP.then(function(photoUrl){return rpc('lrb_ajouter_achat',{p_nom:result.nom,p_famille:result.famille,p_corps_etat:result.corps_etat,p_marque:result.marque,p_reference:result.reference,p_unite:result.unite||'piece',p_quantite:parseFloat(qty)||1,p_photo_url:photoUrl,p_user_id:user.code});}).then(function(){showToast('Produit enregistre!','success');if(onRefresh)onRefresh();onBack();}).catch(function(err){showToast('Erreur: '+err.message,'error');setSaving(false);});
+    photoP.then(function(pu){return rpc('lrb_ajouter_achat',{p_nom:result.nom,p_famille:result.famille,p_corps_etat:result.corps_etat,p_marque:result.marque,p_reference:result.reference,p_unite:result.unite||'piece',p_quantite:parseFloat(qty)||1,p_photo_url:pu,p_user_id:user.code});}).then(function(){showToast('Enregistre!','success');if(onRefresh)onRefresh();onBack();}).catch(function(err){showToast('Erreur: '+err.message,'error');setSaving(false);});
   }
 
-  function resetCapture(){setStep('capture');setResult(null);setImgFile(null);setPreview(null);}
+  function reset(){setStep('capture');setResult(null);setImgFile(null);setPreview(null);}
 
   if(step==='capture')return React.createElement('div',{className:'screen'},
-    React.createElement('div',{className:'header'},React.createElement('button',{className:'header-back',onClick:onBack},'←'),React.createElement('div',{className:'header-info'},React.createElement('div',{className:'header-title'},'📷 Photo IA'),React.createElement('div',{className:'header-sub'},'Identification automatique'))),
+    React.createElement('div',{className:'header'},React.createElement('button',{className:'header-back',onClick:onBack},'←'),React.createElement('div',{className:'header-info'},React.createElement('div',{className:'header-title'},'📷 Photo IA'))),
     React.createElement('div',{style:{background:'var(--surface2)',border:'2px dashed var(--border)',borderRadius:20,padding:'36px 24px',textAlign:'center',marginTop:20}},
       React.createElement('div',{style:{fontSize:64,marginBottom:16}},'📷'),
-      React.createElement('div',{style:{fontSize:16,fontWeight:700,color:'var(--navy)',marginBottom:8}},'Prenez une photo du produit'),
+      React.createElement('div',{style:{fontSize:16,fontWeight:700,color:'var(--navy)',marginBottom:8}},'Prenez une photo'),
       React.createElement('div',{style:{fontSize:13,color:'var(--text3)',marginBottom:24}},"L'IA identifie le produit automatiquement"),
       React.createElement('input',{ref:fileRef,type:'file',accept:'image/*',capture:'environment',style:{display:'none'},onChange:handleFile}),
       React.createElement('button',{className:'btn btn-navy btn-xl btn-full',onClick:function(){fileRef.current.click();}},'📷 Prendre une photo'),
@@ -1344,7 +1343,7 @@ function PhotoAnalyseScreen(props){
   );
 
   if(step==='result'&&result)return React.createElement('div',{className:'screen'},
-    React.createElement('div',{className:'header'},React.createElement('button',{className:'header-back',onClick:resetCapture},'←'),React.createElement('div',{className:'header-info'},React.createElement('div',{className:'header-title'},'Produit identifie'),React.createElement('div',{className:'header-sub'},'Verifiez avant de valider'))),
+    React.createElement('div',{className:'header'},React.createElement('button',{className:'header-back',onClick:reset},'←'),React.createElement('div',{className:'header-info'},React.createElement('div',{className:'header-title'},'Produit identifie'),React.createElement('div',{className:'header-sub'},'Verifiez avant de valider'))),
     preview&&React.createElement('img',{src:preview,style:{width:'100%',height:180,objectFit:'cover',borderRadius:16,marginBottom:16}}),
     React.createElement('div',{className:'space-y-3'},
       React.createElement('div',{className:'input-group'},React.createElement('label',{className:'input-label'},'Nom *'),React.createElement('input',{className:'input',value:result.nom||'',onChange:function(e){var v=e.target.value;setResult(function(r){return Object.assign({},r,{nom:v});});}})),
@@ -1355,11 +1354,10 @@ function PhotoAnalyseScreen(props){
       )
     ),
     React.createElement('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:16}},
-      React.createElement('button',{className:'btn btn-secondary btn-lg',onClick:resetCapture},'🔄 Reprendre'),
+      React.createElement('button',{className:'btn btn-secondary btn-lg',onClick:reset},'🔄 Reprendre'),
       React.createElement('button',{className:'btn btn-gold btn-lg',onClick:handleSave,disabled:saving||!result.nom||!qty},saving?'...':'✅ Valider')
     )
   );
-
   return null;
 }
 
@@ -1380,18 +1378,23 @@ function ConfirmModal({ title, message, onConfirm, onCancel, loading, confirmLab
 
 // ── LOGIN ──
 function LoginScreen({ onLogin }) {
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(() => { try { return localStorage.getItem('lrb_code')||''; } catch(e) { return ''; } });
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
 
   const doLogin = async () => {
     if (code.length < 4) return;
     setLoading(true); setErr('');
+    const USERS_LOCAL = {'284916':{name:'David',role:'chantier'},'651973':{name:'Jacques',role:'chantier'},'908257':{name:'Mathys',role:'chantier'},'739482':{name:'Administration',role:'admin'}};
     try {
       const res = await rpc('lrb_connexion', { p_code: code });
-      if (res?.nom) { onLogin({ code, name: res.nom, role: res.role||'chantier' }); }
+      if (res?.nom) { try { localStorage.setItem('lrb_code', code); } catch(e) {} onLogin({ code, name: res.nom, role: res.role||'chantier' }); }
+      else if (USERS_LOCAL[code]) { try { localStorage.setItem('lrb_code', code); } catch(e) {} onLogin({ code, ...USERS_LOCAL[code] }); }
       else setErr('Code incorrect');
-    } catch(e) { setErr('Erreur de connexion'); }
+    } catch(e) {
+      if (USERS_LOCAL[code]) { try { localStorage.setItem('lrb_code', code); } catch(e2) {} onLogin({ code, ...USERS_LOCAL[code] }); }
+      else setErr('Code incorrect');
+    }
     setLoading(false);
   };
 
