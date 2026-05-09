@@ -500,11 +500,17 @@ function PhotoScreen(props){
     reader.readAsDataURL(file);
     setStep("analyzing");
     fileToBase64(file).then(function(b64){
-      return fetch("/api/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({image:b64,mediaType:file.type||"image/jpeg"})});
+      return fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":"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","anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:file.type||"image/jpeg",data:b64}},{type:"text",text:"Analyse ce produit BTP. Reponds UNIQUEMENT en JSON sans markdown: {nom,famille,corps_etat,marque,reference,unite,quantite_estimee}"}]}]})
+      });
     }).then(function(r){if(!r.ok)throw new Error("Erreur "+r.status);return r.json();}).then(function(d){
-      if(d&&d.error)throw new Error(d.error);
-      setResult(d);
-      if(d.quantite_estimee)setQty(String(d.quantite_estimee));
+      var text=d.content[0].text.trim().replace(/```json\n?/g,"").replace(/```\n?/g,"").trim();
+      var result;
+      try{result=JSON.parse(text);}catch(e){var m=text.match(/\{[\s\S]*\}/);result=m?JSON.parse(m[0]):{nom:"Produit",famille:"MATERIAUX",corps_etat:"Divers",unite:"piece"};}
+      setResult(result);
+      if(result.quantite_estimee)setQty(String(result.quantite_estimee));
       setStep("result");
     }).catch(function(err){showToast("Erreur: "+err.message,"error");setStep("capture");});
   }
