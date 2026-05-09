@@ -2709,7 +2709,8 @@ function AchatScreen(_ref52) {
               p_unite: vals.unite,
               p_fournisseur: vals.fournisseur || "",
               p_lieu: vals.lieu,
-              p_chantier: vals.chantier || ""
+              p_chantier: vals.chantier || "",
+              p_famille: vals.famille || ""
             });
           case 3:
             h = JSON.parse(localStorage.getItem("lrb_histo") || "[]");
@@ -2845,7 +2846,14 @@ function AchatScreen(_ref52) {
     onChange: function onChange(v) {
       return set("fournisseur", v);
     }
-  }), /*#__PURE__*/React.createElement(FI2, {
+  }), /*#__PURE__*/React.createElement("div", {className: "input-group"},
+    /*#__PURE__*/React.createElement("label", {className: "input-label"}, "Famille"),
+    /*#__PURE__*/React.createElement("select", {
+      className: "select",
+      value: vals.famille || "",
+      onChange: function onChange(e) { return set("famille", e.target.value); }
+    }, /*#__PURE__*/React.createElement("option", {value: ""}, "\u2014 Choisir une famille \u2014"), /*#__PURE__*/React.createElement("option", {key: "Démolition", value: "Démolition"}, "Démolition"), /*#__PURE__*/React.createElement("option", {key: "Maçonnerie", value: "Maçonnerie"}, "Maçonnerie"), /*#__PURE__*/React.createElement("option", {key: "Charpente", value: "Charpente"}, "Charpente"), /*#__PURE__*/React.createElement("option", {key: "Ossature bois", value: "Ossature bois"}, "Ossature bois"), /*#__PURE__*/React.createElement("option", {key: "Couverture", value: "Couverture"}, "Couverture"), /*#__PURE__*/React.createElement("option", {key: "Terrasse", value: "Terrasse"}, "Terrasse"), /*#__PURE__*/React.createElement("option", {key: "Menuiserie ext.", value: "Menuiserie ext."}, "Menuiserie ext."), /*#__PURE__*/React.createElement("option", {key: "Menuiserie int.", value: "Menuiserie int."}, "Menuiserie int."), /*#__PURE__*/React.createElement("option", {key: "Plâtrerie", value: "Plâtrerie"}, "Plâtrerie"), /*#__PURE__*/React.createElement("option", {key: "Isolation", value: "Isolation"}, "Isolation"), /*#__PURE__*/React.createElement("option", {key: "Électricité", value: "Électricité"}, "Électricité"), /*#__PURE__*/React.createElement("option", {key: "Plomberie", value: "Plomberie"}, "Plomberie"), /*#__PURE__*/React.createElement("option", {key: "Chauffage", value: "Chauffage"}, "Chauffage"), /*#__PURE__*/React.createElement("option", {key: "Sols", value: "Sols"}, "Sols"), /*#__PURE__*/React.createElement("option", {key: "Carrelage", value: "Carrelage"}, "Carrelage"), /*#__PURE__*/React.createElement("option", {key: "Peinture", value: "Peinture"}, "Peinture"), /*#__PURE__*/React.createElement("option", {key: "Agencement", value: "Agencement"}, "Agencement"), /*#__PURE__*/React.createElement("option", {key: "Cuisine", value: "Cuisine"}, "Cuisine"), /*#__PURE__*/React.createElement("option", {key: "Panneaux / chutes", value: "Panneaux / chutes"}, "Panneaux / chutes"), /*#__PURE__*/React.createElement("option", {key: "Électroménager", value: "Électroménager"}, "Électroménager"), /*#__PURE__*/React.createElement("option", {key: "Outillage", value: "Outillage"}, "Outillage"), /*#__PURE__*/React.createElement("option", {key: "Consommables", value: "Consommables"}, "Consommables"), /*#__PURE__*/React.createElement("option", {key: "Quincaillerie", value: "Quincaillerie"}, "Quincaillerie"), /*#__PURE__*/React.createElement("option", {key: "Protection", value: "Protection"}, "Protection"), /*#__PURE__*/React.createElement("option", {key: "Divers", value: "Divers"}, "Divers"))
+  ), /*#__PURE__*/React.createElement(FI2, {
     label: "Emplacement",
     value: vals.lieu || "",
     onChange: function onChange(v) {
