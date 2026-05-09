@@ -726,28 +726,36 @@ body {
   margin-top: 3px;
 }
 
-/* ── ANALYSE PHOTO ── */
-.photo-capture-zone {
-  background: var(--surface2);
-  border: 2px dashed var(--border);
-  border-radius: 20px;
-  padding: 36px 24px;
-  text-align: center;
-  margin-top: 16px;
-}
-.ai-badge {
-  background: var(--gold-bg);
-  border: 1.5px solid var(--gold-border);
-  border-radius: var(--r-md);
-  padding: 10px 14px;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  font-size: 13px;
-  color: var(--gold-dim);
-  font-weight: 600;
-  margin-bottom: 16px;
-}
+_analyzePhoto = _asyncToGenerator(function _callee10(base64Image) {
+  var mediaType, res, data;
+  return _regenerator().w(function(_context10) {
+    while (1) switch (_context10.p = _context10.n) {
+      case 0:
+        mediaType = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'image/jpeg';
+        _context10.n = 1;
+        return fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Image, mediaType: mediaType })
+        });
+      case 1:
+        res = _context10.v;
+        if (res.ok) { _context10.n = 2; break; }
+        throw new Error('Analyse IA échouée (' + res.status + ')');
+      case 2:
+        _context10.n = 3;
+        return res.json();
+      case 3:
+        data = _context10.v;
+        if (data && data.nom) {
+          return _context10.a(2, data);
+        }
+        throw new Error('Réponse IA vide ou illisible');
+      case 4:
+        return _context10.a(2);
+    }
+  }, _callee10);
+});
 
 /* ── TOAST ── */
 .toast {
