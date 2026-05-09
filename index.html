@@ -1328,7 +1328,7 @@ function PhotoAnalyseScreen(props){
     React.createElement('div',{className:'header'},React.createElement('button',{className:'header-back',onClick:onBack},'←'),React.createElement('div',{className:'header-info'},React.createElement('div',{className:'header-title'},'📷 Photo IA'),React.createElement('div',{className:'header-sub'},'Identification automatique'))),
     React.createElement('div',{style:{background:'var(--surface2)',border:'2px dashed var(--border)',borderRadius:20,padding:'36px 24px',textAlign:'center',marginTop:20}},
       React.createElement('div',{style:{fontSize:64,marginBottom:16}},'📷'),
-      React.createElement('div',{style:{fontSize:16,fontWeight:700,color:'var(--navy)',marginBottom:8}},'Prenez une photo'),
+      React.createElement('div',{style:{fontSize:16,fontWeight:700,color:'var(--navy)',marginBottom:8}},'Prenez une photo du produit'),
       React.createElement('div',{style:{fontSize:13,color:'var(--text3)',marginBottom:24}},"L'IA identifie le produit automatiquement"),
       React.createElement('input',{ref:fileRef,type:'file',accept:'image/*',capture:'environment',style:{display:'none'},onChange:handleFile}),
       React.createElement('button',{className:'btn btn-navy btn-xl btn-full',onClick:function(){fileRef.current.click();}},'📷 Prendre une photo'),
@@ -1380,7 +1380,7 @@ function ConfirmModal({ title, message, onConfirm, onCancel, loading, confirmLab
 
 // ── LOGIN ──
 function LoginScreen({ onLogin }) {
-  const [code, setCode] = useState(() => { try { return localStorage.getItem('lrb_code')||''; } catch(e) { return ''; } });
+  const [code, setCode] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -1389,10 +1389,9 @@ function LoginScreen({ onLogin }) {
     setLoading(true); setErr('');
     try {
       const res = await rpc('lrb_connexion', { p_code: code });
-      if (res?.nom) { try { localStorage.setItem('lrb_code', code); } catch(e) {} onLogin({ code, name: res.nom, role: res.role||'chantier' }); }
+      if (res?.nom) { onLogin({ code, name: res.nom, role: res.role||'chantier' }); }
       else setErr('Code incorrect');
-    } catch(e) { setErr('Code incorrect'); }
-    try{localStorage.setItem('lrb_code',code);}catch(e){}
+    } catch(e) { setErr('Erreur de connexion'); }
     setLoading(false);
   };
 
@@ -1406,7 +1405,7 @@ function LoginScreen({ onLogin }) {
       React.createElement('label', { style: { fontSize:11, fontWeight:800, color:'var(--navy)', textTransform:'uppercase', letterSpacing:'.08em', opacity:.7 } }, 'Code utilisateur'),
       React.createElement('input', { className:'input input-code', type:'tel', maxLength:6, placeholder:'••••••', value:code, onChange:e=>{setCode(e.target.value);setErr('');}, onKeyDown:e=>e.key==='Enter'&&doLogin(), style:{marginTop:6,marginBottom:err?4:16} }),
       err && React.createElement('div', { style:{color:'var(--red)',fontSize:12,fontWeight:700,marginBottom:12} }, '⚠️ ', err),
-      React.createElement('button', { className:'btn btn-navy btn-xl btn-full', onClick:doLogin, disabled:loading||code.length<4 }, loading?'…':'Connexion'),React.createElement('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',gap:8,marginTop:14,fontSize:13,fontWeight:700,color:'var(--text3)'}},React.createElement('span',{},'🔒'),React.createElement('span',{},code?'Code mémorisé automatiquement':'Entrez votre code'))
+      React.createElement('button', { className:'btn btn-navy btn-xl btn-full', onClick:doLogin, disabled:loading||code.length<4 }, loading?'…':'Connexion')
     )
   );
 }
