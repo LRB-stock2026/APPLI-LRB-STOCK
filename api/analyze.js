@@ -7,7 +7,8 @@ module.exports = async function(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    const { image, mediaType } = req.body || {};
+    const image = req.body && req.body.image;
+    const mediaType = (req.body && req.body.mediaType) || 'image/jpeg';
     if (!image) return res.status(400).json({ error: 'Image manquante' });
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -19,7 +20,7 @@ module.exports = async function(req, res) {
       messages: [{
         role: 'user',
         content: [
-          { type: 'image', source: { type: 'base64', media_type: mediaType || 'image/jpeg', data: image } },
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: image } },
           { type: 'text', text: 'Analyse ce produit BTP. Reponds UNIQUEMENT en JSON sans markdown: {"nom":"nom","famille":"OUTILLAGE ou MATERIAUX","corps_etat":"corps etat","marque":null,"reference":null,"unite":"piece","quantite_estimee":null}' }
         ]
       }]
@@ -37,15 +38,14 @@ module.exports = async function(req, res) {
           'Content-Length': Buffer.byteLength(payload)
         }
       };
-
-      const req2 = https.request(options, (r) => {
+      const r = https.request(options, (resp) => {
         let data = '';
-        r.on('data', chunk => data += chunk);
-        r.on('end', () => resolve({ status: r.statusCode, body: data }));
+        resp.on('data', chunk => data += chunk);
+        resp.on('end', () => resolve({ status: resp.statusCode, body: data }));
       });
-      req2.on('error', reject);
-      req2.write(payload);
-      req2.end();
+      r.on('error', reject);
+      r.write(payload);
+      r.end();
     });
 
     if (result.status !== 200) {
@@ -53,7 +53,7 @@ module.exports = async function(req, res) {
     }
 
     const data = JSON.parse(result.body);
-    const text = data.content[0].text.trim().replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    let text = data.content[0].text.trim().replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
 
     try {
       return res.status(200).json(JSON.parse(text));
