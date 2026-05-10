@@ -75,6 +75,7 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .text-center{text-align:center}
 .text-muted{color:var(--text3);font-size:13px}
 .stock-counter{margin-top:8px;text-align:center;font-size:14px;font-weight:700;color:var(--navy);background:rgba(61,84,112,0.1);padding:8px;border-radius:24px;width:fit-content;margin:8px auto 0 auto}
+.btn-edit{background:var(--gold-dim);border:none;border-radius:12px;padding:6px 12px;color:#fff;font-weight:bold;cursor:pointer;font-size:14px;margin-left:auto}
 </style>
 </head>
 <body>
@@ -342,7 +343,7 @@ function ProduitsListScreen(props) {
     );
 }
 
-// ProduitDetail
+// ProduitDetail (avec bouton Modifier)
 function ProduitDetail(props) {
     var p = props.produit;
     var qtyState = useState("");
@@ -380,7 +381,8 @@ function ProduitDetail(props) {
     return h("div", {className:"screen"},
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null, h("div", {className:"header-title", style:{fontSize:18}}, p.nom), h("div", {className:"header-sub"}, p.corps_etat || p.famille || ""))
+            h("div", {style:{flex:1}}, h("div", {className:"header-title", style:{fontSize:18}}, p.nom), h("div", {className:"header-sub"}, p.corps_etat || p.famille || "")),
+            h("button", {className:"btn-edit", onClick:function(){ if(props.nav) props.nav("edit_produit", p); }}, "✏️ Modifier")
         ),
         h("div", {className:"product-hero"}, p.photo_url ? h("img", {src:p.photo_url}) : "📦"),
         h("span", {className:"badge badge-" + statut, style:{marginBottom:14}}, (statut==="ok"?"✅ En stock":statut==="low"?"⚠️ Stock bas":"❌ Rupture") + " — " + (p.quantite||0) + " " + (p.unite||"piece")),
@@ -399,7 +401,66 @@ function ProduitDetail(props) {
     );
 }
 
-// PhotoScreen
+// === NOUVEAU : EditProduitScreen ===
+function EditProduitScreen(props) {
+    var p = props.produit;
+    var nomState = useState(p.nom || ""); var nom = nomState[0]; var setNom = nomState[1];
+    var familleState = useState(p.famille || "MATERIAUX"); var famille = familleState[0]; var setFamille = familleState[1];
+    var corpsState = useState(p.corps_etat || ""); var corps = corpsState[0]; var setCorps = corpsState[1];
+    var uniteState = useState(p.unite || "piece"); var unite = uniteState[0]; var setUnite = uniteState[1];
+    var qteMinState = useState(p.quantite_min || 0); var qteMin = qteMinState[0]; var setQteMin = qteMinState[1];
+    var emplacementState = useState(p.emplacement || ""); var emplacement = emplacementState[0]; var setEmplacement = emplacementState[1];
+    var marqueState = useState(p.marque || ""); var marque = marqueState[0]; var setMarque = marqueState[1];
+    var refState = useState(p.reference || ""); var reference = refState[0]; var setReference = refState[1];
+    var fourState = useState(p.fournisseur || ""); var fournisseur = fourState[0]; var setFournisseur = fourState[1];
+    var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
+
+    async function handleSave() {
+        if (!nom) { showToast("Nom obligatoire", "error"); return; }
+        setSaving(true);
+        try {
+            await supaPatch("produits", p.id, {
+                nom: nom, famille: famille, corps_etat: corps, unite: unite,
+                quantite_min: parseFloat(qteMin) || 0,
+                emplacement: emplacement || null,
+                marque: marque || null,
+                reference: reference || null,
+                fournisseur: fournisseur || null
+            });
+            showToast("✅ Produit modifie", "success");
+            props.onRefresh();
+            props.onBack();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+        setSaving(false);
+    }
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null, h("div", {className:"header-title"}, "Modifier produit"))
+        ),
+        h("div", {className:"space-y"},
+            h("div", {className:"input-group"}, h("label", {className:"input-label"}, "Nom *"), h("input", {className:"input", value:nom, onChange:function(e){setNom(e.target.value);}})),
+            h("div", {className:"grid-2"},
+                h("div", {className:"input-group"}, h("label", {className:"input-label"}, "Famille"), h("select", {className:"select", value:famille, onChange:function(e){setFamille(e.target.value);}}, h("option", null, "MATERIAUX"), h("option", null, "OUTILLAGE"))),
+                h("div", {className:"input-group"}, h("label", {className:"input-label"}, "Unite"), h("select", {className:"select", value:unite, onChange:function(e){setUnite(e.target.value);}}, UNITES.map(function(u){ return h("option", {key:u}, u); })))
+            ),
+            h("div", {className:"grid-2"},
+                h("div", {className:"input-group"}, h("label", {className:"input-label"}, "Corps d'etat"), h("input", {className:"input", value:corps, onChange:function(e){setCorps(e.target.value);}})),
+                h("div", {className:"input-group"}, h("label", {className:"input-label"}, "Emplacement"), h("input", {className:"input", value:emplacement, onChange:function(e){setEmplacement(e.target.value);}}))
+            ),
+            h("div", {className:"grid-2"},
+                h("div", {className:"input-group"}, h("label", {className:"input-label"}, "Marque"), h("input", {className:"input", value:marque, onChange:function(e){setMarque(e.target.value);}})),
+                h("div", {className:"input-group"}, h("label", {className:"input-label"}, "Reference"), h("input", {className:"input", value:reference, onChange:function(e){setReference(e.target.value);}}))
+            ),
+            h("div", {className:"input-group"}, h("label", {className:"input-label"}, "Fournisseur"), h("input", {className:"input", value:fournisseur, onChange:function(e){setFournisseur(e.target.value);}})),
+            h("div", {className:"input-group"}, h("label", {className:"input-label"}, "Seuil d'alerte"), h("input", {className:"input", type:"number", value:qteMin, onChange:function(e){setQteMin(e.target.value);}})),
+            h("button", {className:"btn btn-gold btn-full", onClick:handleSave, disabled:saving}, saving ? "..." : "Enregistrer")
+        )
+    );
+}
+
+// PhotoScreen (avec correction du bug d'enregistrement sans photo)
 function PhotoScreen(props) {
     var stepState = useState("capture");
     var step = stepState[0];
@@ -445,19 +506,33 @@ function PhotoScreen(props) {
     }
     
     function handleSave() {
+        if(!result.nom) { showToast("Nom obligatoire", "error"); return; }
         setSaving(true);
-        var photoP = imgFile ? uploadPhoto(imgFile, (result.nom || "produit").replace(/[^a-z0-9]/gi, "_").slice(0,15)) : Promise.resolve(null);
-        photoP.then(function(pu) {
-            return supaPost("produits", {
+        var savePromise;
+        if(imgFile) {
+            savePromise = uploadPhoto(imgFile, (result.nom || "produit").replace(/[^a-z0-9]/gi, "_").slice(0,15))
+                .then(function(pu) {
+                    return supaPost("produits", {
+                        nom: result.nom,
+                        famille: result.famille,
+                        corps_etat: result.corps_etat,
+                        unite: result.unite || "piece",
+                        quantite: parseFloat(qty) || 1,
+                        photo_url: pu,
+                        user_id: props.user.code
+                    });
+                });
+        } else {
+            savePromise = supaPost("produits", {
                 nom: result.nom,
                 famille: result.famille,
                 corps_etat: result.corps_etat,
                 unite: result.unite || "piece",
                 quantite: parseFloat(qty) || 1,
-                photo_url: pu,
                 user_id: props.user.code
             });
-        }).then(function() {
+        }
+        savePromise.then(function() {
             showToast("Produit enregistre !", "success");
             if(props.onRefresh) props.onRefresh();
             props.onBack();
@@ -758,12 +833,12 @@ function App() {
         return h("div", {className:"app"}, GlobalHeader, h(LoginScreen, {onLogin: function(u){setUser(u);}}));
     }
     
-    var noNav = screen === "photo" || screen === "produit";
+    var noNav = (screen === "photo" || screen === "produit" || screen === "edit_produit");
     var currentScreen;
     
     switch(screen) {
         case "home":
-            currentScreen = h(HomeScreen, {user:user, nav:nav, produits:produits});
+            currentScreen = h(HomeScreen, {nav:nav, produits:produits});
             break;
         case "corpsdetat":
             currentScreen = h(CorpsDetatScreen, {categorie:data.categorie, onBack:goBack, nav:nav});
@@ -772,7 +847,10 @@ function App() {
             currentScreen = h(ProduitsListScreen, {produits:produits, ce:data.ce, onBack:goBack, nav:nav});
             break;
         case "produit":
-            currentScreen = h(ProduitDetail, {produit:data, onBack:goBack, onRefresh:loadData});
+            currentScreen = h(ProduitDetail, {produit:data, onBack:goBack, onRefresh:loadData, nav:nav});
+            break;
+        case "edit_produit":
+            currentScreen = h(EditProduitScreen, {produit:data, onBack:goBack, onRefresh:loadData});
             break;
         case "photo":
             currentScreen = h(PhotoScreen, {user:user, onBack:goBack, onRefresh:loadData});
@@ -787,7 +865,7 @@ function App() {
             currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
             break;
         default:
-            currentScreen = h(HomeScreen, {user:user, nav:nav, produits:produits});
+            currentScreen = h(HomeScreen, {nav:nav, produits:produits});
     }
     
     return h("div", {className:"app"}, GlobalHeader, currentScreen, !noNav ? h(NavBar, {screen:screen, onNav:onNav}) : null);
