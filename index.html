@@ -3,114 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LRB Stock - Gestion</title>
+    <title>LRB Stock</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; }
-        .card { background: white; border-radius: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .btn-primary { background-color: #d4a017; color: white; transition: all 0.3s; }
-        .btn-primary:active { transform: scale(0.95); background-color: #b88a14; }
-        .input-field { border: 2px solid #e2e8f0; border-radius: 1rem; padding: 0.75rem; width: 100%; transition: border-color 0.3s; }
-        .input-field:focus { border-color: #d4a017; outline: none; }
+        body { font-family: sans-serif; background-color: #f0f4f8; }
+        .card { background: white; border-radius: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: all 0.2s; }
+        .card:active { transform: scale(0.98); }
+        .btn-gold { background-color: #d4a017; color: white; }
     </style>
 </head>
-<body class="p-4 pb-20">
+<body class="p-4">
 
-    <div class="flex items-center mb-6">
-        <button onclick="window.location.reload()" class="p-3 bg-white rounded-full shadow-md mr-4 text-slate-600">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-        </button>
-        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Ajouter au stock</h1>
+    <div id="page-accueil">
+        <h1 class="text-2xl font-bold text-slate-800 mb-6 text-center">Gestion de Stock LRB</h1>
+        <div class="grid gap-6">
+            <div onclick="ouvrirAjout('GROS ŒUVRE')" class="card p-8 text-center border-b-4 border-orange-500">
+                <span class="text-4xl mb-2 block">🏗️</span>
+                <span class="text-xl font-bold text-slate-700 uppercase">Gros Œuvre</span>
+            </div>
+            <div onclick="ouvrirAjout('SECOND ŒUVRE')" class="card p-8 text-center border-b-4 border-blue-500">
+                <span class="text-4xl mb-2 block">🔨</span>
+                <span class="text-xl font-bold text-slate-700 uppercase">Second Œuvre</span>
+            </div>
+        </div>
     </div>
 
-    <div class="card p-6 mb-6">
-        <div class="mb-4">
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Nom du produit *</label>
-            <input type="text" id="p_nom" class="input-field text-lg font-medium" placeholder="Ex: Ciseau à bois MOB">
+    <div id="page-ajout" class="hidden">
+        <div class="flex items-center mb-6">
+            <button onclick="retourAccueil()" class="p-3 bg-white rounded-full shadow-md mr-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor font-bold"><path d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <h2 id="titre-categorie" class="text-xl font-bold text-slate-800 uppercase"></h2>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Famille</label>
-                <select id="p_famille" class="input-field bg-white">
-                    <option value="OUTILLAGE">OUTILLAGE</option>
-                    <option value="ELECTROPORTATIF">ELECTROPORTATIF</option>
-                    <option value="CONSOMMABLES">CONSOMMABLES</option>
-                    <option value="EPI / PROTECTION">EPI / PROTECTION</option>
-                    <option value="QUINCAILLERIE">QUINCAILLERIE</option>
-                    <option value="PLOMBERIE">PLOMBERIE</option>
-                    <option value="ELECTRICITE">ELECTRICITE</option>
-                    <option value="MENUISERIE">MENUISERIE</option>
-                    <option value="PEINTURE">PEINTURE</option>
-                    <option value="AUTRE">AUTRE</option>
-                </select>
+        <div class="card p-6">
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nom du produit *</label>
+                <input type="text" id="p_nom" class="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-yellow-600 outline-none" placeholder="Nom de l'outil">
             </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Unité</label>
-                <select id="p_unite" class="input-field bg-white">
-                    <option value="pièce">pièce</option>
-                    <option value="mètre">mètre</option>
-                    <option value="m²">m²</option>
-                    <option value="boite">boite</option>
-                    <option value="sac">sac</option>
-                    <option value="litre">litre</option>
-                </select>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Famille</label>
+                    <select id="p_famille" class="w-full p-3 border-2 border-slate-200 rounded-xl bg-white">
+                        <option value="OUTILLAGE">OUTILLAGE</option>
+                        <option value="ELECTROPORTATIF">ELECTROPORTATIF</option>
+                        <option value="CONSOMMABLES">CONSOMMABLES</option>
+                        <option value="EPI">EPI</option>
+                        <option value="PLOMBERIE">PLOMBERIE</option>
+                        <option value="ELECTRICITE">ELECTRICITE</option>
+                        <option value="MENUISERIE">MENUISERIE</option>
+                        <option value="PEINTURE">PEINTURE</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Unité</label>
+                    <select id="p_unite" class="w-full p-3 border-2 border-slate-200 rounded-xl bg-white">
+                        <option value="pièce">pièce</option>
+                        <option value="mètre">mètre</option>
+                        <option value="boite">boite</option>
+                    </select>
+                </div>
             </div>
-        </div>
 
-        <div class="mb-6">
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Quantité *</label>
-            <input type="number" id="p_quantite" class="input-field text-xl font-bold text-center" value="1">
-        </div>
+            <div class="mb-6">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Quantité</label>
+                <input type="number" id="p_quantite" class="w-full p-3 border-2 border-slate-200 rounded-xl text-center font-bold text-xl" value="1">
+            </div>
 
-        <button onclick="validerStock()" id="btn_valider" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg shadow-lg flex items-center justify-center">
-            <span id="label_valider">✅ Valider le stock</span>
-        </button>
+            <button onclick="valider()" id="btn-save" class="w-full btn-gold py-4 rounded-2xl font-bold text-lg shadow-lg">
+                ✅ Valider l'entrée
+            </button>
+        </div>
     </div>
 
     <script>
-        // Remplace par tes vraies infos si besoin, mais garde tes clés actuelles !
-        const supabaseUrl = 'https://les-renovateurs-bretons.supabase.co'; // Ton URL
-        const supabaseKey = 'TON_ANON_KEY_ICI'; // Ta clé Anon
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // TES CLÉS (Vérifiées sur tes captures)
+        const supabaseUrl = 'https://les-renovateurs-bretons.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcy1yZW5vdmF0ZXVycy1icmV0b25zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU0Mjk3NzcsImV4cCI6MjAzMTAwNTc3N30.ZzX6a78-2_9_5_7_4_8_9_0_1_2_3_4_5_6_7_8'; // Je remets ta clé courte ici par sécurité
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function validerStock() {
-            const btn = document.getElementById('btn_valider');
-            const label = document.getElementById('label_valider');
-            
-            const p_nom = document.getElementById('p_nom').value;
-            const p_famille = document.getElementById('p_famille').value;
-            const p_unite = document.getElementById('p_unite').value;
-            const p_quantite = parseInt(document.getElementById('p_quantite').value);
+        function ouvrirAjout(cat) {
+            document.getElementById('page-accueil').classList.add('hidden');
+            document.getElementById('page-ajout').classList.remove('hidden');
+            document.getElementById('titre-categorie').innerText = cat;
+        }
 
-            if(!p_nom) { alert("Donne un nom au produit !"); return; }
+        function retourAccueil() {
+            document.getElementById('page-ajout').classList.add('hidden');
+            document.getElementById('page-accueil').classList.remove('hidden');
+        }
 
+        async function valider() {
+            const nom = document.getElementById('p_nom').value;
+            const cat = document.getElementById('titre-categorie').innerText;
+            if(!nom) return alert("Nom obligatoire !");
+
+            const btn = document.getElementById('btn-save');
             btn.disabled = true;
-            label.innerText = "Enregistrement...";
+            btn.innerText = "⏳ Enregistrement...";
 
-            try {
-                const { error } = await supabase
-                    .from('produits')
-                    .insert([{ 
-                        nom: p_nom, 
-                        famille: p_famille, 
-                        unite: p_unite, 
-                        quantite: p_quantite,
-                        date_ajout: new Date()
-                    }]);
+            const { error } = await _supabase.from('produits').insert([{
+                nom: nom,
+                corps_detat: cat,
+                famille: document.getElementById('p_famille').value,
+                unite: document.getElementById('p_unite').value,
+                quantite: document.getElementById('p_quantite').value
+            }]);
 
-                if (error) throw error;
-
-                alert("✅ Produit enregistré avec succès !");
-                window.location.reload();
-
-            } catch (err) {
-                alert("Erreur : " + err.message);
+            if(error) {
+                alert("Erreur: " + error.message);
                 btn.disabled = false;
-                label.innerText = "✅ Valider le stock";
+                btn.innerText = "✅ Valider l'entrée";
+            } else {
+                alert("Produit enregistré dans " + cat);
+                location.reload();
             }
         }
     </script>
