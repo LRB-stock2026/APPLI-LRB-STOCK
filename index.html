@@ -10,9 +10,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0}
 :root{--navy:#3D5470;--navy-dark:#2d3f55;--gold:#C9973A;--gold-dim:#b8862e;--bg:#EDF0F4;--surface:#fff;--surface2:#E4E8EF;--border:#C8D0DC;--text:#1C2B3A;--text2:#3D5470;--text3:#7A90A8;--green:#2A7A38;--green-bg:#E6F4E8;--red:#C0392B;--red-bg:#FDEDEC;--orange:#C97320;--orange-bg:#FEF3E6;--shadow:0 3px 12px rgba(61,84,112,0.15);--navy-glow:0 6px 24px rgba(61,84,112,0.35);--gold-glow:0 6px 24px rgba(201,151,58,0.40)}
-html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--bg);color:var(--text)}
 .app{max-width:430px;margin:0 auto;min-height:100dvh;background:var(--bg)}
 .app-header-global{position:sticky;top:0;z-index:45;background:rgba(237,240,244,0.97);backdrop-filter:blur(12px);border-bottom:1.5px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:12px}
 .app-header-global-logo{width:42px;height:42px;border-radius:10px;object-fit:contain;background:#fff;padding:4px}
@@ -36,14 +36,12 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .nav-label{font-size:8px;font-weight:700;color:rgba(255,255,255,0.45)}
 .nav-item.active .nav-label{color:#fff}
 .input,.select{width:100%;background:#fff;border:2px solid var(--border);border-radius:14px;padding:12px 14px;font-family:inherit;font-size:15px}
-.input:focus,.select:focus{border-color:var(--navy)}
 .input-code{text-align:center;font-size:30px;letter-spacing:0.4em;font-weight:900;padding:18px}
 .input-label{font-size:10px;font-weight:800;color:var(--navy);display:block;margin-bottom:4px}
 .checkbox-group{display:flex;align-items:center;gap:12px;margin:12px 0}
 .checkbox-group input{width:20px;height:20px;cursor:pointer}
 .checkbox-group label{font-size:14px;font-weight:600;color:var(--navy);cursor:pointer}
 .btn{display:flex;align-items:center;justify-content:center;gap:6px;border:none;font-weight:700;cursor:pointer;border-radius:14px;font-size:15px;padding:12px 20px}
-.btn:active{transform:scale(0.96)}
 .btn-navy{background:var(--navy);color:#fff}
 .btn-gold{background:var(--gold);color:#fff}
 .btn-outline{background:#fff;color:var(--navy);border:2px solid var(--border)}
@@ -68,7 +66,7 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .badge-out{background:var(--red-bg);color:var(--red)}
 .search-box{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--border);border-radius:14px;padding:11px 14px;margin-bottom:14px}
 .search-box input{flex:1;border:none;background:transparent;font-size:15px;outline:none}
-.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:999}
+.toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:100px;font-size:13px;font-weight:700;z-index:999;white-space:nowrap}
 .spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin 0.6s linear infinite;margin:0 auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 .space-y > * + *{margin-top:10px}
@@ -88,177 +86,656 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 </style>
 </head>
 <body>
-<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;background:var(--navy);flex-direction:column;gap:14px"><div style="color:#fff;font-family:sans-serif;font-size:15px">Chargement...</div></div></div>
+<div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script>
-var LRB_LOGO="https://kiomcpwjveppgragajyv.supabase.co/storage/v1/object/public/product-photos/LRB_Logo_300dpi.png";
-var SUPABASE_URL="https://kiomcpwjveppgragajyv.supabase.co";
-var SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpb21jcHdqdmVwcGdyYWdhanl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzYyMDksImV4cCI6MjA5MzY1MjIwOX0.RHBrIC7Hz_5U91R6ZZTpoq8q925gcvN5d3UL5I8QAGU";
-var USERS_LOCAL={"284916":{name:"David",role:"chantier"},"651973":{name:"Jacques",role:"chantier"},"908257":{name:"Mathys",role:"chantier"},"739482":{name:"Administration",role:"admin"}};
-var CORPS_ETAT_GROS=[{id:"maconnerie",label:"Maçonnerie",icon:"🧱"},{id:"demolition",label:"Démolition",icon:"⛏️"},{id:"terrassement",label:"Terrassement",icon:"🚜"},{id:"beton",label:"Béton",icon:"🏗️"},{id:"charpente",label:"Charpente",icon:"🪵"},{id:"couverture",label:"Couverture",icon:"🏠"}];
-var CORPS_ETAT_SECOND=[{id:"platrerie",label:"Plâtrerie",icon:"🪣"},{id:"peinture",label:"Peinture",icon:"🎨"},{id:"menuiserie",label:"Menuiserie",icon:"🪚"},{id:"carrelage",label:"Carrelage",icon:"🟦"},{id:"electricite",label:"Électricité",icon:"⚡"},{id:"plomberie",label:"Plomberie",icon:"🚿"},{id:"isolation",label:"Isolation",icon:"🌡️"},{id:"sols",label:"Sols",icon:"🦶"},{id:"quincaillerie",label:"Quincaillerie",icon:"🔩"},{id:"consommables",label:"Consommables",icon:"📦"},{id:"finitions",label:"Finitions",icon:"✨"},{id:"securite",label:"Sécurité",icon:"🦺"},{id:"nettoyage",label:"Nettoyage",icon:"🧹"},{id:"divers",label:"Divers",icon:"📦"}];
-var UNITES=["pièce","boîte","sac","rouleau","cartouche","litre","m²","ml","kg","palette","lot"];
+// Configuration
+var LRB_LOGO = "https://kiomcpwjveppgragajyv.supabase.co/storage/v1/object/public/product-photos/LRB_Logo_300dpi.png";
+var SUPABASE_URL = "https://kiomcpwjveppgragajyv.supabase.co";
+var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpb21jcHdqdmVwcGdyYWdhanl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzYyMDksImV4cCI6MjA5MzY1MjIwOX0.RHBrIC7Hz_5U91R6ZZTpoq8q925gcvN5d3UL5I8QAGU";
+var USERS_LOCAL = {"284916":{name:"David",role:"chantier"},"651973":{name:"Jacques",role:"chantier"},"908257":{name:"Mathys",role:"chantier"},"739482":{name:"Administration",role:"admin"}};
+var CORPS_ETAT_GROS = [{id:"maconnerie",label:"Maconnerie",icon:"🧱"},{id:"demolition",label:"Demolition",icon:"⛏️"},{id:"terrassement",label:"Terrassement",icon:"🚜"},{id:"beton",label:"Beton",icon:"🏗️"},{id:"charpente",label:"Charpente",icon:"🪵"},{id:"couverture",label:"Couverture",icon:"🏠"}];
+var CORPS_ETAT_SECOND = [{id:"platrerie",label:"Platrerie",icon:"🪣"},{id:"peinture",label:"Peinture",icon:"🎨"},{id:"menuiserie",label:"Menuiserie",icon:"🪚"},{id:"carrelage",label:"Carrelage",icon:"🟦"},{id:"electricite",label:"Electricite",icon:"⚡"},{id:"plomberie",label:"Plomberie",icon:"🚿"},{id:"isolation",label:"Isolation",icon:"🌡️"},{id:"sols",label:"Sols",icon:"🦶"},{id:"quincaillerie",label:"Quincaillerie",icon:"🔩"},{id:"consommables",label:"Consommables",icon:"📦"},{id:"finitions",label:"Finitions",icon:"✨"},{id:"securite",label:"Securite",icon:"🦺"},{id:"nettoyage",label:"Nettoyage",icon:"🧹"},{id:"divers",label:"Divers",icon:"📦"}];
+var UNITES = ["piece","boite","sac","rouleau","cartouche","litre","m2","ml","kg","palette","lot"];
 
-var useState=React.useState,useEffect=React.useEffect,useCallback=React.useCallback,useRef=React.useRef;
-var h=React.createElement;
+var useState = React.useState;
+var useEffect = React.useEffect;
+var useCallback = React.useCallback;
+var useRef = React.useRef;
+var h = React.createElement;
 
-function showToast(msg,type){document.querySelectorAll(".toast").forEach(function(e){e.remove();});var el=document.createElement("div");el.className="toast"+(type==="success"?" toast-success":type==="error"?" toast-error":"");el.textContent=msg;document.body.appendChild(el);setTimeout(function(){el.remove();},3000);}
-async function supaGet(table,query){var url=SUPABASE_URL+"/rest/v1/"+table+(query?"?"+query:"");var res=await fetch(url,{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Accept":"application/json"}});var text=await res.text();if(!res.ok)throw new Error(text);return JSON.parse(text);}
-async function supaPost(table,data){var res=await fetch(SUPABASE_URL+"/rest/v1/"+table,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Prefer":"return=minimal"},body:JSON.stringify(data)});var text=await res.text();if(!res.ok)throw new Error(text);return text?JSON.parse(text):{};}
-async function supaPatch(table,id,data){var res=await fetch(SUPABASE_URL+"/rest/v1/"+table+"?id=eq."+id,{method:"PATCH",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Prefer":"return=minimal"},body:JSON.stringify(data)});var text=await res.text();if(!res.ok)throw new Error(text);return {};}
-async function uploadPhoto(file,name){var ext=file.name?file.name.split(".").pop():"jpg";var path=name.replace(/[^a-z0-9]/gi,"_").slice(0,20)+"-"+Date.now()+"."+ext;var res=await fetch(SUPABASE_URL+"/storage/v1/object/product-photos/"+path,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":file.type||"image/jpeg"},body:file});if(!res.ok)throw new Error("Upload échoué");return SUPABASE_URL+"/storage/v1/object/public/product-photos/"+path;}
+function showToast(msg, type) {
+    document.querySelectorAll(".toast").forEach(function(e) { e.remove(); });
+    var el = document.createElement("div");
+    el.className = "toast" + (type === "success" ? " toast-success" : (type === "error" ? " toast-error" : ""));
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(function() { el.remove(); }, 3000);
+}
 
-function LoginScreen(props){var s1=useState(""),code=s1[0],setCode=s1[1];var s2=useState(""),err=s2[0],setErr=s2[1];var s3=useState(false),loading=s3[0],setLoading=s3[1];var s4=useState(false),rememberMe=s4[0],setRememberMe=s4[1];
-useEffect(function(){var savedCode=localStorage.getItem("lrb_remembered_code");if(savedCode){setCode(savedCode);setRememberMe(true);}},[]);
-async function doLogin(){if(code.length<4)return;setLoading(true);setErr("");try{var rows=await supaGet("utilisateurs","code=eq."+code+"&limit=1");if(rows&&rows.length>0){if(rememberMe){localStorage.setItem("lrb_remembered_code",code);}else{localStorage.removeItem("lrb_remembered_code");}props.onLogin({code:code,name:rows[0].nom,role:rows[0].role||"chantier"});setLoading(false);return;}}catch(e){}if(USERS_LOCAL[code]){if(rememberMe){localStorage.setItem("lrb_remembered_code",code);}else{localStorage.removeItem("lrb_remembered_code");}props.onLogin(Object.assign({code:code},USERS_LOCAL[code]));}else{setErr("Code incorrect");}setLoading(false);}
-return h("div",{className:"login-wrap"},h("div",{className:"login-card"},h("img",{src:LRB_LOGO,className:"login-logo"}),h("div",{className:"login-title"},"STOCK"),h("label",{className:"input-label"},"Code utilisateur"),h("input",{className:"input input-code",type:"tel",maxLength:6,placeholder:"••••••",value:code,onChange:function(e){setCode(e.target.value);setErr("");},onKeyDown:function(e){if(e.key==="Enter")doLogin();}}),err&&h("div",{style:{color:"var(--red)",fontSize:12,marginBottom:12}},"⚠ "+err),h("div",{className:"checkbox-group"},h("input",{type:"checkbox",id:"rememberMe",checked:rememberMe,onChange:function(e){setRememberMe(e.target.checked);}}),h("label",{htmlFor:"rememberMe"},"Se souvenir de moi")),h("button",{className:"btn btn-navy btn-full",onClick:doLogin,disabled:loading||code.length<4},loading?"…":"Connexion")));}
+async function supaGet(table, query) {
+    var url = SUPABASE_URL + "/rest/v1/" + table + (query ? "?" + query : "");
+    var res = await fetch(url, {
+        headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Accept": "application/json" }
+    });
+    var text = await res.text();
+    if (!res.ok) throw new Error(text);
+    return JSON.parse(text);
+}
 
-function NavBar(props){var items=[{id:"home",icon:"🏠",label:"Accueil"},{id:"stock",icon:"📦",label:"Stock"},{id:"achat",icon:"🛒",label:"Achat"},{id:"besoin",icon:"📋",label:"Besoin"},{id:"profil",icon:"👤",label:"Profil"}];return h("nav",{className:"navbar"},items.map(function(item){var active=props.screen===item.id;return h("button",{key:item.id,className:"nav-item"+(active?" active":""),onClick:function(){props.onNav(item.id);}},h("span",{className:"nav-emoji"},item.icon),h("span",{className:"nav-label"},item.label),h("div",{className:"nav-dot"}));}));}
+async function supaPost(table, data) {
+    var res = await fetch(SUPABASE_URL + "/rest/v1/" + table, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Prefer": "return=minimal" },
+        body: JSON.stringify(data)
+    });
+    var text = await res.text();
+    if (!res.ok) throw new Error(text);
+    return text ? JSON.parse(text) : {};
+}
 
-function HomeScreen(props){var produits=props.produits||[];var totalArticles=produits.reduce(function(s,p){return s+(p.quantite||0);},0);
-return h("div",{className:"screen"},h("div",{className:"home-buttons"},h("button",{className:"home-btn btn-gros",onClick:function(){props.nav("corpsdetat",{categorie:"gros"});}},h("span",{className:"home-btn-icon"},"🏗️"),h("span",{className:"home-btn-label"},"GROS ŒUVRE")),h("button",{className:"home-btn btn-second",onClick:function(){props.nav("corpsdetat",{categorie:"second"});}},h("span",{className:"home-btn-icon"},"🪟"),h("span",{className:"home-btn-label"},"SECOND ŒUVRE")),h("div",{className:"stock-counter"},"📊 "+totalArticles+" article"+(totalArticles>1?"s":"")+" en stock"));}
+async function supaPatch(table, id, data) {
+    var res = await fetch(SUPABASE_URL + "/rest/v1/" + table + "?id=eq." + id, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Prefer": "return=minimal" },
+        body: JSON.stringify(data)
+    });
+    var text = await res.text();
+    if (!res.ok) throw new Error(text);
+    return {};
+}
 
-function CorpsDetatScreen(props){var categorie=props.categorie,onBack=props.onBack,nav=props.nav;var s1=useState(""),search=s1[0],setSearch=s1[1];var ces=categorie==="gros"?CORPS_ETAT_GROS:CORPS_ETAT_SECOND;var title=categorie==="gros"?"GROS ŒUVRE":"SECOND ŒUVRE";var filteredCes=ces;if(search){filteredCes=ces.filter(function(ce){return ce.label.toLowerCase().includes(search.toLowerCase());});}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},title),h("div",{className:"header-sub"},"Choisissez un corps d'état"))),h("div",{className:"search-box"},h("span",null,"🔍"),h("input",{placeholder:"Rechercher un métier…",value:search,onChange:function(e){setSearch(e.target.value);}})),filteredCes.map(function(ce){return h("button",{key:ce.id,className:"ce-btn",onClick:function(){nav("produits_list",{categorie:categorie,ce:ce});}},h("span",{className:"ce-icon"},ce.icon),h("span",{className:"ce-label"},ce.label));}));}
+async function uploadPhoto(file, name) {
+    var ext = file.name ? file.name.split(".").pop() : "jpg";
+    var path = name.replace(/[^a-z0-9]/gi, "_").slice(0,20) + "-" + Date.now() + "." + ext;
+    var res = await fetch(SUPABASE_URL + "/storage/v1/object/product-photos/" + path, {
+        method: "POST",
+        headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": file.type || "image/jpeg" },
+        body: file
+    });
+    if (!res.ok) throw new Error("Upload failed");
+    return SUPABASE_URL + "/storage/v1/object/public/product-photos/" + path;
+}
 
-function ProduitsListScreen(props){var produits=props.produits,ce=props.ce,onBack=props.onBack,nav=props.nav;var s1=useState(""),search=s1[0],setSearch=s1[1];var list=produits.filter(function(p){return(p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase());});if(search){list=list.filter(function(p){return(p.nom||"").toLowerCase().includes(search.toLowerCase());});}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},ce.label),h("div",{className:"header-sub"},list.length+" produit(s)")),h("button",{style:{marginLeft:"auto",background:"transparent",border:"none",fontSize:22,cursor:"pointer"},onClick:function(){nav("photo",null);}},"➕")),h("div",{className:"search-box"},h("span",null,"🔍"),h("input",{placeholder:"Rechercher un produit…",value:search,onChange:function(e){setSearch(e.target.value);}})),list.length===0&&h("div",{className:"text-center text-muted",style:{marginTop:24}},"Aucun produit"),list.map(function(p){var statut=(p.quantite||0)<=0?"out":(p.quantite||0)<=(p.quantite_min||1)?"low":"ok";return h("div",{key:p.id,className:"product-card product-"+statut,onClick:function(){nav("produit",p);}},h("div",{className:"product-thumb"},p.photo_url?h("img",{src:p.photo_url}):"📦"),h("div",{style:{flex:1}},h("div",{className:"product-name"},p.nom),h("div",{className:"product-meta"},(p.corps_etat||p.famille||"")+(p.emplacement?" · "+p.emplacement:"")),h("span",{className:"badge badge-"+statut},(statut==="ok"?"✅":statut==="low"?"⚠️":"❌")+" "+(p.quantite||0)+" "+(p.unite||"pièce"))));}));}
+// ==================== LOGIN SCREEN ====================
+function LoginScreen(props) {
+    var codeState = useState("");
+    var code = codeState[0];
+    var setCode = codeState[1];
+    var errState = useState("");
+    var err = errState[0];
+    var setErr = errState[1];
+    var loadState = useState(false);
+    var loading = loadState[0];
+    var setLoading = loadState[1];
+    var remState = useState(false);
+    var rememberMe = remState[0];
+    var setRememberMe = remState[1];
 
-function ProduitDetail(props){var user=props.user,produit=props.produit,onBack=props.onBack,onRefresh=props.onRefresh,nav=props.nav;var p=produit;var s1=useState(""),qty=s1[0],setQty=s1[1];var s2=useState(""),ajout=s2[0],setAjout=s2[1];var statut=(p.quantite||0)<=0?"out":(p.quantite||0)<=(p.quantite_min||1)?"low":"ok";async function sortir(){var q=parseFloat(qty);if(!q||q<=0)return;try{await supaPatch("produits",p.id,{quantite:Math.max(0,(p.quantite||0)-q)});showToast("✅ "+q+" sorti(s)","success");setQty("");onRefresh();onBack();}catch(e){showToast("Erreur: "+e.message,"error");}}async function ajouter(){var q=parseFloat(ajout);if(!q||q<=0)return;try{await supaPatch("produits",p.id,{quantite:(p.quantite||0)+q});showToast("✅ "+q+" ajouté(s)","success");setAjout("");onRefresh();onBack();}catch(e){showToast("Erreur: "+e.message,"error");}}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",{style:{flex:1}},h("div",{className:"header-title",style:{fontSize:18}},p.nom),h("div",{className:"header-sub"},p.corps_etat||p.famille||"")),h("button",{className:"btn-edit",onClick:function(){if(nav) nav("edit_produit",p);}},"✏️ Modifier")),h("div",{className:"product-hero"},p.photo_url?h("img",{src:p.photo_url}):"📦"),h("span",{className:"badge badge-"+statut,style:{marginBottom:14,fontSize:13}},statut==="ok"?"✅ En stock":statut==="low"?"⚠️ Stock bas":"❌ Rupture"," — "+(p.quantite||0)+" "+(p.unite||"pièce")),h("div",{className:"card",style:{padding:14,marginBottom:14}},["famille","corps_etat","emplacement","marque","reference","fournisseur"].filter(function(k){return p[k];}).map(function(k){var labels={famille:"Famille",corps_etat:"Corps d'état",emplacement:"Emplacement",marque:"Marque",reference:"Référence",fournisseur:"Fournisseur"};return h("div",{key:k,className:"meta-row"},h("span",{className:"meta-key"},labels[k]),h("span",{className:"meta-val"},p[k]));})),h("div",{className:"grid-2"},h("div",{className:"card",style:{padding:12}},h("div",{className:"section-title"},"➕ AJOUTER"),h("input",{className:"input",type:"number",placeholder:"Quantité",value:ajout,onChange:function(e){setAjout(e.target.value);}}),h("button",{className:"btn btn-navy btn-full",style:{marginTop:8},onClick:ajouter,disabled:!ajout},"Ajouter")),h("div",{className:"card",style:{padding:12}},h("div",{className:"section-title"},"➖ SORTIR"),h("input",{className:"input",type:"number",placeholder:"Quantité",value:qty,onChange:function(e){setQty(e.target.value);}}),h("button",{className:"btn btn-gold btn-full",style:{marginTop:8},onClick:sortir,disabled:!qty},"Sortir"))));}
+    useEffect(function() {
+        var saved = localStorage.getItem("lrb_remembered_code");
+        if (saved) { setCode(saved); setRememberMe(true); }
+    }, []);
 
-function EditProduitScreen(props){
-    var p = props.produit;
-    var sNom=useState(p.nom||""),nom=sNom[0],setNom=sNom[1];
-    var sFamille=useState(p.famille||"MATERIAUX"),famille=sFamille[0],setFamille=sFamille[1];
-    var sCorps=useState(p.corps_etat||""),corpsEtat=sCorps[0],setCorpsEtat=sCorps[1];
-    var sUnite=useState(p.unite||"pièce"),unite=sUnite[0],setUnite=sUnite[1];
-    var sQteMin=useState(p.quantite_min||0),qteMin=sQteMin[0],setQteMin=sQteMin[1];
-    var sEmplacement=useState(p.emplacement||""),emplacement=sEmplacement[0],setEmplacement=sEmplacement[1];
-    var sMarque=useState(p.marque||""),marque=sMarque[0],setMarque=sMarque[1];
-    var sReference=useState(p.reference||""),reference=sReference[0],setReference=sReference[1];
-    var sFournisseur=useState(p.fournisseur||""),fournisseur=sFournisseur[0],setFournisseur=sFournisseur[1];
-    var sSaving=useState(false),saving=sSaving[0],setSaving=sSaving[1];
-    async function handleSave(){
-        if(!nom){showToast("Nom obligatoire","error");return;}
-        setSaving(true);
-        try{
-            await supaPatch("produits",p.id,{
-                nom:nom,
-                famille:famille,
-                corps_etat:corpsEtat,
-                unite:unite,
-                quantite_min:parseFloat(qteMin)||0,
-                emplacement:emplacement||null,
-                marque:marque||null,
-                reference:reference||null,
-                fournisseur:fournisseur||null
-            });
-            showToast("✅ Produit modifié","success");
-            props.onRefresh();
-            props.onBack();
-        }catch(e){showToast("Erreur: "+e.message,"error");}
-        setSaving(false);
+    async function doLogin() {
+        if (code.length < 4) return;
+        setLoading(true);
+        setErr("");
+        try {
+            var rows = await supaGet("utilisateurs", "code=eq." + code + "&limit=1");
+            if (rows && rows.length > 0) {
+                if (rememberMe) localStorage.setItem("lrb_remembered_code", code);
+                else localStorage.removeItem("lrb_remembered_code");
+                props.onLogin({ code: code, name: rows[0].nom, role: rows[0].role || "chantier" });
+                setLoading(false);
+                return;
+            }
+        } catch(e) {}
+        if (USERS_LOCAL[code]) {
+            if (rememberMe) localStorage.setItem("lrb_remembered_code", code);
+            else localStorage.removeItem("lrb_remembered_code");
+            props.onLogin(Object.assign({ code: code }, USERS_LOCAL[code]));
+        } else {
+            setErr("Code incorrect");
+        }
+        setLoading(false);
     }
-    return h("div",{className:"screen"},
-        h("div",{className:"header"},
-            h("button",{className:"header-back",onClick:props.onBack},"←"),
-            h("div",null,h("div",{className:"header-title"},"Modifier produit"))
-        ),
-        h("div",{className:"space-y"},
-            h("div",{className:"input-group"},h("label",{className:"input-label"},"Nom *"),h("input",{className:"input",value:nom,onChange:function(e){setNom(e.target.value);}})),
-            h("div",{className:"grid-2"},
-                h("div",{className:"input-group"},h("label",{className:"input-label"},"Famille"),h("select",{className:"select",value:famille,onChange:function(e){setFamille(e.target.value);}},h("option",null,"MATERIAUX"),h("option",null,"OUTILLAGE"))),
-                h("div",{className:"input-group"},h("label",{className:"input-label"},"Unité"),h("select",{className:"select",value:unite,onChange:function(e){setUnite(e.target.value);}},UNITES.map(function(u){return h("option",{key:u},u);})))
+
+    return h("div", { className: "login-wrap" },
+        h("div", { className: "login-card" },
+            h("img", { src: LRB_LOGO, className: "login-logo" }),
+            h("div", { className: "login-title" }, "STOCK"),
+            h("label", { className: "input-label" }, "Code utilisateur"),
+            h("input", { className: "input input-code", type: "tel", maxLength: 6, placeholder: "••••••", value: code, onChange: function(e) { setCode(e.target.value); setErr(""); }, onKeyDown: function(e) { if (e.key === "Enter") doLogin(); } }),
+            err ? h("div", { style: { color: "var(--red)", fontSize: 12, marginBottom: 12 } }, err) : null,
+            h("div", { className: "checkbox-group" },
+                h("input", { type: "checkbox", id: "rememberMe", checked: rememberMe, onChange: function(e) { setRememberMe(e.target.checked); } }),
+                h("label", { htmlFor: "rememberMe" }, "Se souvenir de moi")
             ),
-            h("div",{className:"input-group"},h("label",{className:"input-label"},"Corps d'état"),h("input",{className:"input",value:corpsEtat,onChange:function(e){setCorpsEtat(e.target.value);}})),
-            h("div",{className:"input-group"},h("label",{className:"input-label"},"Emplacement"),h("input",{className:"input",value:emplacement,onChange:function(e){setEmplacement(e.target.value);}})),
-            h("div",{className:"grid-2"},
-                h("div",{className:"input-group"},h("label",{className:"input-label"},"Marque"),h("input",{className:"input",value:marque,onChange:function(e){setMarque(e.target.value);}})),
-                h("div",{className:"input-group"},h("label",{className:"input-label"},"Référence"),h("input",{className:"input",value:reference,onChange:function(e){setReference(e.target.value);}}))
-            ),
-            h("div",{className:"input-group"},h("label",{className:"input-label"},"Fournisseur"),h("input",{className:"input",value:fournisseur,onChange:function(e){setFournisseur(e.target.value);}})),
-            h("div",{className:"input-group"},h("label",{className:"input-label"},"Seuil d'alerte"),h("input",{className:"input",type:"number",value:qteMin,onChange:function(e){setQteMin(e.target.value);}})),
-            h("button",{className:"btn btn-gold btn-full",onClick:handleSave,disabled:saving},saving?"...":"Enregistrer")
+            h("button", { className: "btn btn-navy btn-full", onClick: doLogin, disabled: loading || code.length < 4 }, loading ? "..." : "Connexion")
         )
     );
 }
 
-function PhotoScreen(props){var user=props.user,onBack=props.onBack,onRefresh=props.onRefresh;var s1=useState("capture"),step=s1[0],setStep=s1[1];var s2=useState(null),preview=s2[0],setPreview=s2[1];var s3=useState(null),imgFile=s3[0],setImgFile=s3[1];var s4=useState(null),result=s4[0],setResult=s4[1];var s5=useState(""),qty=s5[0],setQty=s5[1];var s6=useState(false),saving=s6[0],setSaving=s6[1];var fileRef=useRef();function handleFile(e){var file=e.target.files[0];if(!file)return;setImgFile(file);var reader=new FileReader();reader.onload=function(ev){setPreview(ev.target.result);};reader.readAsDataURL(file);setStep("analyzing");setTimeout(function(){setResult({nom:"Produit reconnu",famille:"MATERIAUX",corps_etat:"Divers",unite:"pièce"});setQty("1");setStep("result");},1500);}
-function handleManualEntry(){setStep("result");setResult({nom:"",famille:"MATERIAUX",corps_etat:"",unite:"pièce"});setQty("1");setImgFile(null);setPreview(null);}
-function handleSave(){
-    if(!result.nom){showToast("Nom obligatoire","error");return;}
-    setSaving(true);
-    var savePromise;
-    if(imgFile){
-        savePromise = uploadPhoto(imgFile, (result.nom||"produit").replace(/[^a-z0-9]/gi,"_").slice(0,15))
-            .then(function(pu){
-                return supaPost("produits",{
-                    nom:result.nom,
-                    famille:result.famille,
-                    corps_etat:result.corps_etat,
-                    marque:result.marque||null,
-                    reference:result.reference||null,
-                    unite:result.unite||"pièce",
-                    quantite:parseFloat(qty)||1,
-                    photo_url:pu,
-                    user_id:user.code
-                });
+// ==================== NAVBAR ====================
+function NavBar(props) {
+    var items = [
+        { id: "home", icon: "🏠", label: "Accueil" },
+        { id: "stock", icon: "📦", label: "Stock" },
+        { id: "achat", icon: "🛒", label: "Achat" },
+        { id: "besoin", icon: "📋", label: "Besoin" },
+        { id: "profil", icon: "👤", label: "Profil" }
+    ];
+    return h("nav", { className: "navbar" },
+        items.map(function(item) {
+            var active = props.screen === item.id;
+            return h("button", { key: item.id, className: "nav-item" + (active ? " active" : ""), onClick: function() { props.onNav(item.id); } },
+                h("span", { className: "nav-emoji" }, item.icon),
+                h("span", { className: "nav-label" }, item.label),
+                h("div", { className: "nav-dot" })
+            );
+        })
+    );
+}
+
+// ==================== HOME SCREEN ====================
+function HomeScreen(props) {
+    var produits = props.produits || [];
+    var total = produits.reduce(function(s, p) { return s + (p.quantite || 0); }, 0);
+    return h("div", { className: "screen" },
+        h("div", { className: "home-buttons" },
+            h("button", { className: "home-btn btn-gros", onClick: function() { props.nav("corpsdetat", { categorie: "gros" }); } },
+                h("span", { className: "home-btn-icon" }, "🏗️"),
+                h("span", { className: "home-btn-label" }, "GROS OEUVRE")
+            ),
+            h("button", { className: "home-btn btn-second", onClick: function() { props.nav("corpsdetat", { categorie: "second" }); } },
+                h("span", { className: "home-btn-icon" }, "🪟"),
+                h("span", { className: "home-btn-label" }, "SECOND OEUVRE")
+            ),
+            h("div", { className: "stock-counter" }, "📊 " + total + " article" + (total > 1 ? "s" : "") + " en stock")
+        )
+    );
+}
+
+// ==================== CORPS D'ETAT SCREEN ====================
+function CorpsDetatScreen(props) {
+    var categorie = props.categorie;
+    var onBack = props.onBack;
+    var nav = props.nav;
+    var searchState = useState("");
+    var search = searchState[0];
+    var setSearch = searchState[1];
+    var ces = categorie === "gros" ? CORPS_ETAT_GROS : CORPS_ETAT_SECOND;
+    var title = categorie === "gros" ? "GROS OEUVRE" : "SECOND OEUVRE";
+    var filtered = ces;
+    if (search) {
+        filtered = ces.filter(function(ce) { return ce.label.toLowerCase().includes(search.toLowerCase()); });
+    }
+    return h("div", { className: "screen" },
+        h("div", { className: "header" },
+            h("button", { className: "header-back", onClick: onBack }, "←"),
+            h("div", null, h("div", { className: "header-title" }, title), h("div", { className: "header-sub" }, "Choisissez un corps d'etat"))
+        ),
+        h("div", { className: "search-box" },
+            h("span", null, "🔍"),
+            h("input", { placeholder: "Rechercher un metier...", value: search, onChange: function(e) { setSearch(e.target.value); } })
+        ),
+        filtered.map(function(ce) {
+            return h("button", { key: ce.id, className: "ce-btn", onClick: function() { nav("produits_list", { categorie: categorie, ce: ce }); } },
+                h("span", { className: "ce-icon" }, ce.icon),
+                h("span", { className: "ce-label" }, ce.label)
+            );
+        })
+    );
+}
+
+// ==================== PRODUITS LIST SCREEN ====================
+function ProduitsListScreen(props) {
+    var produits = props.produits;
+    var ce = props.ce;
+    var onBack = props.onBack;
+    var nav = props.nav;
+    var searchState = useState("");
+    var search = searchState[0];
+    var setSearch = searchState[1];
+    var list = produits.filter(function(p) { return (p.corps_etat || "").toLowerCase().includes(ce.label.toLowerCase()); });
+    if (search) {
+        list = list.filter(function(p) { return (p.nom || "").toLowerCase().includes(search.toLowerCase()); });
+    }
+    return h("div", { className: "screen" },
+        h("div", { className: "header" },
+            h("button", { className: "header-back", onClick: onBack }, "←"),
+            h("div", null, h("div", { className: "header-title" }, ce.label), h("div", { className: "header-sub" }, list.length + " produit(s)")),
+            h("button", { style: { marginLeft: "auto", background: "transparent", border: "none", fontSize: 22, cursor: "pointer" }, onClick: function() { nav("photo", null); } }, "➕")
+        ),
+        h("div", { className: "search-box" },
+            h("span", null, "🔍"),
+            h("input", { placeholder: "Rechercher un produit...", value: search, onChange: function(e) { setSearch(e.target.value); } })
+        ),
+        list.length === 0 ? h("div", { className: "text-center text-muted", style: { marginTop: 24 } }, "Aucun produit") : null,
+        list.map(function(p) {
+            var statut = (p.quantite || 0) <= 0 ? "out" : ((p.quantite || 0) <= (p.quantite_min || 1) ? "low" : "ok");
+            return h("div", { key: p.id, className: "product-card product-" + statut, onClick: function() { nav("produit", p); } },
+                h("div", { className: "product-thumb" }, p.photo_url ? h("img", { src: p.photo_url }) : "📦"),
+                h("div", { style: { flex: 1 } },
+                    h("div", { className: "product-name" }, p.nom),
+                    h("div", { className: "product-meta" }, (p.corps_etat || p.famille || "") + (p.emplacement ? " · " + p.emplacement : "")),
+                    h("span", { className: "badge badge-" + statut }, (statut === "ok" ? "✅" : statut === "low" ? "⚠️" : "❌") + " " + (p.quantite || 0) + " " + (p.unite || "piece"))
+                )
+            );
+        })
+    );
+}
+
+// ==================== PRODUIT DETAIL SCREEN ====================
+function ProduitDetail(props) {
+    var user = props.user;
+    var p = props.produit;
+    var onBack = props.onBack;
+    var onRefresh = props.onRefresh;
+    var nav = props.nav;
+    var qtyState = useState("");
+    var qty = qtyState[0];
+    var setQty = qtyState[1];
+    var addState = useState("");
+    var add = addState[0];
+    var setAdd = addState[1];
+    var statut = (p.quantite || 0) <= 0 ? "out" : ((p.quantite || 0) <= (p.quantite_min || 1) ? "low" : "ok");
+
+    async function sortir() {
+        var q = parseFloat(qty);
+        if (!q || q <= 0) return;
+        try {
+            await supaPatch("produits", p.id, { quantite: Math.max(0, (p.quantite || 0) - q) });
+            showToast("✅ " + q + " sorti(s)", "success");
+            setQty("");
+            onRefresh();
+            onBack();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+    }
+
+    async function ajouter() {
+        var q = parseFloat(add);
+        if (!q || q <= 0) return;
+        try {
+            await supaPatch("produits", p.id, { quantite: (p.quantite || 0) + q });
+            showToast("✅ " + q + " ajoute(s)", "success");
+            setAdd("");
+            onRefresh();
+            onBack();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+    }
+
+    return h("div", { className: "screen" },
+        h("div", { className: "header" },
+            h("button", { className: "header-back", onClick: onBack }, "←"),
+            h("div", { style: { flex: 1 } },
+                h("div", { className: "header-title", style: { fontSize: 18 } }, p.nom),
+                h("div", { className: "header-sub" }, p.corps_etat || p.famille || "")
+            ),
+            h("button", { className: "btn-edit", onClick: function() { if (nav) nav("edit_produit", p); } }, "✏️ Modifier")
+        ),
+        h("div", { className: "product-hero" }, p.photo_url ? h("img", { src: p.photo_url }) : "📦"),
+        h("span", { className: "badge badge-" + statut, style: { marginBottom: 14, fontSize: 13 } },
+            (statut === "ok" ? "✅ En stock" : statut === "low" ? "⚠️ Stock bas" : "❌ Rupture") + " — " + (p.quantite || 0) + " " + (p.unite || "piece")),
+        h("div", { className: "card", style: { padding: 14, marginBottom: 14 } },
+            ["famille","corps_etat","emplacement","marque","reference","fournisseur"].filter(function(k){ return p[k]; }).map(function(k){
+                var labels = { famille:"Famille", corps_etat:"Corps d'etat", emplacement:"Emplacement", marque:"Marque", reference:"Reference", fournisseur:"Fournisseur" };
+                return h("div", { key: k, className: "meta-row" }, h("span", { className: "meta-key" }, labels[k]), h("span", { className: "meta-val" }, p[k]));
+            })
+        ),
+        h("div", { className: "grid-2" },
+            h("div", { className: "card", style: { padding: 12 } },
+                h("div", { className: "section-title" }, "➕ AJOUTER"),
+                h("input", { className: "input", type: "number", placeholder: "Quantite", value: add, onChange: function(e) { setAdd(e.target.value); } }),
+                h("button", { className: "btn btn-navy btn-full", style: { marginTop: 8 }, onClick: ajouter, disabled: !add }, "Ajouter")
+            ),
+            h("div", { className: "card", style: { padding: 12 } },
+                h("div", { className: "section-title" }, "➖ SORTIR"),
+                h("input", { className: "input", type: "number", placeholder: "Quantite", value: qty, onChange: function(e) { setQty(e.target.value); } }),
+                h("button", { className: "btn btn-gold btn-full", style: { marginTop: 8 }, onClick: sortir, disabled: !qty }, "Sortir")
+            )
+        )
+    );
+}
+
+// ==================== EDIT PRODUIT SCREEN ====================
+function EditProduitScreen(props) {
+    var p = props.produit;
+    var nomState = useState(p.nom || ""); var nom = nomState[0]; var setNom = nomState[1];
+    var familleState = useState(p.famille || "MATERIAUX"); var famille = familleState[0]; var setFamille = familleState[1];
+    var corpsState = useState(p.corps_etat || ""); var corps = corpsState[0]; var setCorps = corpsState[1];
+    var uniteState = useState(p.unite || "piece"); var unite = uniteState[0]; var setUnite = uniteState[1];
+    var qteMinState = useState(p.quantite_min || 0); var qteMin = qteMinState[0]; var setQteMin = qteMinState[1];
+    var emplacementState = useState(p.emplacement || ""); var emplacement = emplacementState[0]; var setEmplacement = emplacementState[1];
+    var marqueState = useState(p.marque || ""); var marque = marqueState[0]; var setMarque = marqueState[1];
+    var refState = useState(p.reference || ""); var reference = refState[0]; var setReference = refState[1];
+    var fourState = useState(p.fournisseur || ""); var fournisseur = fourState[0]; var setFournisseur = fourState[1];
+    var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
+
+    async function handleSave() {
+        if (!nom) { showToast("Nom obligatoire", "error"); return; }
+        setSaving(true);
+        try {
+            await supaPatch("produits", p.id, {
+                nom: nom, famille: famille, corps_etat: corps, unite: unite,
+                quantite_min: parseFloat(qteMin) || 0,
+                emplacement: emplacement || null, marque: marque || null,
+                reference: reference || null, fournisseur: fournisseur || null
             });
-    } else {
-        savePromise = supaPost("produits",{
-            nom:result.nom,
-            famille:result.famille,
-            corps_etat:result.corps_etat,
-            marque:result.marque||null,
-            reference:result.reference||null,
-            unite:result.unite||"pièce",
-            quantite:parseFloat(qty)||1,
-            user_id:user.code
+            showToast("✅ Produit modifie", "success");
+            props.onRefresh();
+            props.onBack();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+        setSaving(false);
+    }
+
+    return h("div", { className: "screen" },
+        h("div", { className: "header" },
+            h("button", { className: "header-back", onClick: props.onBack }, "←"),
+            h("div", null, h("div", { className: "header-title" }, "Modifier produit"))
+        ),
+        h("div", { className: "space-y" },
+            h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Nom *"), h("input", { className: "input", value: nom, onChange: function(e) { setNom(e.target.value); } })),
+            h("div", { className: "grid-2" },
+                h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Famille"), h("select", { className: "select", value: famille, onChange: function(e) { setFamille(e.target.value); } }, h("option", null, "MATERIAUX"), h("option", null, "OUTILLAGE"))),
+                h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Unite"), h("select", { className: "select", value: unite, onChange: function(e) { setUnite(e.target.value); } }, UNITES.map(function(u) { return h("option", { key: u }, u); })))
+            ),
+            h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Corps d'etat"), h("input", { className: "input", value: corps, onChange: function(e) { setCorps(e.target.value); } })),
+            h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Emplacement"), h("input", { className: "input", value: emplacement, onChange: function(e) { setEmplacement(e.target.value); } })),
+            h("div", { className: "grid-2" },
+                h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Marque"), h("input", { className: "input", value: marque, onChange: function(e) { setMarque(e.target.value); } })),
+                h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Reference"), h("input", { className: "input", value: reference, onChange: function(e) { setReference(e.target.value); } }))
+            ),
+            h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Fournisseur"), h("input", { className: "input", value: fournisseur, onChange: function(e) { setFournisseur(e.target.value); } })),
+            h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Seuil d'alerte"), h("input", { className: "input", type: "number", value: qteMin, onChange: function(e) { setQteMin(e.target.value); } })),
+            h("button", { className: "btn btn-gold btn-full", onClick: handleSave, disabled: saving }, saving ? "..." : "Enregistrer")
+        )
+    );
+}
+
+// ==================== PHOTO SCREEN ====================
+function PhotoScreen(props) {
+    var user = props.user;
+    var onBack = props.onBack;
+    var onRefresh = props.onRefresh;
+    var stepState = useState("capture"); var step = stepState[0]; var setStep = stepState[1];
+    var previewState = useState(null); var preview = previewState[0]; var setPreview = previewState[1];
+    var imgFileState = useState(null); var imgFile = imgFileState[0]; var setImgFile = imgFileState[1];
+    var resultState = useState(null); var result = resultState[0]; var setResult = resultState[1];
+    var qtyState = useState(""); var qty = qtyState[0]; var setQty = qtyState[1];
+    var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
+    var fileRef = useRef(null);
+
+    function handleFile(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        setImgFile(file);
+        var reader = new FileReader();
+        reader.onload = function(ev) { setPreview(ev.target.result); };
+        reader.readAsDataURL(file);
+        setStep("analyzing");
+        setTimeout(function() {
+            setResult({ nom: "Produit reconnu", famille: "MATERIAUX", corps_etat: "Divers", unite: "piece" });
+            setQty("1");
+            setStep("result");
+        }, 1500);
+    }
+
+    function handleManualEntry() {
+        setStep("result");
+        setResult({ nom: "", famille: "MATERIAUX", corps_etat: "", unite: "piece" });
+        setQty("1");
+        setImgFile(null);
+        setPreview(null);
+    }
+
+    function handleSave() {
+        if (!result.nom) { showToast("Nom obligatoire", "error"); return; }
+        setSaving(true);
+        var promise;
+        if (imgFile) {
+            promise = uploadPhoto(imgFile, (result.nom || "produit").replace(/[^a-z0-9]/gi, "_").slice(0,15))
+                .then(function(pu) {
+                    return supaPost("produits", {
+                        nom: result.nom, famille: result.famille, corps_etat: result.corps_etat,
+                        marque: result.marque || null, reference: result.reference || null,
+                        unite: result.unite || "piece", quantite: parseFloat(qty) || 1,
+                        photo_url: pu, user_id: user.code
+                    });
+                });
+        } else {
+            promise = supaPost("produits", {
+                nom: result.nom, famille: result.famille, corps_etat: result.corps_etat,
+                marque: result.marque || null, reference: result.reference || null,
+                unite: result.unite || "piece", quantite: parseFloat(qty) || 1,
+                user_id: user.code
+            });
+        }
+        promise.then(function() {
+            showToast("✅ Produit enregistre !", "success");
+            if (onRefresh) onRefresh();
+            onBack();
+        }).catch(function(err) {
+            showToast("Erreur: " + err.message, "error");
+            setSaving(false);
         });
     }
-    savePromise.then(function(){
-        showToast("✅ Produit enregistré !","success");
-        if(onRefresh) onRefresh();
-        onBack();
-    }).catch(function(err){
-        showToast("Erreur: "+err.message,"error");
-        setSaving(false);
-    });
-}
-function reset(){setStep("capture");setResult(null);setImgFile(null);setPreview(null);}
-if(step==="capture")return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"📷 Photo IA"),h("div",{className:"header-sub"},"Identification par IA"))),h("div",{style:{background:"var(--surface2)",border:"2px dashed var(--border)",borderRadius:20,padding:"36px 24px",textAlign:"center",marginTop:16}},h("div",{style:{fontSize:64,marginBottom:14}},"📷"),h("div",{style:{fontSize:16,fontWeight:700,color:"var(--navy)",marginBottom:8}},"Prenez une photo"),h("div",{className:"text-muted",style:{marginBottom:24}},"L'IA identifie le produit"),h("input",{ref:fileRef,type:"file",accept:"image/*",capture:"environment",style:{display:"none"},onChange:handleFile}),h("button",{className:"btn btn-navy btn-full",style:{marginBottom:10},onClick:function(){fileRef.current.click();}},"📷 Prendre une photo"),h("button",{className:"btn btn-outline btn-full",onClick:function(){fileRef.current.removeAttribute("capture");fileRef.current.click();}},"📁 Galerie"),h("button",{className:"btn btn-outline btn-full",style:{marginTop:10},onClick:handleManualEntry},"⌨️ Saisie Manuelle")));
-if(step==="analyzing")return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"Analyse..."))),preview&&h("img",{src:preview,style:{width:"100%",maxHeight:220,objectFit:"cover",borderRadius:16,marginTop:16}}),h("div",{style:{textAlign:"center",marginTop:32}},h("div",{className:"spinner"}),h("div",{style:{fontWeight:700,color:"var(--navy)",fontSize:16,marginTop:16}},"L'IA analyse...")));
-if(step==="result"&&result){function upd(k){return function(e){var v=e.target.value;setResult(function(r){var n=Object.assign({},r);n[k]=v;return n;});}}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:reset},"←"),h("div",null,h("div",{className:"header-title"},"Produit identifié"),h("div",{className:"header-sub"},"Vérifiez"))),preview&&h("img",{src:preview,style:{width:"100%",height:180,objectFit:"cover",borderRadius:16,marginBottom:14}}),h("div",{className:"notice notice-info",style:{marginBottom:14}},"🤖 Vérifiez et corrigez"),h("div",{className:"space-y"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Nom *"),h("input",{className:"input",value:result.nom||"",onChange:upd("nom")})),h("div",{className:"grid-2"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Famille"),h("select",{className:"select",value:result.famille||"MATERIAUX",onChange:upd("famille")},h("option",null,"MATERIAUX"),h("option",null,"OUTILLAGE"))),h("div",{className:"input-group"},h("label",{className:"input-label"},"Corps d'état"),h("input",{className:"input",value:result.corps_etat||"",onChange:upd("corps_etat")}))),h("div",{className:"grid-2"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Quantité *"),h("input",{className:"input",type:"number",value:qty,onChange:function(e){setQty(e.target.value);}})),h("div",{className:"input-group"},h("label",{className:"input-label"},"Unité"),h("select",{className:"select",value:result.unite||"pièce",onChange:upd("unite")},UNITES.map(function(u){return h("option",{key:u},u);}))))),h("div",{className:"grid-2",style:{marginTop:14}},h("button",{className:"btn btn-outline",onClick:reset},"Reprendre"),h("button",{className:"btn btn-gold",onClick:handleSave,disabled:saving||!result.nom||!qty},saving?"...":"Valider")));}return null;}
 
-function AchatScreen(props){var user=props.user,onBack=props.onBack,onRefresh=props.onRefresh;var s1=useState(""),nom=s1[0],setNom=s1[1];var s2=useState(""),qty=s2[0],setQty=s2[1];var s3=useState("pièce"),unite=s3[0],setUnite=s3[1];var s4=useState(""),fourn=s4[0],setFourn=s4[1];var s5=useState(false),loading=s5[0],setLoading=s5[1];async function create(){if(!nom||!qty)return;setLoading(true);try{await supaPost("achats",{nom:nom,quantite:parseFloat(qty),unite:unite,fournisseur:fourn||null,user_id:user.code});try{var ex=await supaGet("produits","nom=ilike."+encodeURIComponent(nom)+"&limit=1");if(ex&&ex.length>0){await supaPatch("produits",ex[0].id,{quantite:(ex[0].quantite||0)+parseFloat(qty)});}else{await supaPost("produits",{nom:nom,quantite:parseFloat(qty),unite:unite,famille:"MATERIAUX"});}}catch(e2){}showToast("✅ Achat créé","success");setNom("");setQty("");setFourn("");if(onRefresh)onRefresh();onBack();}catch(e){showToast("Erreur: "+e.message,"error");}setLoading(false);}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"🛒 Nouvel achat"))),h("div",{className:"space-y"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Produit *"),h("input",{className:"input",placeholder:"Nom du produit",value:nom,onChange:function(e){setNom(e.target.value);}})),h("div",{className:"grid-2"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Quantité *"),h("input",{className:"input",type:"number",value:qty,onChange:function(e){setQty(e.target.value);}})),h("div",{className:"input-group"},h("label",{className:"input-label"},"Unité"),h("select",{className:"select",value:unite,onChange:function(e){setUnite(e.target.value);}},UNITES.map(function(u){return h("option",{key:u},u);})))),h("div",{className:"input-group"},h("label",{className:"input-label"},"Fournisseur"),h("input",{className:"input",placeholder:"Fournisseur",value:fourn,onChange:function(e){setFourn(e.target.value);}})),h("button",{className:"btn btn-gold btn-full",onClick:create,disabled:!nom||!qty||loading},loading?"…":"Créer")));}
+    function reset() { setStep("capture"); setResult(null); setImgFile(null); setPreview(null); }
 
-function BesoinScreen(props){var user=props.user,onBack=props.onBack;var s1=useState(""),nom=s1[0],setNom=s1[1];var s2=useState(""),qty=s2[0],setQty=s2[1];var s3=useState("pièce"),unite=s3[0],setUnite=s3[1];var s4=useState(""),comment=s4[0],setComment=s4[1];var s5=useState(false),loading=s5[0],setLoading=s5[1];var s6=useState([]),besoins=s6[0],setBesoins=s6[1];useEffect(function(){supaGet("besoins","order=created_at.desc").then(function(b){setBesoins(Array.isArray(b)?b:[]);}).catch(function(){setBesoins([]);});},[]);async function create(){if(!nom||!qty)return;setLoading(true);try{await supaPost("besoins",{nom:nom,quantite:parseFloat(qty),unite:unite,commentaire:comment||null,user_id:user.code});showToast("✅ Besoin créé","success");setNom("");setQty("");setComment("");var b=await supaGet("besoins","order=created_at.desc");setBesoins(Array.isArray(b)?b:[]);}catch(e){showToast("Erreur: "+e.message,"error");}setLoading(false);}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"📋 Besoins"),h("div",{className:"header-sub"},besoins.length+" besoin(s)"))),h("div",{className:"card",style:{marginBottom:16}},h("div",{className:"section-title"},"CRÉER UN BESOIN"),h("div",{className:"space-y"},h("input",{className:"input",placeholder:"Produit",value:nom,onChange:function(e){setNom(e.target.value);}}),h("input",{className:"input",type:"number",placeholder:"Quantité",value:qty,onChange:function(e){setQty(e.target.value);}}),h("input",{className:"input",placeholder:"Commentaire",value:comment,onChange:function(e){setComment(e.target.value);}}),h("button",{className:"btn btn-navy btn-full",onClick:create,disabled:!nom||!qty||loading},loading?"…":"Créer"))),besoins.length===0&&h("div",{className:"text-center text-muted"},"Aucun besoin"),besoins.map(function(b,i){return h("div",{key:i,className:"card",style:{marginBottom:8}},h("div",{style:{fontSize:16,fontWeight:800,color:"var(--navy)"}},b.nom),h("div",{style:{fontSize:12,color:"var(--text3)"}},b.quantite+" "+b.unite+(b.commentaire?" · "+b.commentaire:"")));}));}
-
-function ProfilScreen(props){var user=props.user,onBack=props.onBack,onLogout=props.onLogout;return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"Profil"))),h("div",{style:{textAlign:"center",padding:"20px 0"}},h("div",{className:"profil-avatar"},"👷"),h("div",{className:"profil-name"},user.name),h("div",{className:"profil-role"},user.role==="admin"?"Admin":"Terrain")),h("div",{className:"card"},h("button",{className:"btn btn-danger btn-full",onClick:onLogout},"Déconnexion")));}
-
-function App(){var s1=useState(null),user=s1[0],setUser=s1[1];var s2=useState("home"),screen=s2[0],setScreen=s2[1];var s3=useState(null),data=s3[0],setData=s3[1];var s4=useState([]),produits=s4[0],setProduits=s4[1];var historyStack=useRef([]);var loadData=useCallback(async function(){try{var p=await supaGet("produits","order=nom.asc");setProduits(Array.isArray(p)?p:[]);}catch(e){setProduits([]);}},[]);
-useEffect(function(){if(user)loadData();},[user,loadData]);
-useEffect(function(){var savedCode=localStorage.getItem("lrb_remembered_code");if(savedCode && !user){if(USERS_LOCAL[savedCode]){setUser(Object.assign({code:savedCode},USERS_LOCAL[savedCode]));}else{supaGet("utilisateurs","code=eq."+savedCode+"&limit=1").then(function(rows){if(rows&&rows.length>0){setUser({code:savedCode,name:rows[0].nom,role:rows[0].role||"chantier"});}}).catch(function(){});}}},[]);
-function nav(dest,d){historyStack.current.push({screen:screen,data:data});setScreen(dest);setData(d);}
-function goBack(){if(historyStack.current.length>0){var prev=historyStack.current.pop();setScreen(prev.screen);setData(prev.data);}else{setScreen("home");setData(null);}}
-function onNav(dest){historyStack.current=[];setData(null);setScreen(dest);}
-var GlobalHeader = h("div",{className:"app-header-global"},h("img",{src:LRB_LOGO,className:"app-header-global-logo"}),h("div",{className:"app-header-global-title"},h("h1",null,"LES RÉNOVATEURS BRETONS"),h("p",null,"STOCK")),user?h("div",{style:{width:38}}):null);
-if(!user)return h("div",{className:"app"},GlobalHeader,h(LoginScreen,{onLogin:function(u){setUser(u);}}));
-var noNav=["photo","produit","edit_produit"].includes(screen);
-function renderScreen(){
-    switch(screen){
-        case"home":return h(HomeScreen,{nav:nav,produits:produits});
-        case"corpsdetat":return h(CorpsDetatScreen,{categorie:data.categorie,onBack:goBack,nav:nav});
-        case"produits_list":return h(ProduitsListScreen,{produits:produits,ce:data.ce,onBack:goBack,nav:nav});
-        case"produit":return h(ProduitDetail,{user:user,produit:data,onBack:goBack,onRefresh:loadData,nav:nav});
-        case"edit_produit":return h(EditProduitScreen,{produit:data,onBack:goBack,onRefresh:loadData});
-        case"photo":return h(PhotoScreen,{user:user,onBack:goBack,onRefresh:loadData});
-        case"achat":return h(AchatScreen,{user:user,onBack:goBack,onRefresh:loadData});
-        case"besoin":return h(BesoinScreen,{user:user,onBack:goBack});
-        case"profil":return h(ProfilScreen,{user:user,onBack:goBack,onLogout:function(){setUser(null);setScreen("home");historyStack.current=[];localStorage.removeItem("lrb_remembered_code");}});
-        default:return h(HomeScreen,{nav:nav,produits:produits});
+    if (step === "capture") {
+        return h("div", { className: "screen" },
+            h("div", { className: "header" },
+                h("button", { className: "header-back", onClick: onBack }, "←"),
+                h("div", null, h("div", { className: "header-title" }, "📷 Photo IA"), h("div", { className: "header-sub" }, "Identification automatique"))
+            ),
+            h("div", { style: { background: "var(--surface2)", border: "2px dashed var(--border)", borderRadius: 20, padding: "36px 24px", textAlign: "center", marginTop: 16 } },
+                h("div", { style: { fontSize: 64, marginBottom: 14 } }, "📷"),
+                h("div", { style: { fontSize: 16, fontWeight: 700, color: "var(--navy)", marginBottom: 8 } }, "Prenez une photo"),
+                h("div", { className: "text-muted", style: { marginBottom: 24 } }, "L'IA identifie le produit"),
+                h("input", { ref: fileRef, type: "file", accept: "image/*", capture: "environment", style: { display: "none" }, onChange: handleFile }),
+                h("button", { className: "btn btn-navy btn-full", style: { marginBottom: 10 }, onClick: function() { fileRef.current.click(); } }, "📷 Prendre une photo"),
+                h("button", { className: "btn btn-outline btn-full", onClick: function() { fileRef.current.removeAttribute("capture"); fileRef.current.click(); } }, "📁 Galerie"),
+                h("button", { className: "btn btn-outline btn-full", style: { marginTop: 10 }, onClick: handleManualEntry }, "⌨️ Saisie Manuelle")
+            )
+        );
     }
+    if (step === "analyzing") {
+        return h("div", { className: "screen" },
+            h("div", { className: "header" },
+                h("button", { className: "header-back", onClick: onBack }, "←"),
+                h("div", null, h("div", { className: "header-title" }, "Analyse en cours..."))
+            ),
+            preview ? h("img", { src: preview, style: { width: "100%", maxHeight: 220, objectFit: "cover", borderRadius: 16, marginTop: 16 } }) : null,
+            h("div", { style: { textAlign: "center", marginTop: 32 } },
+                h("div", { className: "spinner" }),
+                h("div", { style: { fontWeight: 700, color: "var(--navy)", fontSize: 16, marginTop: 16 } }, "L'IA analyse...")
+            )
+        );
+    }
+    if (step === "result" && result) {
+        function upd(k) { return function(e) { var v = e.target.value; setResult(function(r) { var n = Object.assign({}, r); n[k] = v; return n; }); }; }
+        return h("div", { className: "screen" },
+            h("div", { className: "header" },
+                h("button", { className: "header-back", onClick: reset }, "←"),
+                h("div", null, h("div", { className: "header-title" }, "Produit identifie"), h("div", { className: "header-sub" }, "Verifiez avant validation"))
+            ),
+            preview ? h("img", { src: preview, style: { width: "100%", height: 180, objectFit: "cover", borderRadius: 16, marginBottom: 14 } }) : null,
+            h("div", { className: "notice notice-info", style: { marginBottom: 14 } }, "🤖 Verifiez et corrigez"),
+            h("div", { className: "space-y" },
+                h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Nom *"), h("input", { className: "input", value: result.nom || "", onChange: upd("nom") })),
+                h("div", { className: "grid-2" },
+                    h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Famille"), h("select", { className: "select", value: result.famille || "MATERIAUX", onChange: upd("famille") }, h("option", null, "MATERIAUX"), h("option", null, "OUTILLAGE"))),
+                    h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Corps d'etat"), h("input", { className: "input", value: result.corps_etat || "", onChange: upd("corps_etat") }))
+                ),
+                h("div", { className: "grid-2" },
+                    h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Quantite *"), h("input", { className: "input", type: "number", value: qty, onChange: function(e) { setQty(e.target.value); } })),
+                    h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Unite"), h("select", { className: "select", value: result.unite || "piece", onChange: upd("unite") }, UNITES.map(function(u) { return h("option", { key: u }, u); })))
+                )
+            ),
+            h("div", { className: "grid-2", style: { marginTop: 14 } },
+                h("button", { className: "btn btn-outline", onClick: reset }, "Reprendre"),
+                h("button", { className: "btn btn-gold", onClick: handleSave, disabled: saving || !result.nom || !qty }, saving ? "..." : "Valider")
+            )
+        );
+    }
+    return null;
 }
-return h("div",{className:"app"},GlobalHeader,renderScreen(),!noNav&&h(NavBar,{screen:screen,onNav:onNav}));}
+
+// ==================== ACHAT SCREEN ====================
+function AchatScreen(props) {
+    var user = props.user;
+    var onBack = props.onBack;
+    var onRefresh = props.onRefresh;
+    var nomState = useState(""); var nom = nomState[0]; var setNom = nomState[1];
+    var qtyState = useState(""); var qty = qtyState[0]; var setQty = qtyState[1];
+    var loadingState = useState(false); var loading = loadingState[0]; var setLoading = loadingState[1];
+    async function create() {
+        if (!nom || !qty) return;
+        setLoading(true);
+        try {
+            await supaPost("achats", { nom: nom, quantite: parseFloat(qty), unite: "piece", user_id: user.code });
+            showToast("✅ Achat cree", "success");
+            setNom(""); setQty("");
+            if (onRefresh) onRefresh();
+            onBack();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+        setLoading(false);
+    }
+    return h("div", { className: "screen" },
+        h("div", { className: "header" },
+            h("button", { className: "header-back", onClick: onBack }, "←"),
+            h("div", null, h("div", { className: "header-title" }, "🛒 Nouvel achat"))
+        ),
+        h("div", { className: "space-y" },
+            h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Produit *"), h("input", { className: "input", placeholder: "Nom du produit", value: nom, onChange: function(e) { setNom(e.target.value); } })),
+            h("div", { className: "input-group" }, h("label", { className: "input-label" }, "Quantite *"), h("input", { className: "input", type: "number", value: qty, onChange: function(e) { setQty(e.target.value); } })),
+            h("button", { className: "btn btn-gold btn-full", onClick: create, disabled: !nom || !qty || loading }, loading ? "..." : "Creer l'achat")
+        )
+    );
+}
+
+// ==================== BESOIN SCREEN ====================
+function BesoinScreen(props) {
+    var user = props.user;
+    var onBack = props.onBack;
+    var nomState = useState(""); var nom = nomState[0]; var setNom = nomState[1];
+    var qtyState = useState(""); var qty = qtyState[0]; var setQty = qtyState[1];
+    var loadingState = useState(false); var loading = loadingState[0]; var setLoading = loadingState[1];
+    var besoinsState = useState([]); var besoins = besoinsState[0]; var setBesoins = besoinsState[1];
+    useEffect(function() {
+        supaGet("besoins", "order=created_at.desc").then(function(b) { setBesoins(Array.isArray(b) ? b : []); }).catch(function() { setBesoins([]); });
+    }, []);
+    async function create() {
+        if (!nom || !qty) return;
+        setLoading(true);
+        try {
+            await supaPost("besoins", { nom: nom, quantite: parseFloat(qty), unite: "piece", user_id: user.code });
+            showToast("✅ Besoin cree", "success");
+            setNom(""); setQty("");
+            var b = await supaGet("besoins", "order=created_at.desc");
+            setBesoins(Array.isArray(b) ? b : []);
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+        setLoading(false);
+    }
+    return h("div", { className: "screen" },
+        h("div", { className: "header" },
+            h("button", { className: "header-back", onClick: onBack }, "←"),
+            h("div", null, h("div", { className: "header-title" }, "📋 Besoins"), h("div", { className: "header-sub" }, besoins.length + " besoin(s) en cours"))
+        ),
+        h("div", { className: "card", style: { marginBottom: 16 } },
+            h("div", { className: "section-title" }, "CREER UN BESOIN"),
+            h("div", { className: "space-y" },
+                h("input", { className: "input", placeholder: "Produit", value: nom, onChange: function(e) { setNom(e.target.value); } }),
+                h("input", { className: "input", type: "number", placeholder: "Quantite", value: qty, onChange: function(e) { setQty(e.target.value); } }),
+                h("button", { className: "btn btn-navy btn-full", onClick: create, disabled: !nom || !qty || loading }, loading ? "..." : "Creer le besoin")
+            )
+        ),
+        besoins.length === 0 ? h("div", { className: "text-center text-muted" }, "Aucun besoin en cours") : null,
+        besoins.map(function(b, i) {
+            return h("div", { key: i, className: "card", style: { marginBottom: 8 } },
+                h("div", { style: { fontSize: 16, fontWeight: 800, color: "var(--navy)" } }, b.nom),
+                h("div", { style: { fontSize: 12, color: "var(--text3)" } }, b.quantite + " piece" + (b.commentaire ? " · " + b.commentaire : ""))
+            );
+        })
+    );
+}
+
+// ==================== PROFIL SCREEN ====================
+function ProfilScreen(props) {
+    var user = props.user;
+    var onBack = props.onBack;
+    var onLogout = props.onLogout;
+    return h("div", { className: "screen" },
+        h("div", { className: "header" },
+            h("button", { className: "header-back", onClick: onBack }, "←"),
+            h("div", null, h("div", { className: "header-title" }, "Profil"))
+        ),
+        h("div", { style: { textAlign: "center", padding: "20px 0" } },
+            h("div", { className: "profil-avatar" }, "👷"),
+            h("div", { className: "profil-name" }, user.name),
+            h("div", { className: "profil-role" }, user.role === "admin" ? "Administrateur" : "Equipe terrain")
+        ),
+        h("div", { className: "card" },
+            h("button", { className: "btn btn-danger btn-full", onClick: onLogout }, "Se deconnecter")
+        )
+    );
+}
+
+// ==================== APP ====================
+function App() {
+    var userState = useState(null); var user = userState[0]; var setUser = userState[1];
+    var screenState = useState("home"); var screen = screenState[0]; var setScreen = screenState[1];
+    var dataState = useState(null); var data = dataState[0]; var setData = dataState[1];
+    var produitsState = useState([]); var produits = produitsState[0]; var setProduits = produitsState[1];
+    var historyStack = useRef([]);
+
+    var loadData = useCallback(async function() {
+        try { var p = await supaGet("produits", "order=nom.asc"); setProduits(Array.isArray(p) ? p : []); } catch(e) { setProduits([]); }
+    }, []);
+
+    useEffect(function() { if (user) loadData(); }, [user, loadData]);
+
+    useEffect(function() {
+        var savedCode = localStorage.getItem("lrb_remembered_code");
+        if (savedCode && !user) {
+            if (USERS_LOCAL[savedCode]) { setUser(Object.assign({ code: savedCode }, USERS_LOCAL[savedCode])); }
+            else { supaGet("utilisateurs", "code=eq." + savedCode + "&limit=1").then(function(rows) { if (rows && rows.length > 0) setUser({ code: savedCode, name: rows[0].nom, role: rows[0].role || "chantier" }); }).catch(function() {}); }
+        }
+    }, [user]);
+
+    function nav(dest, d) { historyStack.current.push({ screen: screen, data: data }); setScreen(dest); setData(d); }
+    function goBack() { if (historyStack.current.length > 0) { var prev = historyStack.current.pop(); setScreen(prev.screen); setData(prev.data); } else { setScreen("home"); setData(null); } }
+    function onNav(dest) { historyStack.current = []; setData(null); setScreen(dest); }
+
+    var GlobalHeader = h("div", { className: "app-header-global" },
+        h("img", { src: LRB_LOGO, className: "app-header-global-logo" }),
+        h("div", { className: "app-header-global-title" }, h("h1", null, "LES RENOVATEURS BRETONS"), h("p", null, "STOCK")),
+        user ? h("div", { style: { width: 38 } }) : null
+    );
+
+    if (!user) { return h("div", { className: "app" }, GlobalHeader, h(LoginScreen, { onLogin: function(u) { setUser(u); } })); }
+
+    var noNav = ["photo", "produit", "edit_produit"].includes(screen);
+    var currentScreen;
+    switch (screen) {
+        case "home": currentScreen = h(HomeScreen, { nav: nav, produits: produits }); break;
+        case "corpsdetat": currentScreen = h(CorpsDetatScreen, { categorie: data.categorie, onBack: goBack, nav: nav }); break;
+        case "produits_list": currentScreen = h(ProduitsListScreen, { produits: produits, ce: data.ce, onBack: goBack, nav: nav }); break;
+        case "produit": currentScreen = h(ProduitDetail, { user: user, produit: data, onBack: goBack, onRefresh: loadData, nav: nav }); break;
+        case "edit_produit": currentScreen = h(EditProduitScreen, { produit: data, onBack: goBack, onRefresh: loadData }); break;
+        case "photo": currentScreen = h(PhotoScreen, { user: user, onBack: goBack, onRefresh: loadData }); break;
+        case "achat": currentScreen = h(AchatScreen, { user: user, onBack: goBack, onRefresh: loadData }); break;
+        case "besoin": currentScreen = h(BesoinScreen, { user: user, onBack: goBack }); break;
+        case "profil": currentScreen = h(ProfilScreen, { user: user, onBack: goBack, onLogout: function() { setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code"); } }); break;
+        default: currentScreen = h(HomeScreen, { nav: nav, produits: produits });
+    }
+
+    return h("div", { className: "app" }, GlobalHeader, currentScreen, !noNav && h(NavBar, { screen: screen, onNav: onNav }));
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(h(App));
 </script>
 </body>
