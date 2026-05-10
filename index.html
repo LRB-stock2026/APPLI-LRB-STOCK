@@ -101,6 +101,10 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
 .empty-state-icon{font-size:48px;margin-bottom:12px}
 .empty-state-text{font-size:14px;font-weight:600}
+.lieu-chip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;border:2px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;white-space:nowrap}
+.lieu-chip.selected{background:var(--navy);color:#fff;border-color:var(--navy)}
+.lieu-chip.none{background:var(--surface2);color:var(--text3);border-color:var(--border)}
+.lieu-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(61,84,112,0.10);color:var(--navy);font-size:12px;font-weight:800;padding:4px 10px;border-radius:10px;margin-bottom:10px}
 .product-card-actions{display:flex;gap:8px;margin-top:10px}
 .product-ok{border-left:3px solid var(--green)}
 .product-low{border-left:3px solid var(--orange)}
@@ -159,57 +163,457 @@ var UNITES = ["piece","boite","sac","rouleau","cartouche","litre","m2","ml","kg"
 // Cle Anthropic pour l'IA photo (a remplir)
 var ANTHROPIC_KEY = "";
 
+// Emplacements prédéfinis fixes
+var EMPLACEMENTS_DEFAUT = ["Camion 1","Camion 2","Camion 3","Magasin","Dépôt"];
+
+// Charger les lieux custom depuis Supabase
+async function fetchLieuxCustom() {
+    try {
+        var rows = await supaGet("lieux", "order=nom.asc");
+        return Array.isArray(rows) ? rows.map(function(r){ return r.nom; }) : [];
+    } catch(e) { return []; }
+}
+async function addLieuCustom(nom) {
+    await supaPost("lieux", {nom: nom});
+}
+async function deleteLieuCustom(nom) {
+    var rows = await supaGet("lieux", "nom=eq." + encodeURIComponent(nom) + "&limit=1");
+    if(rows && rows.length > 0) await supaDelete("lieux", rows[0].id);
+}
+
 // Base de ressources professionnelles par corps d'état
 var RESSOURCES_PRO = {
     "Platrerie": [
-        {type:"dtu", titre:"DTU 25.41", sous:"Ouvrages en plaques de plâtre", contenu:["Plaques BA13 (usage courant), BA18 (humide), BA25 (acoustique)", "Ossature métallique : montants 48, 70, 100 mm selon hauteur", "Hauteur maxi sans renforts : 2.60 m pour ossature 48, 4.00 m pour 100", "Vis TF 25 (1 couche), TF 35 (2 couches) — pas de clou", "Entraxe montants : 600 mm max, 400 mm en zone sismique"]},
-        {type:"regle", titre:"Règles de pose", sous:"Points clés chantier", contenu:["Toujours commencer par les montants de rive fixés au sol et au plafond", "Laisser 1 cm de jeu en bas (jamais au contact du sol)", "Décaler les joints de 40 cm minimum entre couches", "Bandes armées obligatoires sur tous les joints et angles", "Séchage enduit de finition : 24h minimum avant peinture"]},
-        {type:"conseil", titre:"Zones humides", sous:"BA18 & étanchéité", contenu:["BA18 obligatoire dans salles de bain et locaux humides", "Système d'étanchéité liquide (SPEC) sous carrelage douche", "Hauteur de protection : 1.80 m mini en zone mouillée", "Silicone souple sur tous les angles en zone humide", "Ne jamais visser à moins de 15 mm des bords"]}
+        {type:"dtu", titre:"DTU 25.41 — Cloisons & doublages", sous:"Règles complètes plaques de plâtre", contenu:[
+            "PLAQUES : BA13 usage courant / BA18 pièces humides / BA25 acoustique renforcée / BA36 grandes hauteurs",
+            "OSSATURE : montant 48 mm → hmax 2.60 m / 70 mm → 3.50 m / 100 mm → 4.00 m (cloison simple peau)",
+            "FIXATION : vis TF 25 mm (1 plaque) / TF 35 mm (2 plaques) / TF 45 mm (3 plaques) — jamais de clou",
+            "ENTRAXE montants : 600 mm courant / 400 mm en zone sismique / 300 mm si hauteur >3.60 m",
+            "RAILS : rail 48 fixé sol + plafond, chevilles tous les 60 cm, toujours bande résiliente sous le rail",
+            "JEU DE POSE : 1 cm en bas (jamais au contact sol), 1 cm en haut (jamais au contact plafond)",
+            "DOUBLE PEAU : décaler les montants de 20 cm entre les deux peaux, aucun montant commun",
+            "PERFORMANCE FEU : 1 plaque BA13 → EI30 / 2 plaques BA13 → EI60 / 1 plaque FU → EI90",
+            "PERFORMANCE ACOUSTIQUE : simple cloison 72 dB / double cloison avec laine 100 dB visée",
+            "PASSAGE CÂBLES : boîte DCL fixée sur le rail, jamais directement dans la plaque"
+        ]},
+        {type:"dtu", titre:"DTU 25.42 — Doublages complexes", sous:"Isolation thermique par l'intérieur (ITE)", contenu:[
+            "COMPLEXES COLLÉS : PSE + BA13 collé directement au mur (pas d'ossature)",
+            "COLLE : plots de 3 à 5 cm de diamètre, espacés de 30 cm, en quinconce",
+            "DÉLAI : attendre 28 jours après coulage béton, 6 mois après enduit neuf",
+            "HUMIDITÉ SUPPORT : < 3% pour béton, < 5% pour parpaing — vérifier avant pose",
+            "COMPLEXE SUR OSSATURE : PRF 45 ou 60, montants M48 ou M70 selon hauteur",
+            "ISOLATION LAINE MINÉRALE : rouler entre les montants sans tasser, laine à la cote exacte",
+            "PONT THERMIQUE : retour d'isolant obligatoire en tableau de baie (5 cm mini)",
+            "PARE-VAPEUR : côté chaud uniquement (intérieur), recouvrements 20 cm collés",
+            "FINITION : enduit de lissage puis peinture, ou carrelage sur colle C2S1 (zones humides)",
+            "HAUTEUR MAXI collé : 3.00 m — au-delà, ossature obligatoire"
+        ]},
+        {type:"regle", titre:"Mise en œuvre joints & enduits", sous:"Technique professionnelle", contenu:[
+            "ÉTAPE 1 — Bande à joint : papier kraft encollé OU bande polyester armée (zones humides)",
+            "ÉTAPE 2 — 1er enduit (lissage) : remplissage du creux, débordement 5 cm de chaque côté",
+            "ÉTAPE 3 — Séchage minimum 12 h avant 2ème couche (24 h recommandé en hiver)",
+            "ÉTAPE 4 — 2ème enduit (finition) : couche fine 1 mm, lissage à la spatule inox",
+            "ÉTAPE 5 — Ponçage à sec, grain P80 puis P120, dépoussiérage obligatoire",
+            "DÉCALAGE JOINTS : minimum 40 cm entre plaques d'une même couche",
+            "ANGLES SORTANTS : cornière métallique perforée encastrée dans l'enduit",
+            "ANGLES RENTRANTS : bande armée pliée en 90°, jamais d'enduit seul",
+            "PIED DE CLOISON : silicone souple (jamais enduit) sur les 10 premiers cm",
+            "SÉCHAGE TOTAL avant peinture : 48 h en conditions normales (>15°C, <60% HR)"
+        ]},
+        {type:"conseil", titre:"Zones humides — Classement UPEC", sous:"Solutions étanchéité", contenu:[
+            "CLASSEMENT UPEC du local détermine la solution : U2/U3 → SPEC obligatoire en douche",
+            "BA18 : obligatoire partout où l'humidité est présente (salle de bain, WC, buanderie)",
+            "SPEC (Système de Protection à l'Eau sous Carrelage) : étanchéité liquide appliquée en 2 couches",
+            "ZONE 1 (douche/baignoire) : SPEC sur murs jusqu'à 1.80 m + sol complet",
+            "ZONE 2 (reste SDB) : SPEC sur murs jusqu'à 0.50 m du sol",
+            "ANGLES SPEC : bande d'angle tissu de verre noyée entre 2 couches de résine",
+            "SILICONE : joints souples dans TOUS les angles intérieurs et périphérie de bac",
+            "CARRELAGE sur SPEC : mortier-colle C2S1 ou C2S2, pose à bain soufflant",
+            "NE PAS UTILISER : enduit classique, colle C1, ou plâtre en zone mouillée",
+            "CONTRÔLE : test d'étanchéité 24 h à l'eau avant pose carrelage"
+        ]},
+        {type:"video", titre:"Poser une cloison placo de A à Z", sous:"Ossature, plaques, visserie, finitions", url:"https://www.youtube.com/results?search_query=poser+cloison+placo+ossature+metallique+professionnel"},
+        {type:"video", titre:"Joints placo — technique pro", sous:"Bandes, enduits, lissage, ponçage", url:"https://www.youtube.com/results?search_query=faire+joints+plaques+platre+technique+professionnelle"},
+        {type:"video", titre:"Doublage isolation intérieure", sous:"Complexe PSE collé et sur ossature", url:"https://www.youtube.com/results?search_query=doublage+isolation+interieure+placo+complexe+PSE"},
+        {type:"video", titre:"Placo salle de bain & SPEC", sous:"BA18, étanchéité, zones humides", url:"https://www.youtube.com/results?search_query=placo+BA18+salle+de+bain+etancheite+SPEC+douche"}
     ],
     "Electricite": [
-        {type:"dtu", titre:"NF C 15-100", sous:"Installation électrique BT", contenu:["Section 1.5 mm² : éclairage (max 8 points)", "Section 2.5 mm² : prises 16A (max 8 prises)", "Section 4 mm² : four, lave-linge (circuit dédié)", "Section 6 mm² : cuisinière, chauffe-eau (circuit dédié)", "Section 10 mm² : borne recharge véhicule électrique"]},
-        {type:"regle", titre:"Hauteurs réglementaires", sous:"Implantation des boitiers", contenu:["Interrupteurs : 0.90 à 1.30 m du sol (norme PMR : 0.90-1.05 m)", "Prises standard : 0.05 à 0.30 m du sol", "Prises plan de travail cuisine : 1.10-1.20 m du sol", "Disjoncteur de branchement : accessible, max 1.80 m", "Distance prise / baignoire ou douche : 60 cm minimum"]},
-        {type:"conseil", titre:"Points de vigilance", sous:"Erreurs fréquentes", contenu:["Toujours couper le disjoncteur général avant toute intervention", "Tester l'absence de tension avec un vérificateur", "Ne jamais dépasser la capacité des circuits (calcul ΣP)", "DDR 30 mA obligatoire : salles de bain, cuisine, extérieur", "Marquer les câbles à chaque extrémité avant d'enfiler"]}
+        {type:"dtu", titre:"NF C 15-100 — Sections & circuits", sous:"Règles câblage basse tension", contenu:[
+            "ÉCLAIRAGE : 1.5 mm² / max 8 points lumineux / disjoncteur 10A / protection DDR 30mA",
+            "PRISES 16A : 2.5 mm² / max 8 prises par circuit / disjoncteur 16A / DDR 30mA",
+            "FOUR & LAVE-LINGE : 4 mm² / circuit dédié individuel / disjoncteur 20A",
+            "CUISINIÈRE : 6 mm² / circuit dédié / disjoncteur 32A / prise 32A ou bornes directes",
+            "CHAUFFE-EAU : 2.5 mm² ou 4 mm² selon puissance / disjoncteur 20A / DDR 30mA",
+            "BORNE VE : 10 mm² / circuit dédié / disjoncteur 32A / DDR type A 30mA obligatoire",
+            "TABLEAU : disjoncteur de branchement EDF 500mA type AC + DDR 30mA par groupe",
+            "NOMBRE DDR : min 2 DDR 30mA de 40A, répartition équilibrée des circuits",
+            "PRISE TV/RJ45 : câble HDMI ou Cat 6a en gaine ICTA, prévoir 4 gaines vides",
+            "VMC : circuit dédié 1.5 mm² sur disjoncteur 2A, interrupteur différentiel 30mA"
+        ]},
+        {type:"regle", titre:"Hauteurs & implantations", sous:"Normes PMR et règles pratiques", contenu:[
+            "INTERRUPTEURS : 0.90 à 1.30 m / PMR obligatoire à 0.90-1.05 m / jamais derrière une porte",
+            "PRISES SÉJOUR/CHAMBRE : 0.05 à 0.30 m du sol (standard) / 1 prise mini par tranche de 4 m²",
+            "PRISES CUISINE : 1.10 à 1.20 m sur plan de travail / au moins 6 prises au-dessus du plan",
+            "DISTANCE PRISE/EAU : 60 cm de toute baignoire, douche ou évier obligatoire",
+            "SALLE DE BAIN volumes : vol. 0 (dans eau) / vol. 1 (0-0.60 m) / vol. 2 (0.60-1.20 m)",
+            "TABLEAU ÉLECTRIQUE : hauteur 1.50 m (axe) recommandée / min 1.80 m de recul devant",
+            "CUISSON : hotte à 0.65 m mini au-dessus plaque gaz, 0.75 m au-dessus plaque vitro",
+            "COULOIRS : 1 prise tous les 5 m linéaires recommandé",
+            "VOLETS ROULANTS : boîtier à 1.10 m du sol, côté poignée de fenêtre",
+            "EXTÉRIEUR : prises IP44 minimum, sous abri IP55, DDR 30mA type A obligatoire"
+        ]},
+        {type:"conseil", titre:"Sécurité & mise en œuvre", sous:"Erreurs à ne jamais faire", contenu:[
+            "TOUJOURS vérifier l'absence de tension au vérificateur avant tout travail",
+            "JAMAIS couper uniquement le neutre sans couper la phase simultanément",
+            "MARQUAGE : étiqueter chaque câble aux 2 extrémités (scotch + marqueur indélébile)",
+            "SERRAGE : bornes à visser (1.2 N.m) / wago autorisé en dérivation dans boîte accessible",
+            "SECTION : ne jamais réduire la section d'un câble en cours de circuit",
+            "GAINES : ICTA Ø20 pour 1.5 et 2.5 mm² / Ø25 pour 4 et 6 mm² / jamais surcharger",
+            "BOÎTES DE DÉRIVATION : toutes accessibles, fermées, câbles identifiés",
+            "COULEURS : phase = rouge/brun / neutre = bleu / PE = vert-jaune — TOUJOURS respecter",
+            "TEST après pose : mesure isolement >1 MΩ / continuité PE / test DDR (bouton test)",
+            "CONSUEL : ERDF exige un bilan conforme NF C 15-100 avant mise en service"
+        ]},
+        {type:"video", titre:"NF C 15-100 — Les règles essentielles", sous:"Normes, circuits, protections", url:"https://www.youtube.com/results?search_query=norme+NFC+15100+electricite+renovation+essentiel"},
+        {type:"video", titre:"Câblage tableau électrique complet", sous:"DDR, disjoncteurs, organisation", url:"https://www.youtube.com/results?search_query=cablage+tableau+electrique+DDR+disjoncteur+renovation"},
+        {type:"video", titre:"Tirage de câbles & gaines", sous:"Techniques de passage de câbles", url:"https://www.youtube.com/results?search_query=tirage+cable+electrique+gaine+ICTA+technique+pro"},
+        {type:"video", titre:"Pose prises, interrupteurs, DCL", sous:"Encastrement et raccordement", url:"https://www.youtube.com/results?search_query=pose+prise+interrupteur+encastre+electricien"}
     ],
     "Plomberie": [
-        {type:"dtu", titre:"DTU 60.1 / 60.11", sous:"Plomberie sanitaire", contenu:["Pente évacuation : 1 cm/m minimum (2 à 3 cm/m recommandé)", "Diamètre WC : 100 mm minimum", "Diamètre lavabo/douche : 40-50 mm", "Diamètre évier : 50-63 mm", "Colonne principale EU/EV : 100 mm minimum"]},
-        {type:"regle", titre:"Eau chaude sanitaire", sous:"Températures & sécurité", contenu:["Ballon ECS réglé à 60°C minimum (légionelle)", "Mitigeur thermostatique obligatoire douche (max 50°C)", "Soupape de sécurité chauffe-eau : testée 1 fois/an", "Purge annuelle du ballon pour éliminer le calcaire", "Isolation des canalisations ECS > 5 m de linéaire"]},
-        {type:"conseil", titre:"Sertissage & raccords", sous:"Bonnes pratiques", contenu:["Toujours ébavurer le tube avant sertissage", "Vérifier le marquage de sertissage (empreinte visible)", "Test de pression : 1.5× la pression de service, 30 min", "Manchons diélectriques entre cuivre et acier/zinc", "Téflon uniquement sur filetage mâle, 3 tours mini"]}
+        {type:"dtu", titre:"DTU 60.1 — Canalisations PVC & Cu", sous:"Dimensions, pentes, diamètres", contenu:[
+            "PENTES EU : 1 cm/m minimum / 2-3 cm/m recommandé / maxi 4 cm/m (risque assèchement siphon)",
+            "WC : diamètre 100 mm obligatoire / jamais réduire en aval / distance max au stérér : 5 m si ∅100",
+            "LAVABO/DOUCHE : ∅40 ou ∅50 / siphon hauteur mini 50 mm / bonde douche encastrée ∅90",
+            "ÉVIER/BAIGNOIRE : ∅50 ou ∅63 / longueur bras max 2 m si ∅40 / 3 m si ∅50",
+            "CHUTE EU/EV : ∅100 minimum / ∅125 si > 4 logements / regard de nettoyage tous les 15 m",
+            "COLONNES EP : ∅80 jusqu'à 50 m² de toiture / ∅100 jusqu'à 120 m² / ∅125 > 120 m²",
+            "SIPHONS : hauteur d'eau mini 50 mm / jamais d'aspiration excessive / clapet anti-retour si risque",
+            "VENTILATION : colonne de ventilation ∅75 au-dessus de la toiture de 0.40 m mini",
+            "RACCORDS PVC : colle PVC adaptée / temps séchage 15 min / test 30 min après collage",
+            "CUIVRE : brasure à l'étain / flux décapant / nettoyage oxyde avant soudure"
+        ]},
+        {type:"dtu", titre:"DTU 60.5 — Eau chaude sanitaire", sous:"Températures, sécurité, dimensionnement", contenu:[
+            "TEMPÉRATURE BALLON : 60°C mini (légionelle détruite à 60°C en 1 min / à 55°C en 5 à 10 h)",
+            "ANTI-BRÛLURE : mitigeur thermostatique obligatoire douche et bain (max 50°C en sortie)",
+            "SOUPAPE SÉCURITÉ : 7 bars, tuyau de vidange jusqu'au siphon ou extérieur, jamais bouché",
+            "GROUPE SÉCURITÉ : purger 1 fois/mois pour vérifier fonctionnement, jamais forcer",
+            "DILATATION : vase d'expansion obligatoire sur installation fermée, pression réglée à 1.5 bar",
+            "BALLON SOLAIRE : sonde anti-légionelle > 60°C 1 fois/semaine, nuit de préférence",
+            "PAC CHAUFFE-EAU : COP 3 à 4 / tirage d'air mini 10 m³/h / T° ambiante 5 à 35°C",
+            "ISOLATION ECS : toute canalisation ECS > 3 m doit être isolée (classe 2 mini)",
+            "CIRCULATEUR : boucle ECS si longueur développée > 8 m / vitesse réglée au minimum",
+            "PURGE ANNUELLE : ouvrir soupape + vidange fond de cuve pour éliminer calcaire"
+        ]},
+        {type:"conseil", titre:"Sertissage & raccords modernes", sous:"Multicouche et PER — Bonnes pratiques", contenu:[
+            "ÉBAVURAGE : toujours ébavurer et calibrer le tube avant toute connexion",
+            "MARQUAGE SERTISSAGE : l'empreinte doit être visible et complète sur 360° — sinon refaire",
+            "TEST PRESSION : 1.5× pression service (mini 3 bars) pendant 30 min — aucune chute admise",
+            "MULTICOUCHE : rayon courbure mini = 5× le diamètre / Ø16 : Rmin 80 mm / Ø20 : Rmin 100 mm",
+            "DILATATION : compensateur obligatoire tous les 8 m en linéaire / jamais serrer les colliers",
+            "DISSIMILARITÉ : manchon diélectrique entre cuivre et acier galvanisé (corrosion galvanique)",
+            "TÉFLON : filetage mâle uniquement / 5-8 tours / sens du filetage / jamais sur femelle",
+            "RACCORD MÉCANIQUE : clé dynamométrique recommandée / 1/4 de tour après résistance",
+            "ISOLATION ANTIGEL : tubes extérieurs ou non chauffés, isolant classe 4 minimum",
+            "CALORIFUGEAGE EU : tubes dans vide sanitaire = coquille 19 mm / en dalle = gaine PE"
+        ]},
+        {type:"video", titre:"Plomberie PER & multicouche", sous:"Technique de raccordement à sertir", url:"https://www.youtube.com/results?search_query=plomberie+PER+multicouche+sertissage+raccord+tuto"},
+        {type:"video", titre:"Évacuations PVC — pentes & pose", sous:"Chute, siphon, raccordements", url:"https://www.youtube.com/results?search_query=evacuation+PVC+plomberie+pente+siphon+pose+tuto"},
+        {type:"video", titre:"Installer un groupe sécurité ballon", sous:"Montage, réglage, sécurité ECS", url:"https://www.youtube.com/results?search_query=installer+groupe+securite+chauffe+eau+ballon+ECS"},
+        {type:"video", titre:"Brasure cuivre — technique", sous:"Soudure à l'étain, outils, astuces", url:"https://www.youtube.com/results?search_query=brasure+cuivre+plomberie+soudure+chalumeau+technique"}
     ],
     "Carrelage": [
-        {type:"dtu", titre:"DTU 52.1 / 52.2", sous:"Revêtements de sols", contenu:["Mortier-colle C1 : usage courant intérieur sec", "Mortier-colle C2 S1 : sols chauffants, extérieur, piscine", "Déformation maxi du support : L/500 (3 mm sur 1.50 m)", "Calepinage : toujours partir du centre de la pièce", "Joints de dilatation : tous les 25 m² maxi en intérieur"]},
-        {type:"regle", titre:"Joints & formats", sous:"Règles dimensionnelles", contenu:["Carreaux < 10 cm : joint 2 mm mini", "Carreaux 10-30 cm : joint 3-4 mm", "Carreaux > 30 cm : joint 5 mm mini", "Largeur joint périmétrique = largeur joint courant", "Rejointement : 24-48h après pose, support sec"]},
-        {type:"conseil", titre:"Pose sur plancher chauffant", sous:"Points critiques", contenu:["Colle déformable S1 ou S2 obligatoire", "Mise en chauffe progressive avant pose : 7 jours", "Joints > 5 mm pour dissiper la dilatation thermique", "Format maxi recommandé : 60×60 cm", "Arrêt du chauffage 48h avant pose"]}
+        {type:"dtu", titre:"DTU 52.2 — Pose collée carrelage", sous:"Colles, supports, joints", contenu:[
+            "COLLE C1 : intérieur sec, support stable, carreaux < 30×30 cm — usage courant",
+            "COLLE C2 : adhérence double, intérieur/extérieur, formats jusqu'à 60×120 cm",
+            "COLLE S1 : déformable (glissement 2.5 mm) — plancher chauffant, extérieur",
+            "COLLE S2 : très déformable (glissement 5 mm) — façade, piscine, grandes variations thermiques",
+            "SUPPORT : déformation admissible L/500 (3 mm sur 1.50 m) sinon ragréage obligatoire",
+            "PLANÉITÉ : écart maxi 7 mm sous règle de 2 m / 2 mm sous règle de 0.20 m",
+            "PONTAGE FISSURES : ne jamais carreler sur fissure active, traiter cause et poser natte anti-fissure",
+            "ENCOLLAGE : bain soufflant obligatoire pour carreaux > 30×30 cm (colle sur carreau ET support)",
+            "CONTACT MINIMUM : 80% en intérieur sec / 90% en extérieur et zones humides",
+            "TEMPS OUVERT : 15-20 min colle blanche / 30-40 min colle grise (vérifier crémage en surface)"
+        ]},
+        {type:"regle", titre:"Joints — largeurs & matériaux", sous:"Règles de calepinage", contenu:[
+            "JOINTS DE POSE < 10 cm : 2 mm mini / 10 à 30 cm : 3 à 4 mm / > 30 cm : 5 mm mini",
+            "JOINT PÉRIMÉTRIQUE : même largeur que joints courants / mastic souple (silicone ou polyuréthane)",
+            "JOINT DE DILATATION STRUCTUREL : reprendre les joints du bâtiment dans le revêtement",
+            "JOINT DE FRACTIONNEMENT : tous les 25 m² en intérieur / 9 m² en extérieur / 8 m en linéaire",
+            "REJOINTEMENT : attendre minimum 24 h (colle blanche) / 48 h (colle grise) avant de jointoyer",
+            "HUMIDIFICATION avant rejointement : humecter légèrement les bords sans mouiller le fond",
+            "NETTOYAGE : chiffon humide immédiatement / acide si résidus de joint (dilué 10% max)",
+            "CALEPINAGE : partir du centre visuel de la pièce / coupes rejetées en périphérie",
+            "CHUTE MINI : jamais de carreau < 1/3 de sa largeur en périphérie (aspect inesthétique)",
+            "TRACÉ AU SOL : lignes perpendiculaires vérifiées à l'équerre 3-4-5 avant toute pose"
+        ]},
+        {type:"conseil", titre:"Plancher chauffant & grands formats", sous:"Précautions spécifiques", contenu:[
+            "PLANCHER CHAUFFANT : arrêt chauffage 48 h avant pose / remise en chauffe progressive +5°C/jour",
+            "CHAUFFE AVANT POSE : chauffer 7 jours min avant livraison pour éliminer humidité résiduelle",
+            "COLLE OBLIGATOIRE : C2S1 minimum / C2S2 recommandé / jamais de colle rigide C1",
+            "GRANDS FORMATS > 60×60 : pose au bain soufflant total / jointage 5 mm mini",
+            "SOUS-COUCHE DÉSOLIDARISANTE : natte isolante phonique entre chape et carrelage",
+            "CONTRÔLE THERMIQUE : T° maxi surface carrelage 28°C (confort) / 40°C (admissible technique)",
+            "FORMAT vs PENTE : plancher chauffant = jamais de pente supérieure à 1.5%",
+            "DILATATION THERMIQUE : coefficient ≈ 0.008 mm/m/°C pour grès cérame — calculer les joints",
+            "COLLE BLANCHE : impérative en zones où la finition claire est exigée (joints blancs)",
+            "ENTRETIEN : décapant neutre / jamais de javel sur joint époxy / huile pour pierre naturelle"
+        ]},
+        {type:"video", titre:"Poser du carrelage de A à Z", sous:"Préparation, calepinage, pose, joints", url:"https://www.youtube.com/results?search_query=poser+carrelage+sol+de+A+Z+technique+pro"},
+        {type:"video", titre:"Grands formats & rectifié", sous:"Pose bain soufflant, joints fins", url:"https://www.youtube.com/results?search_query=pose+carrelage+grand+format+rectifie+professionnel"},
+        {type:"video", titre:"Ragréage & préparation support", sous:"Autoissant, fibré, conditions de pose", url:"https://www.youtube.com/results?search_query=rageage+autolissant+preparation+support+carrelage"},
+        {type:"video", titre:"Carrelage mural salle de bain", sous:"Découpe, fixation, joints silicone", url:"https://www.youtube.com/results?search_query=poser+carrelage+mural+salle+de+bain+tuto+pro"}
     ],
     "Isolation": [
-        {type:"dtu", titre:"DTU 45.1 / RE2020", sous:"Isolation thermique", contenu:["Résistance R mini murs : 3.7 m².K/W (RE2020)", "Résistance R mini toiture : 6.0 m².K/W (RE2020)", "Résistance R mini plancher bas : 3.0 m².K/W (RE2020)", "Laine de verre 100 mm ≈ R 2.60 / Laine 200 mm ≈ R 5.00", "PSE 100 mm ≈ R 2.70 / PIR 60 mm ≈ R 2.80"]},
-        {type:"regle", titre:"Pare-vapeur & étanchéité à l'air", sous:"Points clés", contenu:["Pare-vapeur côté chaud : toujours côté intérieur chauffé", "Recouvrements : 20 cm minimum, scotchés", "Manchonner tous les passages de câbles et gaines", "Taux de perméabilité n50 < 0.6 vol/h (bâtiment passif)", "Caisson VMC : isoler et étanchéifier tous les raccords"]},
-        {type:"conseil", titre:"Ponts thermiques", sous:"Erreurs fréquentes", contenu:["Traiter les tableaux de fenêtres (retour d'isolant 5 cm mini)", "Isolation rupteur de pont thermique sur dalles filantes", "Pas de couteau dans les panneaux PIR (écraser les bords)", "Décaler les joints entre couches de 50 cm minimum", "Vérifier la continuité de l'isolant à chaque rangée"]}
+        {type:"dtu", titre:"RE2020 — Valeurs réglementaires", sous:"Résistances thermiques minimales", contenu:[
+            "MURS EXTÉRIEURS : R ≥ 3.7 m².K/W (neuf) / R ≥ 2.9 m².K/W (rénovation))",
+            "TOITURE/COMBLES : R ≥ 6.0 m².K/W (neuf) / R ≥ 4.5 m².K/W (combles rénovation)",
+            "PLANCHER BAS : R ≥ 3.0 m².K/W sur vide sanitaire / R ≥ 2.0 m².K/W sur terre-plein",
+            "LAINE DE VERRE 100 mm : R ≈ 2.60 / 120 mm : R ≈ 3.15 / 200 mm : R ≈ 5.20 / 240 mm : R ≈ 6.25",
+            "LAINE DE ROCHE 100 mm : R ≈ 2.50 / 120 mm : R ≈ 3.00 / 200 mm : R ≈ 5.00",
+            "PSE 80 mm : R ≈ 2.15 / 100 mm : R ≈ 2.70 / 120 mm : R ≈ 3.25 / 160 mm : R ≈ 4.30",
+            "PIR/PUR 60 mm : R ≈ 2.80 / 80 mm : R ≈ 3.75 / 100 mm : R ≈ 4.70 / 120 mm : R ≈ 5.65",
+            "OUATE DE CELLULOSE soufflée 200 mm : R ≈ 4.75 / 300 mm : R ≈ 7.15",
+            "FIBRE DE BOIS 100 mm : R ≈ 2.35 / 140 mm : R ≈ 3.30 / 200 mm : R ≈ 4.70",
+            "LIÈGE expansé 60 mm : R ≈ 1.70 / 100 mm : R ≈ 2.85 (référence biobased)"
+        ]},
+        {type:"regle", titre:"Pare-vapeur & étanchéité à l'air", sous:"Mise en œuvre correcte", contenu:[
+            "PRINCIPE : pare-vapeur toujours côté CHAUD (intérieur chauffé), jamais côté froid",
+            "FILM PE 200 µm : Sd ≈ 50 m / film hygrorégulant : Sd variable 0.3 à 10 m selon HR",
+            "RECOUVREMENTS : 20 cm minimum entre lés / scotché sur toute la longueur avec adhésif spécifique",
+            "PASSAGES TRAVERSANTS : manchonner chaque câble/gaine avec manchon + scotch élastique",
+            "JONCTIONS MUR/PLAFOND : bande élastique collée sur les deux faces avant application film",
+            "JONCTIONS MUR/PLANCHER : relevé de 10 cm mini + adhésif double face + scotch de finition",
+            "BOÎTES ÉLECTRIQUES : boîtes étanches à membrane ou coffret spécial étanchéité à l'air",
+            "TEST INFILTROMÉTRIE n50 : < 0.6 vol/h passif / < 1.0 vol/h BBC / < 1.7 vol/h RE2020 neuf",
+            "CAISSON VMC : isoler toutes les parois + scotcher chaque raccord de gaine flexible",
+            "CONTRÔLE : caméra thermique infrarouge à -5°C extérieur pour détecter les ponts thermiques"
+        ]},
+        {type:"conseil", titre:"Ponts thermiques & erreurs courantes", sous:"Ce que les contrôleurs repèrent", contenu:[
+            "TABLEAU DE BAIE : retour d'isolant 5 cm mini sur les 4 côtés, sinon PT linéique = -30% perf",
+            "DALLE FILANTE : rupteur de pont thermique obligatoire en appui de dalle sur voile béton",
+            "CHEVRONS/FERMETTES : combler l'espace entre chevrons AVANT de poser isolant en soufflage",
+            "BOÎTIERS ÉLECTRIQUES : utiliser des boîtiers étanches ou déporter les boîtiers côté chaud",
+            "DÉCOUPE PIR : ne jamais couper au cutter (écraser les bords → PT) — utiliser scie fine",
+            "JOINTS ENTRE PANNEAUX : coller ou scotcher tous les joints des panneaux rigides",
+            "SABLIÈRE : isoler systématiquement derrière la sablière (point faible classique)",
+            "HABILLAGE VMC : la gaine VMC non isolée en combles perdus = pont thermique majeur",
+            "ACROTÈRE : retourner l'isolant sur l'acrotère en toiture terrasse (PT sinon)",
+            "CHEVILLAGE : cheville à rupture de pont thermique (Ejotherm ou similaire) pour ITE"
+        ]},
+        {type:"video", titre:"Isolation combles perdus — soufflage", sous:"Ouate, laine, technique pro", url:"https://www.youtube.com/results?search_query=isolation+combles+perdus+soufflage+ouate+laine+pro"},
+        {type:"video", titre:"ITI — Isolation thermique intérieure", sous:"Doublage, complexe, ponts thermiques", url:"https://www.youtube.com/results?search_query=isolation+thermique+interieure+ITI+doublage+renovation"},
+        {type:"video", titre:"ITE — Isolation par l'extérieur", sous:"Pose panneaux, enduit, finitions", url:"https://www.youtube.com/results?search_query=isolation+thermique+exterieure+ITE+enduit+pose"},
+        {type:"video", titre:"Pare-vapeur & étanchéité à l'air", sous:"Pose, recouvrements, manchonnage", url:"https://www.youtube.com/results?search_query=pare+vapeur+etancheite+air+pose+recouvrements+pro"}
     ],
     "Peinture": [
-        {type:"dtu", titre:"DTU 59.1", sous:"Travaux de peinture", contenu:["Hygrométrie du support maxi : 3-5% selon produit", "Température application : 8°C mini, 35°C maxi", "Temps de recouvrement entre couches : voir fiche technique", "Enduit de rebouchage : séchage 24h avant ponçage", "Catégorie de finition P1 à P4 selon exigence client"]},
-        {type:"regle", titre:"Préparation des supports", sous:"Étapes incontournables", contenu:["Dépoussiérer et dégraisser avant toute application", "Impression obligatoire sur supports poreux et neufs", "Poncer entre chaque couche (grain 180-220)", "Reboucher les fissures < 1 mm : enduit souple", "Fissures > 1 mm : traiter cause avant rebouchage"]},
-        {type:"conseil", titre:"Finitions et rendus", sous:"Conseils de pro", contenu:["Mat : cache les imperfections, déconseillé dans les zones de passage", "Velours/satiné : bon compromis, lavable", "Brillant : amplifie les défauts, bien préparer le support", "Appliquer en croix puis lisser dans le sens de la lumière", "Jamais 2 couches le même jour en intérieur (risque de craquage)"]}
+        {type:"dtu", titre:"DTU 59.1 — Travaux de peinture", sous:"Conditions & finitions", contenu:[
+            "HYGROMÉTRIE support : maxi 3% béton / 5% parpaing / 8% bois (vérifier à l'humidimètre)",
+            "TEMPÉRATURE APPLICATION : mini 8°C / maxi 35°C / éviter soleil direct et vent fort",
+            "HUMIDITÉ AMBIANTE : < 80% HR pendant l'application et le séchage",
+            "TEMPS DE RECOUVREMENT : respecter fiches techniques (variable 2 h à 24 h selon produit)",
+            "CATÉGORIES FINITION : P1 grossier / P2 courant / P3 soigné / P4 très soigné (norme NFP 74-201)",
+            "CONSOMMATIONS INDICATIVES : impression 150-200 ml/m² / peinture 100-150 ml/m² par couche",
+            "POROSITÉ : support très poreux = 2 couches d'impression ou impression diluée 10-20%",
+            "ALCALINITÉ : enduit neuf > 3 mois ou tester pH (< 9 admis) avant peinture glycérophtalique",
+            "NOMBRE DE COUCHES : 1 impression + 2 finition pour P2 / 1 impression + 3 finition pour P4",
+            "LIANTS : acrylique (eau) sur tous supports / glycéro (solvant) sur métal / époxy sur béton industriel"
+        ]},
+        {type:"regle", titre:"Préparation des supports", sous:"Étapes sans lesquelles rien ne tient", contenu:[
+            "ÉTAPE 1 — Dépoussiérer : aspirateur puis chiffon microfibre sec, jamais souffler",
+            "ÉTAPE 2 — Dégraisser : détergent ou acétone sur taches / rincer et laisser sécher 24 h",
+            "ÉTAPE 3 — Gratter/poncer : éliminer tout ce qui est décollé / grain P80 puis P120",
+            "ÉTAPE 4 — Reboucher : enduit de rebouchage, débordement 10 cm, séchage 24 h mini",
+            "ÉTAPE 5 — Poncer rebouchages : P180 puis P220 / épousseter obligatoirement",
+            "ÉTAPE 6 — Impression : OBLIGATOIRE sur neuf, piqûres de rouille, taches de nicotine",
+            "FISSURES < 1 mm : enduit souple, bande armée si > 0.5 mm (mouvement résiduel possible)",
+            "FISSURES > 1 mm : traiter la cause (humidité, mouvement) AVANT de reboucher",
+            "SALPÊTRE : traitement antimoisissure / séchage / impression antifongique avant peinture",
+            "ANCIENNE PEINTURE : tester adhérence (croix au cutter + scotch) — si ça part = décaper tout"
+        ]},
+        {type:"conseil", titre:"Techniques d'application", sous:"Pour un résultat professionnel", contenu:[
+            "ROULEAU : poil court (5 mm) sur lisse / poil moyen (10 mm) sur léger relief / long (18 mm) sur crépi",
+            "PINCEAU : application en croix puis lissage dans le sens de la lumière naturelle",
+            "PISTOLET AIRLESS : pression 150-200 bars / buse 0.015-0.021 selon viscosité / distance 30-40 cm",
+            "MAT : cache les imperfections / fuite / moisissures / déconseillé pièces de passage",
+            "SATINÉ/VELOURS : bon compromis lavable / idéal chambre, séjour, couloir",
+            "BRILLANT : amplifie TOUS les défauts de support / préparer parfaitement / cuisine, salle de bain",
+            "JAMAIS 2 COUCHES LE MÊME JOUR en intérieur (craquage garanti par emprisonnement solvants)",
+            "VENTILATION : aérer pendant et 24 h après / dangereux en espace confiné (solvants)",
+            "ORDRE : plafond → murs → boiseries → sol — toujours du haut vers le bas",
+            "RACCORDS : reprendre toujours d'un angle ou d'un angle rentrant pour éviter les marques"
+        ]},
+        {type:"video", titre:"Technique de peinture murale pro", sous:"Rouleau, pinceau, ordre, astuces", url:"https://www.youtube.com/results?search_query=technique+peinture+murale+professionnelle+rouleau+pinceau"},
+        {type:"video", titre:"Préparation support — le vrai tuto", sous:"Rebouchage, ponçage, impression", url:"https://www.youtube.com/results?search_query=preparation+support+peinture+rebouchage+poncage+pro"},
+        {type:"video", titre:"Pistolet airless — utilisation", sous:"Réglages, buses, sécurité", url:"https://www.youtube.com/results?search_query=pistolet+airless+peinture+technique+reglage+utilisation"},
+        {type:"video", titre:"Enduit de finition & lissage", sous:"Technique pour un mur parfait", url:"https://www.youtube.com/results?search_query=enduit+finition+lissage+mur+platre+technique+pro"}
     ],
     "Menuiserie": [
-        {type:"dtu", titre:"DTU 36.1 / 36.5", sous:"Menuiseries extérieures", contenu:["Calfeutrement : fond de joint + mastic souple", "Uw maxi (RE2020) : 1.3 W/m².K pour fenêtres", "Acier de scellement : 2 pattes mini par vantail", "Jeu de fonctionnement dormant/ouvrant : 5-7 mm", "Vitrage argon : Ug ≈ 1.1 W/m².K / krypton : Ug ≈ 0.7"]},
-        {type:"regle", titre:"Pose et étanchéité", sous:"Points clés", contenu:["Réservation : 2 cm de jeu de tous côtés", "Calage : coins à 15 cm des angles, tous les 60 cm", "Bavette d'appui obligatoire en partie basse extérieure", "Membrane précomprimée extérieure : poser avant enduit", "Révision des joints : tous les 10 ans minimum"]},
-        {type:"conseil", titre:"Portes & ferrage", sous:"Bonnes pratiques", contenu:["Paumelles : 3 mini sur porte > 40 kg ou > 2.10 m", "Serrure multipoints : 5 points de fermeture mini", "Seuil PMR : passage libre 0.77 m, seuil < 2 cm", "Huisserie : traiter coupes en bas (bois) avant pose", "Sens d'ouverture : s'assurer de la réglementation incendie"]}
+        {type:"dtu", titre:"DTU 36.1 / 36.5 — Menuiseries extérieures", sous:"Fenêtres, portes, performance", contenu:[
+            "Uw MAXI RE2020 : 1.3 W/m².K fenêtres / 1.7 W/m².K portes / 1.0 W/m².K portes-fenêtres",
+            "VITRAGE : Ug = 1.1 W/m².K (argon standard) / 0.7 W/m².K (krypton) / 0.4 W/m².K (triple)",
+            "FACTEUR SOLAIRE g : 0.32 en zone sud / 0.48 en zone nord (confort estival RE2020)",
+            "CALFEUTREMENT : fond de joint cylindrique Ø10 mm + mastic polyuréthane 6-10 mm",
+            "PATTES DE SCELLEMENT : 2 mini par vantail / 1 patte tous les 60 cm sur dormant > 1.20 m",
+            "JEU DE POSE : 2 cm de jeu de tous côtés (1 cm mini) pour calage et isolation périphérique",
+            "CALAGES : coins à 15 cm des angles, puis tous les 60 cm maximum, vérifier nivellement",
+            "MEMBRANE PRÉCOMPRIMÉE : extérieur (joint gonflant) posée AVANT l'enduit ou le bardage",
+            "BAVETTE D'APPUI : obligatoire en partie basse extérieure, pente 15% minimum vers l'extérieur",
+            "ÉTANCHÉITÉ INTÉRIEURE : bande ou enduit plâtre hermétique (Sd > 8 m) côté intérieur"
+        ]},
+        {type:"regle", titre:"Portes intérieures & ferrage", sous:"Poses et réglages", contenu:[
+            "HUISSERIE BOIS : encastrée dans la réservation / cales tous les 40 cm / scellement ou vissage",
+            "PAUMELLES : 2 paumelles pour porte < 40 kg et < 2.00 m / 3 paumelles au-delà",
+            "RÉGLAGE PAUMELLES 3D : rattrapage jeu jusqu'à 3 mm en x/y/z selon modèle",
+            "BÉQUILLE : à 1.00 m du sol (milieu de la plaque de propreté)",
+            "SERRURE POINTS : 3 points mini courant / 5 points anti-effraction (certification A2P)",
+            "SEUIL PMR : passage libre 0.77 m minimum / seuil < 2 cm ou 0 cm avec quart de rond",
+            "PORTE COUPE-FEU : EI30 ou EI60 selon local / joint intumescent OBLIGATOIRE en périphérie",
+            "HUISSERIE ALUMINIUM : rupteur de pont thermique intégré / joint brosse réglable",
+            "GLISSEMENT PORTE COULISSANTE : galets en nylon ou inox / rail Ø19 mini pour porte > 25 kg",
+            "SENS OUVERTURE : vérifier réglementation incendie (sens évacuation dans ERP)"
+        ]},
+        {type:"conseil", titre:"Étanchéité & performance thermique", sous:"Les détails qui font la différence", contenu:[
+            "PONT THERMIQUE TABLEAU : retour d'isolant 5 cm sur les 4 côtés du tableau de baie = gain -0.3 W/m².K",
+            "COFFRE VOLET ROULANT : source majeure de déperdition / isoler le coffre et colmater les fentes",
+            "JOINTS DE FRAPPE : remplacer dès qu'on voit le jour — durée de vie 10-15 ans",
+            "TEST INFILTRATION : bougie ou fumée devant dormant fenêtre fermée = détecte les fuites",
+            "HUILE MÉCANISMES : 1 fois/an sur paumelles, crémones, espagnolettes (huile légère WD40 type)",
+            "NETTOYAGE ALUMINIUM : eau savonneuse / jamais de produit abrasif ou solvant agressif",
+            "RAGRÉAGE TABLEAU : enduit plâtre jusqu'au nu du dormant, puis bande d'étanchéité intérieure",
+            "CONDENSATION : si condensation sur vitrage intérieur → problème ventilation / air trop humide",
+            "CONDENSATION sur bord vitrage → Ug trop élevé (pont thermique) → vitrage insuffisant",
+            "GARANTIE DÉCENNALE : s'applique aux menuiseries extérieures dès mise en oeuvre professionnelle"
+        ]},
+        {type:"video", titre:"Poser une fenêtre de A à Z", sous:"Dépose, calage, étanchéité, finitions", url:"https://www.youtube.com/results?search_query=poser+fenetre+renovation+calage+etancheite+tuto+pro"},
+        {type:"video", titre:"Poser une porte intérieure", sous:"Huisserie, vantail, paumelles, réglage", url:"https://www.youtube.com/results?search_query=poser+porte+interieure+huisserie+paumelle+tuto"},
+        {type:"video", titre:"Étanchéité tableau de baie", sous:"Membrane, mastic, bande intérieure", url:"https://www.youtube.com/results?search_query=etancheite+tableau+baie+fenetre+membrane+precomprimee"},
+        {type:"video", titre:"Régler une fenêtre PVC/ALU", sous:"Paumelles 3D, joints, crémone", url:"https://www.youtube.com/results?search_query=regler+fenetre+PVC+ALU+paumelle+cremone+joint"}
     ],
     "Maconnerie": [
-        {type:"dtu", titre:"DTU 20.1 / 23.1", sous:"Maçonnerie & béton", contenu:["Résistance béton C25/30 pour éléments structuraux", "Enrobage armatures : 3 cm en conditions normales, 5 cm extérieur", "Mortier de maçonnerie M5 (usage courant), M10 (charge élevée)", "Joints de maçonnerie : 10 mm d'épaisseur", "Chaînages horizontaux : tous les niveaux obligatoires"]},
-        {type:"regle", titre:"Règles de mise en œuvre", sous:"Points essentiels", contenu:["Humidifier les parpaings avant pose (absorption eau du mortier)", "Décaler les joints verticaux d'un demi-bloc minimum", "Encadrement baies : linteau + tableau + appui", "Chaînage vertical : aux angles et encadrements de baies", "Jointoiement : 48h après pose de la maçonnerie"]},
-        {type:"conseil", titre:"Enduits & finitions", sous:"Bon à savoir", contenu:["Gobetis : couche d'accrochage, séchage 48h avant corps d'enduit", "Corps d'enduit : 10-15 mm en 1 ou 2 passes", "Finition : talochée, frottassée, grattée selon rendu", "Délai entre couches : support doit être ferme mais pas sec", "Protection soleil et vent pendant séchage (7 jours)"]}
+        {type:"dtu", titre:"DTU 20.1 — Maçonnerie courante", sous:"Parpaing, brique, béton banché", contenu:[
+            "RÉSISTANCE BÉTON : C20/25 pour dalles courantes / C25/30 pour poteaux et poutres / C30/37 pour fondations agressives",
+            "ENROBAGE ARMATURES : 3 cm conditions normales / 4 cm extérieur / 5 cm humide ou marin",
+            "MORTIER MAÇONNERIE : M5 usage courant (dosage 250 kg ciment/m³) / M10 charges lourdes (350 kg/m³)",
+            "ÉPAISSEUR JOINTS : 10 mm maçonnerie courante / joints minces 1-3 mm sur blocs rectifiés",
+            "CHAÎNAGES HORIZONTAUX : tous les niveaux / section 100×100 mm mini / 2 barres HA10",
+            "CHAÎNAGES VERTICAUX : aux angles / encadrements de baies / section 100×100 mm / HA10",
+            "PARPAING CREUX 20 cm : résistance maxi 5 kN / linéaire de mur (vérifier fiche technique)",
+            "BRIQUE MONOMUR 37.5 cm : R ≈ 1.25 m².K/W / pas d'isolation supplémentaire nécessaire en ZC1",
+            "BÉTON BANCHÉ : coffrage résistant / vibration obligatoire / décoffrage après 28 jours minimum",
+            "BARBACANES : espacement 1.00 m maxi / section 50 cm² mini / pour murs de soutènement"
+        ]},
+        {type:"regle", titre:"Mise en oeuvre & enduits", sous:"Technique de maçon", contenu:[
+            "HUMIDIFICATION PARPAINGS : humidifier 2 h avant pose en été (absorbe l'eau du mortier sinon)",
+            "CALEPINAGE : commencer par les angles / alignement au cordeau / vérification aplomb tous les 5 rangs",
+            "DÉCALAGE JOINTS : 50% du module obligatoire (demi-bloc) / jamais de joints continus verticaux",
+            "POSE À SEC (joints minces) : colle M10 à la taloche dentée / brossage des surfaces avant encollage",
+            "LINTEAU : débordement mini 20 cm de chaque côté de la baie / hauteur min 15 cm (1 rang)",
+            "APPUI DE BAIE : brique ou béton armé / pente 5% vers l'extérieur / débordement 5 cm",
+            "GOBETIS : couche d'accrochage projetée 3-5 mm / séchage 48 h / ne pas ratisser",
+            "CORPS D'ENDUIT : 10-15 mm en 1 passe (< 10 mm) ou 2 passes / séchage 7 jours entre passes",
+            "FINITION : talochée (grains fins) / frottassée (aspect rustique) / grattée (relief prononcé)",
+            "PROTECTION : couvrir les têtes de mur / protéger du soleil et gel 7 jours après enduit"
+        ]},
+        {type:"conseil", titre:"Béton & ferraillage", sous:"Points techniques critiques", contenu:[
+            "RAPPORT E/C : eau/ciment < 0.60 pour béton ordinaire / < 0.45 pour béton performant",
+            "AFFAISSEMENT : slump 10-16 cm pour béton pompé / 7-10 cm pour béton vibré standard",
+            "VIBRATION : aiguille vibrante Ø40-50 mm / durée 5-15 s / espacement 0.40 m maxi",
+            "COFFRAGE : résistance latérale : 40 kN/m² pour béton coulé rapidement (> 30 cm/h)",
+            "CURE BÉTON : humidifier pendant 7 jours (toile de jute mouillée ou produit de cure)",
+            "DÉCOFFRAGE : 3 jours pour voiles / 7 jours pour poutres et dalles / 21 jours pour consoles",
+            "REPRISE DE BÉTONNAGE : picote l'ancienne surface + couche de liant (latex ou ciment pur)",
+            "ACIERS HA vs HLE : HA (ribés) adhérence naturelle / jamais mélanger sans calcul",
+            "RECOUVREMENT ACIERS : 40Ø en zone courante / 60Ø en zone sismique (ex : HA12 = 48 cm recouvrement)",
+            "CONTRÔLE BÉTON : éprouvettes 16×32 conservées à 20°C / essai 28 jours = résistance contractuelle"
+        ]},
+        {type:"video", titre:"Monter un mur en parpaing", sous:"Tracé, mortier, niveaux, chaînage", url:"https://www.youtube.com/results?search_query=monter+mur+parpaing+mortier+niveau+technique+pro"},
+        {type:"video", titre:"Réaliser un enduit façade", sous:"Gobetis, corps d'enduit, finition", url:"https://www.youtube.com/results?search_query=enduit+facade+gobetis+corps+finition+technique+tuto"},
+        {type:"video", titre:"Ferraillage et coulage béton", sous:"Armatures, coffrage, vibration", url:"https://www.youtube.com/results?search_query=ferraillage+coulage+beton+armatures+coffrage+tuto"},
+        {type:"video", titre:"Maçonnerie brique monomur", sous:"Joints minces, calepinage, technique", url:"https://www.youtube.com/results?search_query=maconnerie+brique+monomur+joints+minces+tuto+pro"}
     ],
     "Charpente": [
-        {type:"dtu", titre:"DTU 31.1 / 31.2", sous:"Charpente bois", contenu:["Classe de résistance C24 mini pour charpente courante", "Contreventement : triangulation ou pannes de contreventement", "Assemblages : boulons M12 mini, connecteurs métalliques", "Entraxe pannes selon portée et charge neige/vent", "Humidité bois maxi à la pose : 18%"]},
-        {type:"regle", titre:"Protection & traitement", sous:"Durabilité", contenu:["Classe d'emploi 2 : bois couvert, sans contact sol (charpente type)", "Classe 3 : bois exposé aux intempéries (bois extérieur)", "Traitement autoclave : vérifier le label CTB-P+ ou CTB-B+", "Ventilation de la toiture : lame d'air 3 cm mini sous couverture", "Pare-pluie HPV (hautement perméable à la vapeur) obligatoire"]},
-        {type:"conseil", titre:"Vérifications avant couverture", sous:"Contrôles essentiels", contenu:["Contrôler l'aplomb et le niveau de tous les arêtiers", "Vérifier la planéité des versants (< 5 mm sur 3 m)", "Tendre un cordeau sur toutes les pannes pour alignement", "Pose des chevrons : commencer par les extrémités", "Fixer les écrans HPV avant chaque rangée de liteaux"]}
+        {type:"dtu", titre:"DTU 31.1 / 31.2 — Charpente bois", sous:"Calculs, assemblages, contreventement", contenu:[
+            "CLASSES DE RÉSISTANCE : C16 légères structures / C24 charpente courante / C27 et C30 charges lourdes",
+            "HUMIDITÉ BOIS À LA POSE : < 18% obligatoire (charpente couverte) / < 23% temporairement acceptable",
+            "PORTÉE MAXI POUTRE C24 : section 63×175 mm → 3.50 m / 75×225 mm → 4.50 m / 100×250 mm → 5.50 m",
+            "CONTREVENTEMENT : plan horizontal = plancher ou diagonales / plan vertical = triangulation ou voile",
+            "ASSEMBLAGES TRADITIONNELS : tenon-mortaise / mi-bois / queue d'aronde — avec chevilles bois",
+            "CONNECTEURS MÉTALLIQUES : sabots / équerres / plaques perforées / boulons M12 mini",
+            "ENTRAXE PANNES : selon calcul neige/vent local (NV65) / typiquement 1.50 à 2.00 m",
+            "FLÈCHE ADMISSIBLE : L/300 à mi-portée pour élément fléchi sous charges permanentes",
+            "CHARGES NEIGE : zone A1 = 45 kg/m² / A2 = 65 kg/m² / B1 = 100 kg/m² (vérifier zonage)",
+            "CHARGES VENT : zone 1 = 500 Pa / zone 2 = 650 Pa / zone 3 = 800 Pa / zone 4 = 900 Pa"
+        ]},
+        {type:"regle", titre:"Traitement & protection bois", sous:"Classes d'emploi et labels", contenu:[
+            "CLASSE 1 : intérieur sec / classe 2 : intérieur humide ou couvert non exposé à la pluie",
+            "CLASSE 3 : extérieur au-dessus du sol exposé / classe 4 : contact sol ou eau douce",
+            "CLASSE 5 : eau de mer — bois très durables uniquement (teck, iroko, azobé)",
+            "TRAITEMENT AUTOCLAVE : label CTB-P+ (classe 2) ou CTB-B+ (classe 3-4) obligatoire",
+            "DURABILITÉ NATURELLE : chêne, châtaignier, douglas → classe 2 sans traitement",
+            "COUPES EN OEUVRE : badigeonner IMMÉDIATEMENT au produit de préservation (spray ou pinceau)",
+            "VENTILATION TOITURE : lame d'air 3 cm mini sous couverture / entrée en sous-face de débord",
+            "LITEAUX : 27×40 ou 40×60 selon couverture / traitement classe 2 mini",
+            "ÉCRAN HPV : résistance à la diffusion de vapeur < 0.3 m² equiv air / poids > 120 g/m²",
+            "STOCKAGE SUR CHANTIER : surélevé / couvert / ventilé / hors contact sol obligatoire"
+        ]},
+        {type:"conseil", titre:"Contrôles avant couverture", sous:"Checklist essentielle", contenu:[
+            "APLOMB FAÎTAGE : vérifier sur toute la longueur / tolérance ±5 mm sur 10 m",
+            "PLANÉITÉ VERSANTS : règle de 3 m / écart maxi 5 mm sous règle (sinon tuiles cassées)",
+            "ALIGNEMENT PANNES : cordeau tendu / toutes les pannes dans le même plan",
+            "TRIANGULATION : vérifier diagonales des versants (carrés) avant pose HPV",
+            "FIXATION ÉCRAN HPV : agrafes inox tous les 30 cm / pas de tension excessive (craquage)",
+            "POSE LITEAUX : à partir du bas / cordeau sur chaque rangée / vérifier pas de tuile",
+            "TUILE DE COURANT : poser 3-4 rangs test avant de valider le pas de lattage définitif",
+            "FAÎTAGE : contrôler l'alignement au cordeau / scellement mortier de chaux + enduit souple",
+            "RIVES : bavette rive ou tuile de rive / débordement 3-5 cm hors nu du mur pignon",
+            "NOUE : zinc ou ardoise sur 40 cm de large / débordement 5 cm sous la couverture courante"
+        ]},
+        {type:"video", titre:"Charpente traditionnelle — technique", sous:"Tracé, levage, assemblages", url:"https://www.youtube.com/results?search_query=charpente+bois+traditionnelle+levage+assemblage+tuto"},
+        {type:"video", titre:"Fermette industrielle — pose", sous:"Levage, contreventement, fixation", url:"https://www.youtube.com/results?search_query=fermette+industrielle+pose+contreventement+charpente"},
+        {type:"video", titre:"Traitement charpente bois", sous:"Produits, techniques, classes", url:"https://www.youtube.com/results?search_query=traitement+charpente+bois+produit+classe+emploi+tuto"},
+        {type:"video", titre:"Sous-toiture HPV & liteaux", sous:"Pose écran, lattage, réglage pas", url:"https://www.youtube.com/results?search_query=pose+ecran+HPV+sous+toiture+liteaux+lattage+tuto"}
     ],
     "Couverture": [
-        {type:"dtu", titre:"DTU 40.11 à 40.35", sous:"Couverture & étanchéité", contenu:["Tuiles terre cuite : pente mini 35% (DTU 40.21)", "Ardoises : pente mini 45% (DTU 40.11)", "Zinc joint debout : pente mini 5% (DTU 40.41)", "Bac acier : pente mini 7% selon portée", "Couverture terrasse : pente mini 1% vers évacuation"]},
-        {type:"regle", titre:"Étanchéité et faîtage", sous:"Points critiques", contenu:["Solin en plomb ou zinc sur tous les relevés en façade", "Recouvrement tuiles : 1/3 de la tuile minimum", "Faîtière : mortier de chaux + joints souples aux extrémités", "Noue : largeur 30 cm mini de chaque côté de l'axe", "Egout : débord mini 5 cm hors nu du mur"]},
-        {type:"conseil", titre:"EEP & gouttières", sous:"Évacuation des eaux", contenu:["Section gouttière : 1 cm² pour 1 m² de toiture", "Diamètre descente : 80 mm mini jusqu'à 50 m² de toiture", "Pente gouttière : 5 mm/ml minimum vers la descente", "Fixation gouttière : entraxe 70 cm maxi", "Déboîtement en bas de descente : 30 cm mini du sol"]}
+        {type:"dtu", titre:"DTU 40 — Pentes et recouvrement", sous:"Règles par type de couverture", contenu:[
+            "TUILES TERRE CUITE canal : pente mini 30% / recouvrement 8-10 cm selon pente et vent",
+            "TUILES MÉCANIQUES : pente mini 35-40% selon fabricant / recouvrement 7.5 cm mini",
+            "ARDOISES NATURELLES : pente mini 45% / recouvrement 1/3 de la longueur de l'ardoise",
+            "ARDOISES FIBROCIMENT : pente mini 20% / recouvrement selon pente (table DTU 40.13)",
+            "ZINC JOINT DEBOUT : pente mini 5% / feuilles longueur maxi 10 m / lés larges 530 mm",
+            "BAC ACIER NERVURÉ : pente mini 7% avec recouvrement / 5% avec joint d'étanchéité",
+            "CHAUME : pente mini 45% / épaisseur 30-35 cm / traitement feu obligatoire",
+            "TUILES BÉTON : pente 30-45% / pureau réglable / couleur stable UV garantie 30 ans",
+            "SHINGLE BITUMINEUX : pente mini 20% / sous-couche bitumée auto-adhésive obligatoire",
+            "MEMBRANE EPDM terrasse : épaisseur 1.14 mm mini / soudure air chaud ou colle contact"
+        ]},
+        {type:"regle", titre:"Étanchéité — Points singuliers", sous:"Les détails qui fuient en premier", contenu:[
+            "NOUE : zinc Ø 0.65 mm / largeur 40 cm (20 cm sous chaque versant) / pas de joints",
+            "FAÎTAGE : faîtière ciment = risque fissure — préférer faîtière ventilée avec joint souple",
+            "ARÊTIER : ardoise ou tuile spéciale / solin plomb ou zinc sur maçonnerie",
+            "SOLIN FAÇADE : plomb (2 kg/m²) ou zinc prépatiné / sertissage dans joint de façade",
+            "SOLIN CHEMINÉE : rehausse 40 cm mini au-dessus de la couverture / bavette avant et arrière",
+            "ÉGOUT : débord 5 cm hors nu du mur / gouttière pendante ou de rives",
+            "PÉNÉTRATIONS : manchon plomberie avec bavette plomb intégrée / diamètre > 200 mm = costière",
+            "JONCTION VERTICAL/INCLINÉ : retour d'étanchéité 15 cm mini sur vertical",
+            "LANTERNEAU : costière hauteur 15 cm mini / étanchéité remontée + solin",
+            "MEMBRANE ANTI-CONDENSATION : sous bac acier sans isolant, toujours prévoir"
+        ]},
+        {type:"conseil", titre:"EEP — Calcul & mise en oeuvre", sous:"Évacuation des eaux pluviales", contenu:[
+            "CALCUL SECTION : 1 cm² de descente pour 1 m² de toiture (pluie 3 l/min/m²)",
+            "DESCENTE ∅80 : jusqu'à 60 m² de surface collectée (zones normales)",
+            "DESCENTE ∅100 : jusqu'à 120 m² / ∅125 : jusqu'à 200 m² / ∅160 : jusqu'à 350 m²",
+            "GOUTTIÈRE DEMI-RONDE ∅16 : jusqu'à 35 m² / ∅20 : jusqu'à 60 m² / ∅25 : jusqu'à 100 m²",
+            "PENTE GOUTTIÈRE : 5 mm/ml minimum vers la naissance de descente",
+            "FIXATION GOUTTIÈRE : crochet tous les 60-80 cm / inox en bord de mer / zinc sur couverture zinc",
+            "RACCORD GOUTTIÈRE/DESCENTE : naissance avec crépine anti-feuilles / contrôle 1 fois/an",
+            "REJET BAS : coude de rejet 30 cm minimum du sol / vers grille ou regard EP",
+            "COLLECTE EAUX PLUVIALES : cuve enterrée avec trop-plein dirigé vers réseau ou infiltration",
+            "ENTRETIEN : déboucher gouttières 2 fois/an (automne + printemps) / nettoyer crépines"
+        ]},
+        {type:"video", titre:"Poser des tuiles — technique complète", sous:"Lattage, pureau, faîtage, rives", url:"https://www.youtube.com/results?search_query=poser+tuiles+toiture+lattage+pureau+faitier+tuto+pro"},
+        {type:"video", titre:"Pose ardoises naturelles", sous:"Recouvrement, pureau, fixation", url:"https://www.youtube.com/results?search_query=pose+ardoises+naturelles+toiture+recouvrement+crochet"},
+        {type:"video", titre:"Zinc joint debout — technique", sous:"Pliage, jonction, faîtage", url:"https://www.youtube.com/results?search_query=zinc+joint+debout+toiture+pliage+pose+technique"},
+        {type:"video", titre:"Étanchéité terrasse toiture plate", sous:"Membrane EPDM et bicouche", url:"https://www.youtube.com/results?search_query=etancheite+terrasse+toiture+plate+membrane+EPDM+bicouche"}
     ]
 };
 
@@ -621,7 +1025,7 @@ function ProduitsListScreen(props) {
                                 color: p.famille === "OUTILLAGE" ? "var(--gold-dim)" : "var(--navy)",
                                 padding:"1px 6px", borderRadius:6, fontSize:10, fontWeight:700, marginRight:6
                             }}, p.famille === "OUTILLAGE" ? "🔧" : "🧱"),
-                            (p.emplacement ? p.emplacement : "")
+                            p.emplacement ? h("span", {style:{background:"rgba(61,84,112,0.08)", color:"var(--navy)", padding:"1px 6px", borderRadius:6, fontSize:10, fontWeight:700}}, "📍 " + p.emplacement) : h("span", {style:{color:"var(--text3)", fontSize:10}}, "Non localisé")
                         ),
                         h("span", {className:"badge badge-" + statut}, (statut==="ok"?"✅":statut==="low"?"⚠️":"❌") + " " + (p.quantite||0) + " " + (p.unite||"piece"))
                     )
@@ -665,6 +1069,14 @@ function ProduitDetail(props) {
     var mvts = mvtsState[0]; var setMvts = mvtsState[1];
     var mvtLoadingState = useState(true);
     var mvtLoading = mvtLoadingState[0]; var setMvtLoading = mvtLoadingState[1];
+    var emplacementState = useState(p.emplacement || "");
+    var emplacement = emplacementState[0]; var setEmplacement = emplacementState[1];
+    var newLieuState = useState("");
+    var newLieu = newLieuState[0]; var setNewLieu = newLieuState[1];
+    var lieuxState = useState(EMPLACEMENTS_DEFAUT.slice());
+    var lieux = lieuxState[0]; var setLieux = lieuxState[1];
+    var lieuxLoadedState = useState(false);
+    var lieuxLoaded = lieuxLoadedState[0]; var setLieuxLoaded = lieuxLoadedState[1];
     var statut = getStatut(p);
 
     useEffect(function() {
@@ -712,6 +1124,22 @@ function ProduitDetail(props) {
         } catch(e) { showToast("Erreur: " + e.message, "error"); setDeleting(false); }
     }
 
+    useEffect(function() {
+        fetchLieuxCustom().then(function(custom) {
+            setLieux(EMPLACEMENTS_DEFAUT.concat(custom));
+            setLieuxLoaded(true);
+        });
+    }, []);
+
+    async function saveEmplacement(val) {
+        try {
+            await supaPatch("produits", p.id, {emplacement: val});
+            setEmplacement(val);
+            showToast("📍 " + (val || "Emplacement retiré"), "success");
+            props.onRefresh();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+    }
+
     function MvtRow(m, i) {
         var isEntree = m.type === "entree" || m.type === "creation";
         var iconClass = m.type === "creation" ? "mvt-icon-creation" : (isEntree ? "mvt-icon-entree" : "mvt-icon-sortie");
@@ -737,9 +1165,75 @@ function ProduitDetail(props) {
         h("div", {className:"product-hero"},
             p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📦")
         ),
-        h("span", {className:"badge badge-" + statut, style:{marginBottom:14, display:"inline-flex"}},
+        h("span", {className:"badge badge-" + statut, style:{marginBottom:8, display:"inline-flex"}},
             (statut==="ok"?"✅ En stock":statut==="low"?"⚠️ Stock bas":"❌ Rupture") + " — " + (p.quantite||0) + " " + (p.unite||"piece")
         ),
+
+        // Bloc emplacement
+        h("div", {className:"card", style:{marginBottom:12}},
+            h("div", {className:"section-title"}, "📍 EMPLACEMENT"),
+            emplacement ? h("div", {className:"lieu-badge"}, "📍 " + emplacement) : h("div", {style:{fontSize:12, color:"var(--text3)", marginBottom:8}}, "Non localisé"),
+            h("div", {style:{display:"flex", gap:6, flexWrap:"wrap", marginBottom:10}},
+                h("button", {
+                    className:"lieu-chip" + (!emplacement ? " selected" : " none"),
+                    onClick:function(){ saveEmplacement(""); }
+                }, "✕ Aucun"),
+                lieux.map(function(l) {
+                    var isCustom = !EMPLACEMENTS_DEFAUT.includes(l);
+                    return h("div", {key:l, style:{display:"flex", alignItems:"center", gap:2}},
+                        h("button", {
+                            className:"lieu-chip" + (emplacement===l ? " selected" : ""),
+                            onClick:function(){ saveEmplacement(l); }
+                        }, l),
+                        isCustom ? h("button", {
+                            style:{background:"none", border:"none", cursor:"pointer", fontSize:12, color:"var(--text3)", padding:"0 2px"},
+                            onClick:async function(e){
+                                e.stopPropagation();
+                                try {
+                                    await deleteLieuCustom(l);
+                                    var custom = await fetchLieuxCustom();
+                                    setLieux(EMPLACEMENTS_DEFAUT.concat(custom));
+                                    if(emplacement === l) saveEmplacement("");
+                                    showToast("🗑️ Lieu supprimé", "success");
+                                } catch(e) { showToast("Erreur: " + e.message, "error"); }
+                            }
+                        }, "✕") : null
+                    );
+                })
+            ),
+            h("div", {style:{display:"flex", gap:8}},
+                h("input", {
+                    className:"input", placeholder:"Ajouter un lieu...",
+                    style:{flex:1, fontSize:13, padding:"8px 12px"},
+                    value:newLieu,
+                    onChange:function(e){ setNewLieu(e.target.value); },
+                    onKeyDown:async function(e){
+                        if(e.key==="Enter" && newLieu.trim()){
+                            var nom = newLieu.trim();
+                            try {
+                                await addLieuCustom(nom);
+                                var custom = await fetchLieuxCustom();
+                                setLieux(EMPLACEMENTS_DEFAUT.concat(custom));
+                                setNewLieu("");
+                                showToast("📍 Lieu ajouté : " + nom, "success");
+                            } catch(e) { showToast("Erreur: " + e.message, "error"); }
+                        }
+                    }
+                }),
+                h("button", {
+                    className:"btn btn-outline",
+                    style:{padding:"8px 14px", fontSize:13},
+                    disabled:!newLieu.trim(),
+                    onClick:function(){
+                        if(!newLieu.trim()) return;
+                        addEmplacement(newLieu.trim());
+                        setLieux(getEmplacements());
+                        setNewLieu("");
+                    }
+                }, "＋")
+            )
+        ),
+
         h("div", {className:"grid-2"},
             h("div", {className:"card"},
                 h("div", {className:"section-title"}, "➕ AJOUTER"),
