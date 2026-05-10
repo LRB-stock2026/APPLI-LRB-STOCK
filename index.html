@@ -14,21 +14,14 @@
 :root{--navy:#3D5470;--navy-dark:#2d3f55;--gold:#C9973A;--gold-dim:#b8862e;--bg:#EDF0F4;--surface:#fff;--surface2:#E4E8EF;--border:#C8D0DC;--text:#1C2B3A;--text2:#3D5470;--text3:#7A90A8;--green:#2A7A38;--green-bg:#E6F4E8;--red:#C0392B;--red-bg:#FDEDEC;--orange:#C97320;--orange-bg:#FEF3E6;--shadow:0 3px 12px rgba(61,84,112,0.15);--navy-glow:0 6px 24px rgba(61,84,112,0.35);--gold-glow:0 6px 24px rgba(201,151,58,0.40)}
 html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
 .app{max-width:430px;margin:0 auto;min-height:100dvh;background:var(--bg)}
+.app-header{position:sticky;top:0;z-index:40;background:rgba(237,240,244,.97);backdrop-filter:blur(12px);border-bottom:1.5px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:12px}
+.app-header-logo{width:42px;height:42px;border-radius:10px;object-fit:contain;background:#fff;padding:4px}
+.app-header-title{flex:1}
+.app-header-title h1{font-size:14px;font-weight:800;color:var(--navy);letter-spacing:.05em;margin:0}
+.app-header-title p{font-size:9px;color:var(--text3);margin:0;text-transform:uppercase;letter-spacing:.08em}
+.app-header .app-header-spacer{width:38px}
 .screen{padding:0 16px 90px;animation:fadeUp .2s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* --- MODIF 1 : HEADER FIXE --- */
-.lrb-main-header {
-    position: sticky; top: 0; z-index: 100;
-    background: var(--navy); padding: 10px 16px;
-    display: flex; align-items: center; gap: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-}
-.lrb-main-header img { height: 32px; background: #fff; padding: 2px; border-radius: 4px; }
-.lrb-main-header .title-box { line-height: 1.1; }
-.lrb-main-header h1 { font-size: 13px; font-weight: 900; color: #fff; letter-spacing: 1px; margin:0; }
-.lrb-main-header p { font-size: 9px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin:0; }
-
 .login-wrap{min-height:100dvh;display:flex;align-items:center;justify-content:center;background:var(--navy);padding:24px}
 .login-card{background:#fff;border-radius:24px;padding:32px 24px;width:100%;max-width:340px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
 .login-logo{display:block;width:130px;margin:0 auto 12px;border-radius:12px}
@@ -49,6 +42,9 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .input:focus,.select:focus{border-color:var(--navy)}
 .input::placeholder{color:var(--text3)}
 .input-code{text-align:center;font-size:30px;letter-spacing:.4em;font-weight:900;padding:18px}
+.checkbox-group{display:flex;align-items:center;gap:12px;margin:12px 0;padding:8px 0}
+.checkbox-group input{width:20px;height:20px;margin:0;cursor:pointer}
+.checkbox-group label{font-size:14px;font-weight:600;color:var(--navy);cursor:pointer}
 .input-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--navy);opacity:.7;display:block;margin-bottom:4px}
 .select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233D5470' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer}
 .btn{display:flex;align-items:center;justify-content:center;gap:6px;border:none;font-family:inherit;font-weight:700;cursor:pointer;border-radius:14px;transition:all .15s;font-size:15px}
@@ -116,6 +112,7 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .input-group{display:flex;flex-direction:column;gap:4px}
 .notice{padding:11px 14px;border-radius:12px;font-size:13px;font-weight:600}
 .notice-info{background:rgba(201,151,58,.1);border:1.5px solid rgba(201,151,58,.3);color:var(--gold-dim)}
+.stock-counter{margin-top:8px;text-align:center;font-size:14px;font-weight:700;color:var(--navy);background:rgba(61,84,112,.1);padding:8px;border-radius:24px;width:fit-content;margin-left:auto;margin-right:auto}
 </style>
 </head>
 <body>
@@ -123,7 +120,6 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script>
-// --- MODIF 1 : NOUVELLE URL LOGO ---
 var LRB_LOGO="https://kiomcpwjveppgragajyv.supabase.co/storage/v1/object/public/product-photos/LRB_Logo_300dpi.png";
 var SUPABASE_URL="https://kiomcpwjveppgragajyv.supabase.co";
 var SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpb21jcHdqdmVwcGdyYWdhanl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzYyMDksImV4cCI6MjA5MzY1MjIwOX0.RHBrIC7Hz_5U91R6ZZTpoq8q925gcvN5d3UL5I8QAGU";
@@ -142,53 +138,15 @@ async function supaPatch(table,id,data){var res=await fetch(SUPABASE_URL+"/rest/
 async function uploadPhoto(file,name){var ext=file.name?file.name.split(".").pop():"jpg";var path=name.replace(/[^a-z0-9]/gi,"_").slice(0,20)+"-"+Date.now()+"."+ext;var res=await fetch(SUPABASE_URL+"/storage/v1/object/product-photos/"+path,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":file.type||"image/jpeg"},body:file});if(!res.ok)throw new Error("Upload échoué");return SUPABASE_URL+"/storage/v1/object/public/product-photos/"+path;}
 function fileToBase64(file){return new Promise(function(resolve,reject){var reader=new FileReader();reader.onload=function(e){resolve(e.target.result.split(",")[1]);};reader.onerror=reject;reader.readAsDataURL(file);});}
 
-// --- MODIF 2 : LOGIN AVEC MÉMOIRE ---
-function LoginScreen(props){
-    var s1=useState(""),code=s1[0],setCode=s1[1];
-    var s2=useState(""),err=s2[0],setErr=s2[1];
-    var s3=useState(false),loading=s3[0],setLoading=s3[1];
-    var s4=useState(true),rem=s4[0],setRem=s4[1];
-
-    useEffect(function(){
-        const saved = localStorage.getItem("lrb_auth_code");
-        if(saved && (USERS_LOCAL[saved] || saved.length >= 4)) {
-            // Tentative de reconnexion auto
-            doLogin(saved);
-        }
-    }, []);
-
-    async function doLogin(storedCode){
-        var c = storedCode || code;
-        if(c.length<4)return;
-        setLoading(true); setErr("");
-        try{
-            var rows=await supaGet("utilisateurs","code=eq."+c+"&limit=1");
-            if(rows&&rows.length>0){
-                if(rem) localStorage.setItem("lrb_auth_code", c);
-                props.onLogin({code:c,name:rows[0].nom,role:rows[0].role||"chantier"});
-                setLoading(false); return;
-            }
-        }catch(e){}
-        if(USERS_LOCAL[c]){
-            if(rem) localStorage.setItem("lrb_auth_code", c);
-            props.onLogin(Object.assign({code:c},USERS_LOCAL[c]));
-        }else{setErr("Code incorrect");}
-        setLoading(false);
-    }
-    return h("div",{className:"login-wrap"},h("div",{className:"login-card"},h("img",{src:LRB_LOGO,alt:"LRB",className:"login-logo",style:{objectFit:"contain"}}),h("div",{className:"login-title"},"STOCK"),h("label",{className:"input-label"},"Code utilisateur"),h("input",{className:"input input-code",type:"tel",maxLength:6,placeholder:"••••••",value:code,onChange:function(e){setCode(e.target.value);setErr("");},onKeyDown:function(e){if(e.key==="Enter")doLogin();},style:{marginTop:6,marginBottom:8}}),h("label",{style:{display:"flex",alignItems:"center",gap:8,justifyContent:"center",marginBottom:16,fontSize:14,fontWeight:600,color:"var(--navy)"}},h("input",{type:"checkbox",checked:rem,onChange:e=>setRem(e.target.checked)}),"Se souvenir de moi"),err&&h("div",{style:{color:"var(--red)",fontSize:12,fontWeight:700,marginBottom:12}},"⚠ "+err),h("button",{className:"btn btn-navy btn-xl btn-full",onClick:()=>doLogin(),disabled:loading||code.length<4},loading?"…":"Connexion")));
-}
+function LoginScreen(props){var s1=useState(""),code=s1[0],setCode=s1[1];var s2=useState(""),err=s2[0],setErr=s2[1];var s3=useState(false),loading=s3[0],setLoading=s3[1];var s4=useState(false),rememberMe=s4[0],setRememberMe=s4[1];
+useEffect(function(){var savedCode=localStorage.getItem("lrb_remembered_code");if(savedCode){setCode(savedCode);setRememberMe(true);}},[]);
+async function doLogin(){if(code.length<4)return;setLoading(true);setErr("");try{var rows=await supaGet("utilisateurs","code=eq."+code+"&limit=1");if(rows&&rows.length>0){if(rememberMe){localStorage.setItem("lrb_remembered_code",code);}else{localStorage.removeItem("lrb_remembered_code");}props.onLogin({code:code,name:rows[0].nom,role:rows[0].role||"chantier"});setLoading(false);return;}}catch(e){}if(USERS_LOCAL[code]){if(rememberMe){localStorage.setItem("lrb_remembered_code",code);}else{localStorage.removeItem("lrb_remembered_code");}props.onLogin(Object.assign({code:code},USERS_LOCAL[code]));}else{setErr("Code incorrect");}setLoading(false);}
+return h("div",{className:"login-wrap"},h("div",{className:"login-card"},h("img",{src:LRB_LOGO,alt:"LRB",className:"login-logo"}),h("div",{className:"login-title"},"STOCK"),h("label",{className:"input-label"},"Code utilisateur"),h("input",{className:"input input-code",type:"tel",maxLength:6,placeholder:"••••••",value:code,onChange:function(e){setCode(e.target.value);setErr("");},onKeyDown:function(e){if(e.key==="Enter")doLogin();},style:{marginTop:6,marginBottom:err?4:16}}),err&&h("div",{style:{color:"var(--red)",fontSize:12,fontWeight:700,marginBottom:12}},"⚠ "+err),h("div",{className:"checkbox-group"},h("input",{type:"checkbox",id:"rememberMe",checked:rememberMe,onChange:function(e){setRememberMe(e.target.checked);}}),h("label",{htmlFor:"rememberMe"},"Se souvenir de moi")),h("button",{className:"btn btn-navy btn-xl btn-full",onClick:doLogin,disabled:loading||code.length<4},loading?"…":"Connexion")));}
 
 function NavBar(props){var items=[{id:"home",icon:"🏠",label:"Accueil"},{id:"stock",icon:"📦",label:"Stock"},{id:"achat",icon:"🛒",label:"Achat"},{id:"besoin",icon:"📋",label:"Besoin"},{id:"profil",icon:"👤",label:"Profil"}];return h("nav",{className:"navbar"},items.map(function(item){var active=props.screen===item.id;return h("button",{key:item.id,className:"nav-item"+(active?" active":""),onClick:function(){props.onNav(item.id);}},h("span",{className:"nav-emoji"},item.icon),h("span",{className:"nav-label"},item.label),h("div",{className:"nav-dot"}));}));}
 
-// --- MODIF 4 : COMPTEURS SUR ACCUEIL ---
-function HomeScreen(props){
-    var user=props.user,nav=props.nav,produits=props.produits||[];
-    
-    // Filtrage dynamique pour les compteurs
-    var countGros = produits.filter(p => CORPS_ETAT_GROS.some(ce => (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()))).length;
-    var countSecond = produits.filter(p => CORPS_ETAT_SECOND.some(ce => (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()))).length;
-
-    return h("div",{className:"screen"},h("div",{style:{display:"flex",alignItems:"center",gap:12,padding:"16px 0 12px",borderBottom:"1.5px solid var(--border)",marginBottom:14}},h("img",{src:LRB_LOGO,alt:"LRB",style:{width:48,height:48,borderRadius:10,objectFit:"cover"}}),h("div",null,h("div",{style:{fontSize:13,fontWeight:800,color:"var(--navy)"}},"LES RÉNOVATEURS BRETONS"),h("div",{style:{fontSize:22,fontWeight:900,color:"var(--gold)",letterSpacing:".1em"}},"STOCK")),h("div",{style:{marginLeft:"auto",fontSize:13,color:"var(--text3)"}},user.name)),h("div",{className:"home-buttons"},h("button",{className:"home-btn btn-gros",onClick:function(){nav("corpsdetat",{categorie:"gros"});}},h("span",{className:"home-btn-icon"},"🏗️"),h("div",null,h("span",{className:"home-btn-label"},"GROS ŒUVRE"),h("span",{style:{color:"#fff",opacity:0.8,fontSize:14,fontWeight:700}},countGros + " articles"))),h("button",{className:"home-btn btn-second",onClick:function(){nav("corpsdetat",{categorie:"second"});}},h("span",{className:"home-btn-icon"},"🪟"),h("div",null,h("span",{className:"home-btn-label"},"SECOND ŒUVRE"),h("span",{style:{color:"#fff",opacity:0.8,fontSize:14,fontWeight:700}},countSecond + " articles")))));}
+function HomeScreen(props){var user=props.user,nav=props.nav,produits=props.produits||[];var totalArticles=produits.reduce(function(sum,p){return sum+(p.quantite||0);},0);
+return h("div",{className:"screen"},h("div",{className:"home-buttons"},h("button",{className:"home-btn btn-gros",onClick:function(){nav("corpsdetat",{categorie:"gros"});}},h("span",{className:"home-btn-icon"},"🏗️"),h("span",{className:"home-btn-label"},"GROS ŒUVRE")),h("button",{className:"home-btn btn-second",onClick:function(){nav("corpsdetat",{categorie:"second"});}},h("span",{className:"home-btn-icon"},"🪟"),h("span",{className:"home-btn-label"},"SECOND ŒUVRE")),h("div",{className:"stock-counter"},"📊 "+totalArticles+" article"+(totalArticles>1?"s":"")+" en stock"));}
 
 function CorpsDetatScreen(props){var categorie=props.categorie,onBack=props.onBack,nav=props.nav;var s1=useState(""),search=s1[0],setSearch=s1[1];var ces=categorie==="gros"?CORPS_ETAT_GROS:CORPS_ETAT_SECOND;var title=categorie==="gros"?"GROS ŒUVRE":"SECOND ŒUVRE";var filteredCes=ces;if(search){filteredCes=ces.filter(function(ce){return ce.label.toLowerCase().includes(search.toLowerCase());});}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},title),h("div",{className:"header-sub"},"Choisissez un corps d'état"))),h("div",{className:"search-box"},h("span",{style:{color:"var(--text3)"}},"🔍"),h("input",{placeholder:"Rechercher un métier…",value:search,onChange:function(e){setSearch(e.target.value);}})),filteredCes.map(function(ce){return h("button",{key:ce.id,className:"ce-btn",onClick:function(){nav("produits_list",{categorie:categorie,ce:ce});}},h("span",{className:"ce-icon"},ce.icon),h("span",{className:"ce-label"},ce.label));}));}
 
@@ -196,121 +154,30 @@ function ProduitsListScreen(props){var produits=props.produits,ce=props.ce,onBac
 
 function ProduitDetail(props){var user=props.user,produit=props.produit,onBack=props.onBack,onRefresh=props.onRefresh;var p=produit;var s1=useState(""),qty=s1[0],setQty=s1[1];var s2=useState(""),ajout=s2[0],setAjout=s2[1];var statut=(p.quantite||0)<=0?"out":(p.quantite||0)<=(p.quantite_min||1)?"low":"ok";async function sortir(){var q=parseFloat(qty);if(!q||q<=0)return;try{await supaPatch("produits",p.id,{quantite:Math.max(0,(p.quantite||0)-q)});showToast("✅ "+q+" sorti(s)","success");setQty("");onRefresh();onBack();}catch(e){showToast("Erreur: "+e.message,"error");}}async function ajouter(){var q=parseFloat(ajout);if(!q||q<=0)return;try{await supaPatch("produits",p.id,{quantite:(p.quantite||0)+q});showToast("✅ "+q+" ajouté(s)","success");setAjout("");onRefresh();onBack();}catch(e){showToast("Erreur: "+e.message,"error");}}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title",style:{fontSize:18}},p.nom),h("div",{className:"header-sub"},p.corps_etat||p.famille||""))),h("div",{className:"product-hero"},p.photo_url?h("img",{src:p.photo_url,alt:""}):"📦"),h("span",{className:"badge badge-"+statut,style:{marginBottom:14,fontSize:13}},statut==="ok"?"✅ En stock":statut==="low"?"⚠️ Stock bas":"❌ Rupture"," — "+(p.quantite||0)+" "+(p.unite||"pièce")),h("div",{className:"card",style:{padding:14,marginBottom:14}},["famille","corps_etat","emplacement","marque","reference","fournisseur"].filter(function(k){return p[k];}).map(function(k){var labels={famille:"Famille",corps_etat:"Corps d'état",emplacement:"Emplacement",marque:"Marque",reference:"Référence",fournisseur:"Fournisseur"};return h("div",{key:k,className:"meta-row"},h("span",{className:"meta-key"},labels[k]),h("span",{className:"meta-val"},p[k]));})),h("div",{className:"grid-2"},h("div",{className:"card",style:{padding:12}},h("div",{className:"section-title",style:{marginBottom:6}},"➕ AJOUTER"),h("input",{className:"input",type:"number",min:"0",placeholder:"Quantité",value:ajout,onChange:function(e){setAjout(e.target.value);},style:{marginBottom:8}}),h("button",{className:"btn btn-navy btn-md btn-full",onClick:ajouter,disabled:!ajout},"Ajouter")),h("div",{className:"card",style:{padding:12}},h("div",{className:"section-title",style:{marginBottom:6}},"➖ SORTIR"),h("input",{className:"input",type:"number",min:"0",placeholder:"Quantité",value:qty,onChange:function(e){setQty(e.target.value);},style:{marginBottom:8}}),h("button",{className:"btn btn-gold btn-md btn-full",onClick:sortir,disabled:!qty},"Sortir"))));}
 
-// --- MODIF 3 : LIBERTÉ DE SAISIE (PHOTO OU MANUEL) ---
-function PhotoScreen(props){
-    var user=props.user,onBack=props.onBack,onRefresh=props.onRefresh;
-    var s1=useState("capture"),step=s1[0],setStep=s1[1];
-    var s2=useState(null),preview=s2[0],setPreview=s2[1];
-    var s3=useState(null),imgFile=s3[0],setImgFile=s3[1];
-    var s4=useState({nom:"",famille:"MATÉRIAUX",corps_etat:"Divers",unite:"pièce"}),result=s4[0],setResult=s4[1];
-    var s5=useState(""),qty=s5[0],setQty=s5[1];
-    var s6=useState(false),saving=s6[0],setSaving=s6[1];
-    var fileRef=useRef();
+function PhotoScreen(props){var user=props.user,onBack=props.onBack,onRefresh=props.onRefresh;var s1=useState("capture"),step=s1[0],setStep=s1[1];var s2=useState(null),preview=s2[0],setPreview=s2[1];var s3=useState(null),imgFile=s3[0],setImgFile=s3[1];var s4=useState(null),result=s4[0],setResult=s4[1];var s5=useState(""),qty=s5[0],setQty=s5[1];var s6=useState(false),saving=s6[0],setSaving=s6[1];var fileRef=useRef();function handleFile(e){var file=e.target.files[0];if(!file)return;setImgFile(file);var reader=new FileReader();reader.onload=function(ev){setPreview(ev.target.result);};reader.readAsDataURL(file);setStep("analyzing");setTimeout(function(){setResult({nom:"Produit reconnu",famille:"MATERIAUX",corps_etat:"Divers",unite:"pièce",quantite_estimee:1});setQty("1");setStep("result");},1500);}
+function handleManualEntry(){setStep("result");setResult({nom:"",famille:"MATERIAUX",corps_etat:"",unite:"pièce",quantite_estimee:1});setQty("1");setImgFile(null);setPreview(null);}
+function handleSave(){setSaving(true);var photoP=imgFile?uploadPhoto(imgFile,(result.nom||"produit").replace(/[^a-z0-9]/gi,"_").slice(0,15)):Promise.resolve(null);photoP.then(function(pu){return supaPost("produits",{nom:result.nom,famille:result.famille,corps_etat:result.corps_etat,marque:result.marque||null,reference:result.reference||null,unite:result.unite||"pièce",quantite:parseFloat(qty)||1,photo_url:pu,user_id:user.code});}).then(function(){showToast("✅ Produit enregistré !","success");if(onRefresh)onRefresh();onBack();}).catch(function(err){showToast("Erreur: "+err.message,"error");setSaving(false);});}
+function reset(){setStep("capture");setResult(null);setImgFile(null);setPreview(null);}
+if(step==="capture")return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"📷 Photo IA"),h("div",{className:"header-sub"},"Identification automatique par IA"))),h("div",{style:{background:"var(--surface2)",border:"2px dashed var(--border)",borderRadius:20,padding:"36px 24px",textAlign:"center",marginTop:16}},h("div",{style:{fontSize:64,marginBottom:14}},"📷"),h("div",{style:{fontSize:16,fontWeight:700,color:"var(--navy)",marginBottom:8}},"Prenez une photo du produit"),h("div",{className:"text-muted",style:{marginBottom:24}},"L'IA identifie le produit, la famille et la quantité"),h("input",{ref:fileRef,type:"file",accept:"image/*",capture:"environment",style:{display:"none"},onChange:handleFile}),h("button",{className:"btn btn-navy btn-xl btn-full",style:{marginBottom:10},onClick:function(){fileRef.current.click();}},"📷 Prendre une photo"),h("button",{className:"btn btn-outline btn-lg btn-full",onClick:function(){fileRef.current.removeAttribute("capture");fileRef.current.click();}},"📁 Depuis la galerie"),h("button",{className:"btn btn-outline btn-lg btn-full",style:{marginTop:10},onClick:handleManualEntry},"⌨️ Saisie Manuelle")));
+if(step==="analyzing")return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"Analyse en cours..."))),preview&&h("img",{src:preview,style:{width:"100%",maxHeight:220,objectFit:"cover",borderRadius:16,marginTop:16}}),h("div",{style:{textAlign:"center",marginTop:32}},h("div",{className:"spinner",style:{width:48,height:48,margin:"0 auto"}}),h("div",{style:{fontWeight:700,color:"var(--navy)",fontSize:16,marginTop:16}},"L'IA analyse le produit...")));
+if(step==="result"&&result){function upd(k){return function(e){var v=e.target.value;setResult(function(r){var n=Object.assign({},r);n[k]=v;return n;});}}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:reset},"←"),h("div",null,h("div",{className:"header-title"},"Produit identifié"),h("div",{className:"header-sub"},"Vérifiez avant de valider"))),preview&&h("img",{src:preview,style:{width:"100%",height:180,objectFit:"cover",borderRadius:16,marginBottom:14,border:"1.5px solid var(--border)"}}),h("div",{className:"notice notice-info",style:{marginBottom:14}},"🤖 Analysé par IA — vérifiez et corrigez si nécessaire"),h("div",{className:"space-y"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Nom du produit *"),h("input",{className:"input",value:result.nom||"",onChange:upd("nom")})),h("div",{className:"grid-2"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Famille"),h("select",{className:"select",value:result.famille||"MATERIAUX",onChange:upd("famille")},h("option",null,"MATERIAUX"),h("option",null,"OUTILLAGE"))),h("div",{className:"input-group"},h("label",{className:"input-label"},"Corps d'état"),h("input",{className:"input",value:result.corps_etat||"",onChange:upd("corps_etat")}))),h("div",{className:"grid-2"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Quantité *"),h("input",{className:"input",type:"number",min:"0",value:qty,onChange:function(e){setQty(e.target.value);}})),h("div",{className:"input-group"},h("label",{className:"input-label"},"Unité"),h("select",{className:"select",value:result.unite||"pièce",onChange:upd("unite")},UNITES.map(function(u){return h("option",{key:u},u);}))))),h("div",{className:"grid-2",style:{marginTop:14}},h("button",{className:"btn btn-outline btn-lg",onClick:reset},"🔄 Reprendre"),h("button",{className:"btn btn-gold btn-lg",onClick:handleSave,disabled:saving||!result.nom||!qty},saving?"...":"✅ Valider")));}return null;}
 
-    function handleFile(e){
-        var file=e.target.files[0];if(!file)return;
-        setImgFile(file);
-        var reader=new FileReader();
-        reader.onload=function(ev){setPreview(ev.target.result);};
-        reader.readAsDataURL(file);
-        setStep("analyzing");
-        setTimeout(function(){
-            setResult({nom:"Produit reconnu",famille:"MATÉRIAUX",corps_etat:"Divers",unite:"pièce"});
-            setQty("1");
-            setStep("result");
-        },1500);
-    }
-
-    function handleManualEntry(){
-        setResult({nom:"",famille:"MATÉRIAUX",corps_etat:"",unite:"pièce"});
-        setQty("1");
-        setStep("result");
-    }
-
-    function handleSave(){
-        setSaving(true);
-        var photoP=imgFile?uploadPhoto(imgFile,(result.nom||"produit").replace(/[^a-z0-9]/gi,"_").slice(0,15)):Promise.resolve(null);
-        photoP.then(function(pu){
-            // Attention : respect strict de la minuscule pour Supabase
-            return supaPost("produits",{nom:result.nom,famille:result.famille,corps_etat:result.corps_etat,marque:result.marque||null,reference:result.reference||null,unite:result.unite||"pièce",quantite:parseFloat(qty)||1,photo_url:pu,user_id:user.code});
-        }).then(function(){
-            showToast("✅ Produit enregistré !","success");
-            if(onRefresh)onRefresh();
-            onBack();
-        }).catch(function(err){
-            showToast("Erreur: "+err.message,"error");
-            setSaving(false);
-        });
-    }
-
-    function reset(){setStep("capture");setResult({nom:"",famille:"MATÉRIAUX",corps_etat:"Divers",unite:"pièce"});setImgFile(null);setPreview(null);}
-
-    if(step==="capture")return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"📷 Nouveau Produit"))),h("div",{style:{background:"var(--surface2)",border:"2px dashed var(--border)",borderRadius:20,padding:"36px 24px",textAlign:"center",marginTop:16}},h("div",{style:{fontSize:64,marginBottom:14}},"📷"),h("input",{ref:fileRef,type:"file",accept:"image/*",capture:"environment",style:{display:"none"},onChange:handleFile}),h("button",{className:"btn btn-navy btn-xl btn-full",style:{marginBottom:10},onClick:function(){fileRef.current.click();}},"📷 Prendre une photo"),h("button",{className:"btn btn-outline btn-lg btn-full",onClick:handleManualEntry},"⌨️ Saisie Manuelle")));
-    if(step==="analyzing")return h("div",{className:"screen"},h("div",{style:{textAlign:"center",marginTop:100}},h("div",{className:"spinner",style:{width:48,height:48,margin:"0 auto"}}),h("div",{style:{marginTop:16,fontWeight:700}},"Analyse IA en cours...")));
-    if(step==="result"&&result){
-        function upd(k){return function(e){var v=e.target.value;setResult(function(r){var n=Object.assign({},r);n[k]=v;return n;});}}
-        return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:reset},"←"),h("div",null,h("div",{className:"header-title"},"Détails produit"))),preview&&h("img",{src:preview,style:{width:"100%",maxHeight:180,objectFit:"cover",borderRadius:16,marginBottom:14}}),h("div",{className:"space-y"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Nom du produit *"),h("input",{className:"input",value:result.nom||"",onChange:upd("nom"),placeholder:"Entrez le nom"})),h("div",{className:"grid-2"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Famille"),h("select",{className:"select",value:result.famille||"MATÉRIAUX",onChange:upd("famille")},h("option",null,"MATÉRIAUX"),h("option",null,"OUTILLAGE"))),h("div",{className:"input-group"},h("label",{className:"input-label"},"Quantité *"),h("input",{className:"input",type:"number",min:"0",value:qty,onChange:function(e){setQty(e.target.value);}}))),h("button",{className:"btn btn-gold btn-xl btn-full",style:{marginTop:20},onClick:handleSave,disabled:saving||!result.nom||!qty},saving?"...":"✅ Valider")));
-    }
-    return null;
-}
-
-function AchatScreen(props){var user=props.user,onBack=props.onBack,onRefresh=props.onRefresh;var s1=useState(""),nom=s1[0],setNom=s1[1];var s2=useState(""),qty=s2[0],setQty=s2[1];var s3=useState("pièce"),unite=s3[0],setUnite=s3[1];var s4=useState(""),fourn=s4[0],setFourn=s4[1];var s5=useState(false),loading=s5[0],setLoading=s5[1];async function create(){if(!nom||!qty)return;setLoading(true);try{await supaPost("achats",{nom:nom,quantite:parseFloat(qty),unite:unite,fournisseur:fourn||null,user_id:user.code});try{var ex=await supaGet("produits","nom=ilike."+encodeURIComponent(nom)+"&limit=1");if(ex&&ex.length>0){await supaPatch("produits",ex[0].id,{quantite:(ex[0].quantite||0)+parseFloat(qty)});}else{await supaPost("produits",{nom:nom,quantite:parseFloat(qty),unite:unite,famille:"MATÉRIAUX"});}}catch(e2){}showToast("✅ Achat créé","success");setNom("");setQty("");setFourn("");if(onRefresh)onRefresh();onBack();}catch(e){showToast("Erreur: "+e.message,"error");}setLoading(false);}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"🛒 Nouvel achat"))),h("div",{className:"space-y"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Produit *"),h("input",{className:"input",placeholder:"Nom du produit",value:nom,onChange:function(e){setNom(e.target.value);}})),h("div",{className:"grid-2"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Quantité *"),h("input",{className:"input",type:"number",min:"0",value:qty,onChange:function(e){setQty(e.target.value);}})),h("div",{className:"input-group"},h("label",{className:"input-label"},"Unité"),h("select",{className:"select",value:unite,onChange:function(e){setUnite(e.target.value);}},UNITES.map(function(u){return h("option",{key:u},u);})))),h("div",{className:"input-group"},h("label",{className:"input-label"},"Fournisseur"),h("input",{className:"input",placeholder:"Ex: Point P, Leroy Merlin…",value:fourn,onChange:function(e){setFourn(e.target.value);}})),h("button",{className:"btn btn-gold btn-xl btn-full",onClick:create,disabled:!nom||!qty||loading},loading?"…":"✅ Créer l'achat")));}
+function AchatScreen(props){var user=props.user,onBack=props.onBack,onRefresh=props.onRefresh;var s1=useState(""),nom=s1[0],setNom=s1[1];var s2=useState(""),qty=s2[0],setQty=s2[1];var s3=useState("pièce"),unite=s3[0],setUnite=s3[1];var s4=useState(""),fourn=s4[0],setFourn=s4[1];var s5=useState(false),loading=s5[0],setLoading=s5[1];async function create(){if(!nom||!qty)return;setLoading(true);try{await supaPost("achats",{nom:nom,quantite:parseFloat(qty),unite:unite,fournisseur:fourn||null,user_id:user.code});try{var ex=await supaGet("produits","nom=ilike."+encodeURIComponent(nom)+"&limit=1");if(ex&&ex.length>0){await supaPatch("produits",ex[0].id,{quantite:(ex[0].quantite||0)+parseFloat(qty)});}else{await supaPost("produits",{nom:nom,quantite:parseFloat(qty),unite:unite,famille:"MATERIAUX"});}}catch(e2){}showToast("✅ Achat créé","success");setNom("");setQty("");setFourn("");if(onRefresh)onRefresh();onBack();}catch(e){showToast("Erreur: "+e.message,"error");}setLoading(false);}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"🛒 Nouvel achat"))),h("div",{className:"space-y"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Produit *"),h("input",{className:"input",placeholder:"Nom du produit",value:nom,onChange:function(e){setNom(e.target.value);}})),h("div",{className:"grid-2"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Quantité *"),h("input",{className:"input",type:"number",min:"0",value:qty,onChange:function(e){setQty(e.target.value);}})),h("div",{className:"input-group"},h("label",{className:"input-label"},"Unité"),h("select",{className:"select",value:unite,onChange:function(e){setUnite(e.target.value);}},UNITES.map(function(u){return h("option",{key:u},u);})))),h("div",{className:"input-group"},h("label",{className:"input-label"},"Fournisseur"),h("input",{className:"input",placeholder:"Ex: Point P, Leroy Merlin…",value:fourn,onChange:function(e){setFourn(e.target.value);}})),h("button",{className:"btn btn-gold btn-xl btn-full",onClick:create,disabled:!nom||!qty||loading},loading?"…":"✅ Créer l'achat")));}
 
 function BesoinScreen(props){var user=props.user,onBack=props.onBack;var s1=useState(""),nom=s1[0],setNom=s1[1];var s2=useState(""),qty=s2[0],setQty=s2[1];var s3=useState("pièce"),unite=s3[0],setUnite=s3[1];var s4=useState(""),comment=s4[0],setComment=s4[1];var s5=useState(false),loading=s5[0],setLoading=s5[1];var s6=useState([]),besoins=s6[0],setBesoins=s6[1];useEffect(function(){supaGet("besoins","order=created_at.desc").then(function(b){setBesoins(Array.isArray(b)?b:[]);}).catch(function(){setBesoins([]);});},[]);async function create(){if(!nom||!qty)return;setLoading(true);try{await supaPost("besoins",{nom:nom,quantite:parseFloat(qty),unite:unite,commentaire:comment||null,user_id:user.code});showToast("✅ Besoin créé","success");setNom("");setQty("");setComment("");var b=await supaGet("besoins","order=created_at.desc");setBesoins(Array.isArray(b)?b:[]);}catch(e){showToast("Erreur: "+e.message,"error");}setLoading(false);}return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"📋 Besoins"),h("div",{className:"header-sub"},besoins.length+" besoin(s) en cours"))),h("div",{className:"card",style:{padding:14,marginBottom:16}},h("div",{className:"section-title",style:{marginBottom:8}},"CRÉER UN BESOIN"),h("div",{className:"space-y"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Produit *"),h("input",{className:"input",placeholder:"Ex: Vis placo 25mm, Silicone blanc…",value:nom,onChange:function(e){setNom(e.target.value);}})),h("div",{className:"grid-2"},h("div",{className:"input-group"},h("label",{className:"input-label"},"Quantité *"),h("input",{className:"input",type:"number",min:"0",value:qty,onChange:function(e){setQty(e.target.value);}})),h("div",{className:"input-group"},h("label",{className:"input-label"},"Unité"),h("select",{className:"select",value:unite,onChange:function(e){setUnite(e.target.value);}},UNITES.map(function(u){return h("option",{key:u},u);})))),h("div",{className:"input-group"},h("label",{className:"input-label"},"Commentaire"),h("input",{className:"input",placeholder:"Précisions, urgence…",value:comment,onChange:function(e){setComment(e.target.value);}})),h("button",{className:"btn btn-navy btn-xl btn-full",onClick:create,disabled:!nom||!qty||loading},loading?"…":"✅ Créer le besoin"))),besoins.length===0&&h("div",{className:"text-center text-muted"},"Aucun besoin en cours"),besoins.map(function(b,i){return h("div",{key:i,className:"card",style:{padding:14,marginBottom:8}},h("div",{style:{fontSize:16,fontWeight:800,color:"var(--navy)"}},b.nom),h("div",{style:{fontSize:12,color:"var(--text3)",marginTop:3}},b.quantite," ",b.unite,b.user_nom?" · par "+b.user_nom:""),b.commentaire&&h("div",{style:{background:"var(--surface2)",borderRadius:8,padding:"6px 10px",fontSize:12,marginTop:6,fontStyle:"italic"}},"💬 ",b.commentaire));}));}
 
 function ProfilScreen(props){var user=props.user,onBack=props.onBack,onLogout=props.onLogout;return h("div",{className:"screen"},h("div",{className:"header"},h("button",{className:"header-back",onClick:onBack},"←"),h("div",null,h("div",{className:"header-title"},"Profil"))),h("div",{style:{textAlign:"center",padding:"20px 0"}},h("div",{className:"profil-avatar"},"👷"),h("div",{className:"profil-name"},user.name),h("div",{className:"profil-role"},user.role==="admin"?"Administrateur":"Équipe terrain")),h("div",{className:"card",style:{padding:14,marginBottom:14}},h("div",{className:"meta-row"},h("span",{className:"meta-key"},"Code"),h("span",{className:"meta-val"},user.code)),h("div",{className:"meta-row"},h("span",{className:"meta-key"},"Rôle"),h("span",{className:"meta-val"},user.role))),h("button",{className:"btn btn-danger btn-lg btn-full",onClick:onLogout},"🚪 Se déconnecter"));}
 
-function App(){
-    var s1=useState(null),user=s1[0],setUser=s1[1];
-    var s2=useState("home"),screen=s2[0],setScreen=s2[1];
-    var s3=useState(null),data=s3[0],setData=s3[1];
-    var s4=useState([]),produits=s4[0],setProduits=s4[1];
-    var s5=useState([]),besoins=s5[0],setBesoins=s5[1];
-    var historyStack=useRef([]);
-
-    var loadData=useCallback(async function(){
-        try{
-            var p=await supaGet("produits","order=nom.asc");
-            setProduits(Array.isArray(p)?p:[]);
-        }catch(e){setProduits([]);}
-    },[]);
-
-    useEffect(function(){if(user)loadData();},[user,loadData]);
-    function nav(dest,d){historyStack.current.push({screen:screen,data:data});setScreen(dest);setData(d);}
-    function goBack(){if(historyStack.current.length>0){var prev=historyStack.current.pop();setScreen(prev.screen);setData(prev.data);}else{setScreen("home");setData(null);}}
-    function onNav(dest){historyStack.current=[];setData(null);setScreen(dest);}
-    function onLogout(){ localStorage.removeItem("lrb_auth_code"); setUser(null); setScreen("home"); historyStack.current=[]; }
-
-    if(!user)return h("div",{className:"app"},h(LoginScreen,{onLogin:function(u){setUser(u);}}));
-    
-    var noNav=["photo","produit"].includes(screen);
-    function renderScreen(){
-        switch(screen){
-            case"home":return h(HomeScreen,{user:user,nav:nav,produits:produits});
-            case"corpsdetat":return h(CorpsDetatScreen,{categorie:data.categorie,onBack:goBack,nav:nav});
-            case"produits_list":return h(ProduitsListScreen,{produits:produits,ce:data.ce,onBack:goBack,nav:nav});
-            case"produit":return h(ProduitDetail,{user:user,produit:data,onBack:goBack,onRefresh:loadData});
-            case"photo":return h(PhotoScreen,{user:user,onBack:goBack,onRefresh:loadData});
-            case"achat":return h(AchatScreen,{user:user,onBack:goBack,onRefresh:loadData});
-            case"besoin":return h(BesoinScreen,{user:user,onBack:goBack});
-            case"profil":return h(ProfilScreen,{user:user,onBack:goBack,onLogout:onLogout});
-            default:return h(HomeScreen,{user:user,nav:nav,produits:produits});
-        }
-    }
-
-    return h("div",{className:"app"},
-        /* --- MODIF 1 : HEADER FIXE AVEC LOGO --- */
-        h("header", { className: "lrb-fixed-header" },
-            h("img", { src: LRB_LOGO }),
-            h("div", { className: "title-box" },
-                h("h1", null, "LES RÉNOVATEURS BRETONS"),
-                h("p", null, "Gestion de Stock")
-            )
-        ),
-        renderScreen(),
-        !noNav&&h(NavBar,{screen:screen,onNav:onNav})
-    );
-}
+function App(){var s1=useState(null),user=s1[0],setUser=s1[1];var s2=useState("home"),screen=s2[0],setScreen=s2[1];var s3=useState(null),data=s3[0],setData=s3[1];var s4=useState([]),produits=s4[0],setProduits=s4[1];var s5=useState([]),besoins=s5[0],setBesoins=s5[1];var historyStack=useRef([]);var loadData=useCallback(async function(){try{var p=await supaGet("produits","order=nom.asc");setProduits(Array.isArray(p)?p:[]);}catch(e){setProduits([]);}try{var b=await supaGet("besoins","order=created_at.desc");setBesoins(Array.isArray(b)?b:[]);}catch(e){setBesoins([]);}},[]);
+useEffect(function(){if(user)loadData();},[user,loadData]);
+useEffect(function(){var savedCode=localStorage.getItem("lrb_remembered_code");if(savedCode && !user){var checkUser=function(){if(USERS_LOCAL[savedCode]){setUser(Object.assign({code:savedCode},USERS_LOCAL[savedCode]));}else{supaGet("utilisateurs","code=eq."+savedCode+"&limit=1").then(function(rows){if(rows&&rows.length>0){setUser({code:savedCode,name:rows[0].nom,role:rows[0].role||"chantier"});}}).catch(function(){});}};checkUser();}},[]);
+function nav(dest,d){historyStack.current.push({screen:screen,data:data});setScreen(dest);setData(d);}
+function goBack(){if(historyStack.current.length>0){var prev=historyStack.current.pop();setScreen(prev.screen);setData(prev.data);}else{setScreen("home");setData(null);}}
+function onNav(dest){historyStack.current=[];setData(null);setScreen(dest);}
+var AppHeader=h("div",{className:"app-header"},h("img",{src:LRB_LOGO,alt:"LRB",className:"app-header-logo"}),h("div",{className:"app-header-title"},h("h1",null,"LES RÉNOVATEURS BRETONS"),h("p",null,"STOCK")),user?h("div",{className:"app-header-spacer"}):null);
+if(!user)return h("div",{className:"app"},AppHeader,h(LoginScreen,{onLogin:function(u){setUser(u);}}));
+var noNav=["photo","produit"].includes(screen);function renderScreen(){switch(screen){case"home":return h(HomeScreen,{user:user,nav:nav,produits:produits});case"corpsdetat":return h(CorpsDetatScreen,{categorie:data.categorie,onBack:goBack,nav:nav});case"produits_list":return h(ProduitsListScreen,{produits:produits,ce:data.ce,onBack:goBack,nav:nav});case"produit":return h(ProduitDetail,{user:user,produit:data,onBack:goBack,onRefresh:loadData});case"photo":return h(PhotoScreen,{user:user,onBack:goBack,onRefresh:loadData});case"achat":return h(AchatScreen,{user:user,onBack:goBack,onRefresh:loadData});case"besoin":return h(BesoinScreen,{user:user,onBack:goBack});case"profil":return h(ProfilScreen,{user:user,onBack:goBack,onLogout:function(){setUser(null);setScreen("home");historyStack.current=[];localStorage.removeItem("lrb_remembered_code");}});default:return h(HomeScreen,{user:user,nav:nav,produits:produits});}}
+return h("div",{className:"app"},AppHeader,renderScreen(),!noNav&&h(NavBar,{screen:screen,onNav:onNav}));}
 ReactDOM.createRoot(document.getElementById("root")).render(h(App,null));
 </script>
 </body>
