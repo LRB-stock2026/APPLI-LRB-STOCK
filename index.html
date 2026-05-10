@@ -59,7 +59,7 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .ce-icon{font-size:32px}
 .ce-label{font-size:18px;font-weight:800;color:var(--navy)}
 .product-card{display:flex;gap:12px;padding:13px 14px;background:#fff;border-radius:16px;border:1.5px solid var(--border);margin-bottom:8px;cursor:pointer}
-.product-thumb{width:50px;height:50px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:22px}
+.product-thumb{width:50px;height:50px;min-width:50px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden}
 .product-name{font-size:15px;font-weight:700;color:var(--navy)}
 .product-meta{font-size:12px;color:var(--text3)}
 .badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;margin-top:4px}
@@ -80,9 +80,9 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .space-y > * + *{margin-top:12px}
 .input-group{display:flex;flex-direction:column;gap:4px}
 .section-title{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px}
-.product-hero{width:100%;height:200px;background:var(--surface2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:64px;margin-bottom:14px;overflow:hidden}
-.product-hero img{width:100%;height:100%;object-fit:cover;border-radius:16px}
-.product-thumb img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.product-hero{width:100%;height:160px;max-height:40vw;background:var(--surface2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:64px;margin-bottom:14px;overflow:hidden}
+.product-hero img{width:100%;height:100%;object-fit:cover;border-radius:16px;display:block}
+.product-thumb img{width:50px;height:50px;object-fit:cover;border-radius:12px;display:block}
 .profil-avatar{font-size:56px;margin-bottom:8px}
 .profil-name{font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px}
 .profil-role{font-size:12px;color:var(--text3);margin-bottom:20px}
@@ -339,21 +339,29 @@ function NavBar(props) {
 // HomeScreen
 function HomeScreen(props) {
     var produits = props.produits || [];
-    var total = 0;
-    for(var i=0; i<produits.length; i++) {
-        total = total + (produits[i].quantite || 0);
-    }
+    var totalArticles = produits.length;
+
+    var grossIds = CORPS_ETAT_GROS.map(function(c){ return c.label.toLowerCase(); });
+    var countGros = produits.filter(function(p){ return grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
+    var countSecond = produits.filter(function(p){ return !grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
+
     return h("div", {className:"screen"},
         h("div", {className:"home-buttons"},
             h("button", {className:"home-btn btn-gros", onClick:function(){props.nav("corpsdetat", {categorie:"gros"});}},
                 h("span", {className:"home-btn-icon"}, "🏗️"),
-                h("span", {className:"home-btn-label"}, "GROS OEUVRE")
+                h("div", {style:{display:"flex", flexDirection:"column", alignItems:"flex-start"}},
+                    h("span", {className:"home-btn-label"}, "GROS OEUVRE"),
+                    h("span", {style:{fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.7)", marginTop:2}}, countGros + " référence" + (countGros > 1 ? "s" : ""))
+                )
             ),
             h("button", {className:"home-btn btn-second", onClick:function(){props.nav("corpsdetat", {categorie:"second"});}},
                 h("span", {className:"home-btn-icon"}, "🪟"),
-                h("span", {className:"home-btn-label"}, "SECOND OEUVRE")
+                h("div", {style:{display:"flex", flexDirection:"column", alignItems:"flex-start"}},
+                    h("span", {className:"home-btn-label"}, "SECOND OEUVRE"),
+                    h("span", {style:{fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.7)", marginTop:2}}, countSecond + " référence" + (countSecond > 1 ? "s" : ""))
+                )
             ),
-            h("div", {className:"stock-counter"}, "📊 " + total + " article" + (total > 1 ? "s" : "") + " en stock")
+            h("div", {className:"stock-counter"}, "📊 " + totalArticles + " référence" + (totalArticles > 1 ? "s" : "") + " en stock")
         )
     );
 }
@@ -362,15 +370,33 @@ function HomeScreen(props) {
 function CorpsDetatScreen(props) {
     var ces = props.categorie === "gros" ? CORPS_ETAT_GROS : CORPS_ETAT_SECOND;
     var title = props.categorie === "gros" ? "GROS OEUVRE" : "SECOND OEUVRE";
+    var produits = props.produits || [];
+
     return h("div", {className:"screen"},
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null, h("div", {className:"header-title"}, title), h("div", {className:"header-sub"}, "Choisissez un corps d'etat"))
+            h("div", null, h("div", {className:"header-title"}, title), h("div", {className:"header-sub"}, "Choisissez un corps d'état"))
         ),
         ces.map(function(ce) {
+            var count = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()); }).length;
+            var countMat = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "MATERIAUX"; }).length;
+            var countOut = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "OUTILLAGE"; }).length;
             return h("button", {key:ce.id, className:"ce-btn", onClick:function(){props.nav("produits_list", {categorie:props.categorie, ce:ce});}},
                 h("span", {className:"ce-icon"}, ce.icon),
-                h("span", {className:"ce-label"}, ce.label)
+                h("div", {style:{flex:1}},
+                    h("span", {className:"ce-label"}, ce.label),
+                    count > 0 ? h("div", {style:{display:"flex", gap:6, marginTop:4}},
+                        h("span", {style:{fontSize:10, fontWeight:700, background:"rgba(61,84,112,0.1)", color:"var(--navy)", padding:"2px 7px", borderRadius:8}}, "🧱 " + countMat),
+                        h("span", {style:{fontSize:10, fontWeight:700, background:"rgba(201,151,58,0.12)", color:"var(--gold-dim)", padding:"2px 7px", borderRadius:8}}, "🔧 " + countOut)
+                    ) : h("div", {style:{fontSize:10, color:"var(--text3)", marginTop:2}}, "Aucun article")
+                ),
+                h("span", {style:{
+                    marginLeft:"auto", minWidth:28, height:28, borderRadius:14,
+                    background: count > 0 ? "var(--navy)" : "var(--border)",
+                    color: count > 0 ? "#fff" : "var(--text3)",
+                    fontSize:13, fontWeight:800,
+                    display:"flex", alignItems:"center", justifyContent:"center"
+                }}, count)
             );
         })
     );
@@ -379,35 +405,54 @@ function CorpsDetatScreen(props) {
 // ProduitsListScreen
 function ProduitsListScreen(props) {
     var searchState = useState("");
-    var search = searchState[0];
-    var setSearch = searchState[1];
+    var search = searchState[0]; var setSearch = searchState[1];
+    var familleState = useState("all");
+    var famille = familleState[0]; var setFamille = familleState[1];
     var ce = props.ce;
+
     var list = props.produits.filter(function(p) {
-        return (p.corps_etat || "").toLowerCase().includes(ce.label.toLowerCase());
+        if(!(p.corps_etat || "").toLowerCase().includes(ce.label.toLowerCase())) return false;
+        if(famille !== "all" && (p.famille || "") !== famille) return false;
+        if(search && !(p.nom || "").toLowerCase().includes(search.toLowerCase())) return false;
+        return true;
     });
-    if(search) {
-        list = list.filter(function(p) {
-            return (p.nom || "").toLowerCase().includes(search.toLowerCase());
-        });
-    }
+
+    var countMat = props.produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "MATERIAUX"; }).length;
+    var countOut = props.produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "OUTILLAGE"; }).length;
+
     return h("div", {className:"screen"},
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null, h("div", {className:"header-title"}, ce.label), h("div", {className:"header-sub"}, list.length + " produit(s)")),
+            h("div", null, h("div", {className:"header-title"}, ce.icon + " " + ce.label), h("div", {className:"header-sub"}, list.length + " produit(s)")),
             h("button", {style:{marginLeft:"auto", background:"transparent", border:"none", fontSize:22, cursor:"pointer"}, onClick:function(){props.nav("photo", null);}}, "➕")
+        ),
+        h("div", {className:"chips"},
+            h("button", {className:"chip" + (famille==="all"?" active":""), onClick:function(){setFamille("all");}}, "Tout (" + (countMat+countOut) + ")"),
+            h("button", {className:"chip" + (famille==="MATERIAUX"?" active":""), onClick:function(){setFamille("MATERIAUX");}}, "🧱 Matériaux (" + countMat + ")"),
+            h("button", {className:"chip" + (famille==="OUTILLAGE"?" active":""), onClick:function(){setFamille("OUTILLAGE");}}, "🔧 Outillage (" + countOut + ")")
         ),
         h("div", {className:"search-box"},
             h("span", {style:{color:"var(--text3)"}}, "🔍"),
             h("input", {placeholder:"Rechercher un produit...", value:search, onChange:function(e){setSearch(e.target.value);}})
         ),
-        list.length === 0 ? h("div", {className:"text-center text-muted", style:{marginTop:24}}, "Aucun produit") : null,
+        list.length === 0 ? h("div", {className:"empty-state"},
+            h("div", {className:"empty-state-icon"}, "📦"),
+            h("div", {className:"empty-state-text"}, "Aucun produit dans cette catégorie")
+        ) : null,
         list.map(function(p) {
             var statut = (p.quantite||0) <= 0 ? "out" : ((p.quantite||0) <= (p.quantite_min||1) ? "low" : "ok");
             return h("div", {key:p.id, className:"product-card product-" + statut, onClick:function(){props.nav("produit", p);}},
                 h("div", {className:"product-thumb"}, p.photo_url ? h("img", {src:p.photo_url}) : "📦"),
                 h("div", {style:{flex:1}},
                     h("div", {className:"product-name"}, p.nom),
-                    h("div", {className:"product-meta"}, (p.corps_etat || p.famille || "") + (p.emplacement ? " · " + p.emplacement : "")),
+                    h("div", {className:"product-meta"},
+                        h("span", {style:{
+                            background: p.famille === "OUTILLAGE" ? "rgba(201,151,58,0.15)" : "rgba(61,84,112,0.1)",
+                            color: p.famille === "OUTILLAGE" ? "var(--gold-dim)" : "var(--navy)",
+                            padding:"1px 6px", borderRadius:6, fontSize:10, fontWeight:700, marginRight:6
+                        }}, p.famille === "OUTILLAGE" ? "🔧" : "🧱"),
+                        (p.emplacement ? p.emplacement : "")
+                    ),
                     h("span", {className:"badge badge-" + statut}, (statut==="ok"?"✅":statut==="low"?"⚠️":"❌") + " " + (p.quantite||0) + " " + (p.unite||"piece"))
                 )
             );
@@ -986,7 +1031,7 @@ function App() {
             currentScreen = h(StockScreen, {produits:produits, nav:nav, user:user});
             break;
         case "corpsdetat":
-            currentScreen = h(CorpsDetatScreen, {categorie:data.categorie, onBack:goBack, nav:nav});
+            currentScreen = h(CorpsDetatScreen, {categorie:data.categorie, onBack:goBack, nav:nav, produits:produits});
             break;
         case "produits_list":
             currentScreen = h(ProduitsListScreen, {produits:produits, ce:data.ce, onBack:goBack, nav:nav});
