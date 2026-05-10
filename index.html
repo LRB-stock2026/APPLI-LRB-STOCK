@@ -105,6 +105,15 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .product-ok{border-left:3px solid var(--green)}
 .product-low{border-left:3px solid var(--orange)}
 .product-out{border-left:3px solid var(--red)}
+.mvt-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.mvt-row:last-child{border-bottom:none}
+.mvt-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.mvt-icon-entree{background:var(--green-bg)}
+.mvt-icon-sortie{background:var(--orange-bg)}
+.mvt-icon-creation{background:rgba(61,84,112,0.1)}
+.mvt-nom{font-size:13px;font-weight:700;color:var(--navy)}
+.mvt-meta{font-size:11px;color:var(--text3)}
+.mvt-qty{font-size:13px;font-weight:900;margin-left:auto;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -197,6 +206,25 @@ async function supaDelete(table, id) {
         }
     });
     if(!res.ok) { var t = await res.text(); throw new Error(t); }
+}
+
+async function logMouvement(data) {
+    // Ne bloque jamais l'action principale si ça échoue
+    try {
+        await supaPost("mouvements", data);
+    } catch(e) { console.warn("Log mouvement échoué:", e.message); }
+}
+
+function formatDate(iso) {
+    if(!iso) return "";
+    var d = new Date(iso);
+    var now = new Date();
+    var diff = Math.floor((now - d) / 1000);
+    if(diff < 60) return "À l'instant";
+    if(diff < 3600) return Math.floor(diff/60) + " min";
+    if(diff < 86400) return Math.floor(diff/3600) + " h";
+    if(diff < 604800) return Math.floor(diff/86400) + " j";
+    return d.toLocaleDateString("fr-FR", {day:"2-digit", month:"2-digit"});
 }
 
 async function analyzeImageWithClaude(base64Data, mediaType) {
@@ -491,38 +519,74 @@ function ProduitDetail(props) {
     var add = addState[0]; var setAdd = addState[1];
     var deletingState = useState(false);
     var deleting = deletingState[0]; var setDeleting = deletingState[1];
+    var mvtsState = useState([]);
+    var mvts = mvtsState[0]; var setMvts = mvtsState[1];
+    var mvtLoadingState = useState(true);
+    var mvtLoading = mvtLoadingState[0]; var setMvtLoading = mvtLoadingState[1];
     var statut = getStatut(p);
-    
+
+    useEffect(function() {
+        if(!p.id) return;
+        setMvtLoading(true);
+        supaGet("mouvements", "produit_id=eq." + p.id + "&order=created_at.desc&limit=10")
+            .then(function(rows){ setMvts(Array.isArray(rows) ? rows : []); })
+            .catch(function(){ setMvts([]); })
+            .finally(function(){ setMvtLoading(false); });
+    }, [p.id]);
+
     async function sortir() {
         var q = parseFloat(qty);
         if(!q || q<=0) return;
+        var avant = p.quantite||0;
+        var apres = Math.max(0, avant - q);
         try {
-            await supaPatch("produits", p.id, {quantite: Math.max(0, (p.quantite||0) - q)});
+            await supaPatch("produits", p.id, {quantite: apres});
+            await logMouvement({produit_id:p.id, produit_nom:p.nom, type:"sortie", quantite:q, quantite_avant:avant, quantite_apres:apres, user_id:props.user.code, user_nom:props.user.name});
             showToast("➖ " + q + " sorti(s)", "success");
             setQty(""); props.onRefresh(); props.onBack();
         } catch(e) { showToast("Erreur: " + e.message, "error"); }
     }
-    
+
     async function ajouter() {
         var q = parseFloat(add);
         if(!q || q<=0) return;
+        var avant = p.quantite||0;
+        var apres = avant + q;
         try {
-            await supaPatch("produits", p.id, {quantite: (p.quantite||0) + q});
-            showToast("➕ " + q + " ajoute(s)", "success");
+            await supaPatch("produits", p.id, {quantite: apres});
+            await logMouvement({produit_id:p.id, produit_nom:p.nom, type:"entree", quantite:q, quantite_avant:avant, quantite_apres:apres, user_id:props.user.code, user_nom:props.user.name});
+            showToast("➕ " + q + " ajouté(s)", "success");
             setAdd(""); props.onRefresh(); props.onBack();
         } catch(e) { showToast("Erreur: " + e.message, "error"); }
     }
 
     async function supprimer() {
-        if(!window.confirm("Supprimer definitivement ce produit ?")) return;
+        if(!window.confirm("Supprimer définitivement ce produit ?")) return;
         setDeleting(true);
         try {
             await supaDelete("produits", p.id);
-            showToast("🗑️ Produit supprime", "success");
+            showToast("🗑️ Produit supprimé", "success");
             props.onRefresh(); props.onBack();
         } catch(e) { showToast("Erreur: " + e.message, "error"); setDeleting(false); }
     }
-    
+
+    function MvtRow(m, i) {
+        var isEntree = m.type === "entree" || m.type === "creation";
+        var iconClass = m.type === "creation" ? "mvt-icon-creation" : (isEntree ? "mvt-icon-entree" : "mvt-icon-sortie");
+        var icon = m.type === "creation" ? "🆕" : (isEntree ? "➕" : "➖");
+        var qtyColor = isEntree ? "var(--green)" : "var(--orange)";
+        return h("div", {key:m.id||i, className:"mvt-row"},
+            h("div", {className:"mvt-icon " + iconClass}, icon),
+            h("div", {style:{flex:1}},
+                h("div", {className:"mvt-nom"}, m.user_nom || "Inconnu"),
+                h("div", {className:"mvt-meta"}, formatDate(m.created_at) + (m.quantite_apres !== undefined ? " · Stock : " + m.quantite_apres + " " + (p.unite||"pièce") : ""))
+            ),
+            h("div", {className:"mvt-qty", style:{color: qtyColor}},
+                (isEntree ? "+" : "-") + m.quantite + " " + (p.unite||"pièce")
+            )
+        );
+    }
+
     return h("div", {className:"screen"},
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
@@ -575,6 +639,17 @@ function ProduitDetail(props) {
             h("div", {style:{fontSize:12, color:"var(--gold-dim)", fontWeight:700}}, "🔧 Outillage — pas de seuil d'alerte"),
             h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:4}}, "L'alerte se déclenche uniquement en cas de rupture (0 unité).")
         ),
+
+        // Historique des mouvements
+        h("div", {className:"card", style:{marginTop:12}},
+            h("div", {className:"section-title"}, "📋 HISTORIQUE"),
+            mvtLoading
+                ? h("div", {style:{textAlign:"center", padding:"16px 0"}}, h("div", {className:"spinner", style:{width:24, height:24, borderWidth:2}}))
+                : mvts.length === 0
+                    ? h("div", {style:{textAlign:"center", color:"var(--text3)", fontSize:13, padding:"12px 0"}}, "Aucun mouvement enregistré")
+                    : mvts.map(MvtRow)
+        ),
+
         props.isAdmin ? h("button", {
             className:"btn btn-danger btn-full",
             style:{marginTop:12},
@@ -660,6 +735,16 @@ function PhotoScreen(props) {
                 quantite: parseFloat(qty) || 1,
                 photo_url: pu,
                 user_id: props.user.code
+            });
+        }).then(function(newProduit) {
+            return logMouvement({
+                produit_nom: result.nom,
+                type: "creation",
+                quantite: parseFloat(qty) || 1,
+                quantite_avant: 0,
+                quantite_apres: parseFloat(qty) || 1,
+                user_id: props.user.code,
+                user_nom: props.user.name
             });
         }).then(function() {
             showToast("Produit enregistre !", "success");
@@ -919,16 +1004,28 @@ function BesoinScreen(props) {
     );
 }
 
-// AlertesScreen — ruptures et stocks bas en priorité
+// AlertesScreen — ruptures, stocks bas et activité récente
 function AlertesScreen(props) {
     var produits = props.produits || [];
+    var activiteState = useState([]);
+    var activite = activiteState[0]; var setActivite = activiteState[1];
+    var actLoadingState = useState(true);
+    var actLoading = actLoadingState[0]; var setActLoading = actLoadingState[1];
+
+    useEffect(function() {
+        setActLoading(true);
+        supaGet("mouvements", "order=created_at.desc&limit=20")
+            .then(function(rows){ setActivite(Array.isArray(rows) ? rows : []); })
+            .catch(function(){ setActivite([]); })
+            .finally(function(){ setActLoading(false); });
+    }, []);
 
     var ruptures = produits.filter(function(p){ return getStatut(p) === "out"; });
     var basFond  = produits.filter(function(p){ return getStatut(p) === "low"; });
     var ok       = produits.filter(function(p){ return getStatut(p) === "ok"; });
 
     function ProductRow(p) {
-        var statut = (p.quantite||0) <= 0 ? "out" : "low";
+        var statut = getStatut(p);
         return h("div", {key:p.id, className:"product-card product-"+statut, onClick:function(){props.nav("produit", p);}},
             h("div", {className:"product-thumb"},
                 p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📦")
@@ -944,12 +1041,28 @@ function AlertesScreen(props) {
         );
     }
 
+    function ActRow(m, i) {
+        var isEntree = m.type === "entree" || m.type === "creation";
+        var iconClass = m.type === "creation" ? "mvt-icon-creation" : (isEntree ? "mvt-icon-entree" : "mvt-icon-sortie");
+        var icon = m.type === "creation" ? "🆕" : (isEntree ? "➕" : "➖");
+        var qtyColor = isEntree ? "var(--green)" : "var(--orange)";
+        return h("div", {key:m.id||i, className:"mvt-row"},
+            h("div", {className:"mvt-icon " + iconClass}, icon),
+            h("div", {style:{flex:1}},
+                h("div", {className:"mvt-nom"}, m.produit_nom || "—"),
+                h("div", {className:"mvt-meta"}, (m.user_nom||"") + " · " + formatDate(m.created_at))
+            ),
+            h("div", {className:"mvt-qty", style:{color: qtyColor}},
+                (isEntree ? "+" : "-") + (m.quantite||0)
+            )
+        );
+    }
+
     var totalProblemes = ruptures.length + basFond.length;
 
     return h("div", {className:"screen"},
         h("div", {style:{paddingTop:12}}),
 
-        // Résumé en 3 cartes
         h("div", {className:"grid-2", style:{gridTemplateColumns:"1fr 1fr 1fr", marginBottom:16}},
             h("div", {className:"card", style:{textAlign:"center", padding:"12px 8px", borderLeft:"3px solid var(--red)"}},
                 h("div", {style:{fontSize:24, fontWeight:900, color:"var(--red)"}}, ruptures.length),
@@ -966,31 +1079,35 @@ function AlertesScreen(props) {
         ),
 
         totalProblemes === 0
-            ? h("div", {className:"empty-state"},
+            ? h("div", {className:"empty-state", style:{paddingTop:16, paddingBottom:16}},
                 h("div", {className:"empty-state-icon"}, "✅"),
                 h("div", {className:"empty-state-text"}, "Tout le stock est au vert !")
               )
             : null,
 
-        // Ruptures
         ruptures.length > 0
             ? h("div", null,
-                h("div", {style:{fontSize:11, fontWeight:800, color:"var(--red)", marginBottom:8, letterSpacing:"0.06em"}},
-                    "❌ RUPTURES (" + ruptures.length + ")"
-                ),
+                h("div", {style:{fontSize:11, fontWeight:800, color:"var(--red)", marginBottom:8, letterSpacing:"0.06em"}}, "❌ RUPTURES (" + ruptures.length + ")"),
                 ruptures.map(ProductRow)
               )
             : null,
 
-        // Stock bas
         basFond.length > 0
             ? h("div", {style:{marginTop: ruptures.length > 0 ? 16 : 0}},
-                h("div", {style:{fontSize:11, fontWeight:800, color:"var(--orange)", marginBottom:8, letterSpacing:"0.06em"}},
-                    "⚠️ STOCK BAS (" + basFond.length + ")"
-                ),
+                h("div", {style:{fontSize:11, fontWeight:800, color:"var(--orange)", marginBottom:8, letterSpacing:"0.06em"}}, "⚠️ STOCK BAS (" + basFond.length + ")"),
                 basFond.map(ProductRow)
               )
-            : null
+            : null,
+
+        // Fil d'activité global
+        h("div", {className:"card", style:{marginTop:20}},
+            h("div", {className:"section-title"}, "📋 ACTIVITÉ RÉCENTE"),
+            actLoading
+                ? h("div", {style:{textAlign:"center", padding:"16px 0"}}, h("div", {className:"spinner", style:{width:24, height:24, borderWidth:2}}))
+                : activite.length === 0
+                    ? h("div", {style:{textAlign:"center", color:"var(--text3)", fontSize:13, padding:"12px 0"}}, "Aucun mouvement enregistré")
+                    : activite.map(ActRow)
+        )
     );
 }
 
@@ -1107,7 +1224,7 @@ function App() {
             currentScreen = h(ProduitsListScreen, {produits:produits, ce:data.ce, onBack:goBack, nav:nav});
             break;
         case "produit":
-            currentScreen = h(ProduitDetail, {produit:data, onBack:goBack, onRefresh:loadData, isAdmin:user.role==="admin"});
+            currentScreen = h(ProduitDetail, {produit:data, onBack:goBack, onRefresh:loadData, isAdmin:user.role==="admin", user:user});
             break;
         case "photo":
             currentScreen = h(PhotoScreen, {user:user, onBack:goBack, onRefresh:loadData});
