@@ -114,6 +114,32 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .mvt-nom{font-size:13px;font-weight:700;color:var(--navy)}
 .mvt-meta{font-size:11px;color:var(--text3)}
 .mvt-qty{font-size:13px;font-weight:900;margin-left:auto;white-space:nowrap}
+.tuto-card{background:#fff;border-radius:20px;border:1.5px solid var(--border);margin-bottom:12px;overflow:hidden;cursor:pointer}
+.tuto-card-header{display:flex;align-items:center;gap:14px;padding:16px}
+.tuto-card-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.tuto-card-title{font-size:15px;font-weight:800;color:var(--navy)}
+.tuto-card-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.tuto-card-arrow{margin-left:auto;font-size:18px;color:var(--text3)}
+.tuto-step{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.tuto-step:last-child{border-bottom:none}
+.tuto-step-num{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.tuto-step-title{font-size:13px;font-weight:800;color:var(--navy);margin-bottom:3px}
+.tuto-step-desc{font-size:12px;color:var(--text3);line-height:1.5}
+.tuto-badge-done{background:var(--green-bg);color:var(--green);font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px}
+.tab-bar{display:flex;background:var(--surface2);border-radius:14px;padding:3px;margin-bottom:14px;gap:3px}
+.tab-btn{flex:1;padding:8px;border:none;border-radius:11px;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:var(--text3)}
+.tab-btn.active{background:#fff;color:var(--navy);box-shadow:0 2px 6px rgba(61,84,112,0.15)}
+.ressource-card{background:#fff;border-radius:16px;border:1.5px solid var(--border);margin-bottom:10px;overflow:hidden}
+.ressource-card-header{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer}
+.ressource-card-type{font-size:9px;font-weight:800;letter-spacing:0.08em;padding:2px 7px;border-radius:6px;margin-bottom:4px;display:inline-block}
+.ressource-type-dtu{background:#E8F0FE;color:#1a5cb5}
+.ressource-type-regle{background:var(--green-bg);color:var(--green)}
+.ressource-type-video{background:#FEE8E8;color:#c0392b}
+.ressource-type-conseil{background:var(--orange-bg);color:var(--orange)}
+.ressource-body{padding:0 14px 14px;border-top:1px solid var(--border)}
+.ressource-body ul{margin:8px 0 0 16px}
+.ressource-body li{font-size:12px;color:var(--text2);line-height:1.8}
+.ressource-ref{font-size:11px;font-weight:700;color:var(--navy);background:rgba(61,84,112,0.08);padding:4px 10px;border-radius:8px;display:inline-block;margin-top:8px}
 </style>
 </head>
 <body>
@@ -132,6 +158,61 @@ var UNITES = ["piece","boite","sac","rouleau","cartouche","litre","m2","ml","kg"
 
 // Cle Anthropic pour l'IA photo (a remplir)
 var ANTHROPIC_KEY = "";
+
+// Base de ressources professionnelles par corps d'état
+var RESSOURCES_PRO = {
+    "Platrerie": [
+        {type:"dtu", titre:"DTU 25.41", sous:"Ouvrages en plaques de plâtre", contenu:["Plaques BA13 (usage courant), BA18 (humide), BA25 (acoustique)", "Ossature métallique : montants 48, 70, 100 mm selon hauteur", "Hauteur maxi sans renforts : 2.60 m pour ossature 48, 4.00 m pour 100", "Vis TF 25 (1 couche), TF 35 (2 couches) — pas de clou", "Entraxe montants : 600 mm max, 400 mm en zone sismique"]},
+        {type:"regle", titre:"Règles de pose", sous:"Points clés chantier", contenu:["Toujours commencer par les montants de rive fixés au sol et au plafond", "Laisser 1 cm de jeu en bas (jamais au contact du sol)", "Décaler les joints de 40 cm minimum entre couches", "Bandes armées obligatoires sur tous les joints et angles", "Séchage enduit de finition : 24h minimum avant peinture"]},
+        {type:"conseil", titre:"Zones humides", sous:"BA18 & étanchéité", contenu:["BA18 obligatoire dans salles de bain et locaux humides", "Système d'étanchéité liquide (SPEC) sous carrelage douche", "Hauteur de protection : 1.80 m mini en zone mouillée", "Silicone souple sur tous les angles en zone humide", "Ne jamais visser à moins de 15 mm des bords"]}
+    ],
+    "Electricite": [
+        {type:"dtu", titre:"NF C 15-100", sous:"Installation électrique BT", contenu:["Section 1.5 mm² : éclairage (max 8 points)", "Section 2.5 mm² : prises 16A (max 8 prises)", "Section 4 mm² : four, lave-linge (circuit dédié)", "Section 6 mm² : cuisinière, chauffe-eau (circuit dédié)", "Section 10 mm² : borne recharge véhicule électrique"]},
+        {type:"regle", titre:"Hauteurs réglementaires", sous:"Implantation des boitiers", contenu:["Interrupteurs : 0.90 à 1.30 m du sol (norme PMR : 0.90-1.05 m)", "Prises standard : 0.05 à 0.30 m du sol", "Prises plan de travail cuisine : 1.10-1.20 m du sol", "Disjoncteur de branchement : accessible, max 1.80 m", "Distance prise / baignoire ou douche : 60 cm minimum"]},
+        {type:"conseil", titre:"Points de vigilance", sous:"Erreurs fréquentes", contenu:["Toujours couper le disjoncteur général avant toute intervention", "Tester l'absence de tension avec un vérificateur", "Ne jamais dépasser la capacité des circuits (calcul ΣP)", "DDR 30 mA obligatoire : salles de bain, cuisine, extérieur", "Marquer les câbles à chaque extrémité avant d'enfiler"]}
+    ],
+    "Plomberie": [
+        {type:"dtu", titre:"DTU 60.1 / 60.11", sous:"Plomberie sanitaire", contenu:["Pente évacuation : 1 cm/m minimum (2 à 3 cm/m recommandé)", "Diamètre WC : 100 mm minimum", "Diamètre lavabo/douche : 40-50 mm", "Diamètre évier : 50-63 mm", "Colonne principale EU/EV : 100 mm minimum"]},
+        {type:"regle", titre:"Eau chaude sanitaire", sous:"Températures & sécurité", contenu:["Ballon ECS réglé à 60°C minimum (légionelle)", "Mitigeur thermostatique obligatoire douche (max 50°C)", "Soupape de sécurité chauffe-eau : testée 1 fois/an", "Purge annuelle du ballon pour éliminer le calcaire", "Isolation des canalisations ECS > 5 m de linéaire"]},
+        {type:"conseil", titre:"Sertissage & raccords", sous:"Bonnes pratiques", contenu:["Toujours ébavurer le tube avant sertissage", "Vérifier le marquage de sertissage (empreinte visible)", "Test de pression : 1.5× la pression de service, 30 min", "Manchons diélectriques entre cuivre et acier/zinc", "Téflon uniquement sur filetage mâle, 3 tours mini"]}
+    ],
+    "Carrelage": [
+        {type:"dtu", titre:"DTU 52.1 / 52.2", sous:"Revêtements de sols", contenu:["Mortier-colle C1 : usage courant intérieur sec", "Mortier-colle C2 S1 : sols chauffants, extérieur, piscine", "Déformation maxi du support : L/500 (3 mm sur 1.50 m)", "Calepinage : toujours partir du centre de la pièce", "Joints de dilatation : tous les 25 m² maxi en intérieur"]},
+        {type:"regle", titre:"Joints & formats", sous:"Règles dimensionnelles", contenu:["Carreaux < 10 cm : joint 2 mm mini", "Carreaux 10-30 cm : joint 3-4 mm", "Carreaux > 30 cm : joint 5 mm mini", "Largeur joint périmétrique = largeur joint courant", "Rejointement : 24-48h après pose, support sec"]},
+        {type:"conseil", titre:"Pose sur plancher chauffant", sous:"Points critiques", contenu:["Colle déformable S1 ou S2 obligatoire", "Mise en chauffe progressive avant pose : 7 jours", "Joints > 5 mm pour dissiper la dilatation thermique", "Format maxi recommandé : 60×60 cm", "Arrêt du chauffage 48h avant pose"]}
+    ],
+    "Isolation": [
+        {type:"dtu", titre:"DTU 45.1 / RE2020", sous:"Isolation thermique", contenu:["Résistance R mini murs : 3.7 m².K/W (RE2020)", "Résistance R mini toiture : 6.0 m².K/W (RE2020)", "Résistance R mini plancher bas : 3.0 m².K/W (RE2020)", "Laine de verre 100 mm ≈ R 2.60 / Laine 200 mm ≈ R 5.00", "PSE 100 mm ≈ R 2.70 / PIR 60 mm ≈ R 2.80"]},
+        {type:"regle", titre:"Pare-vapeur & étanchéité à l'air", sous:"Points clés", contenu:["Pare-vapeur côté chaud : toujours côté intérieur chauffé", "Recouvrements : 20 cm minimum, scotchés", "Manchonner tous les passages de câbles et gaines", "Taux de perméabilité n50 < 0.6 vol/h (bâtiment passif)", "Caisson VMC : isoler et étanchéifier tous les raccords"]},
+        {type:"conseil", titre:"Ponts thermiques", sous:"Erreurs fréquentes", contenu:["Traiter les tableaux de fenêtres (retour d'isolant 5 cm mini)", "Isolation rupteur de pont thermique sur dalles filantes", "Pas de couteau dans les panneaux PIR (écraser les bords)", "Décaler les joints entre couches de 50 cm minimum", "Vérifier la continuité de l'isolant à chaque rangée"]}
+    ],
+    "Peinture": [
+        {type:"dtu", titre:"DTU 59.1", sous:"Travaux de peinture", contenu:["Hygrométrie du support maxi : 3-5% selon produit", "Température application : 8°C mini, 35°C maxi", "Temps de recouvrement entre couches : voir fiche technique", "Enduit de rebouchage : séchage 24h avant ponçage", "Catégorie de finition P1 à P4 selon exigence client"]},
+        {type:"regle", titre:"Préparation des supports", sous:"Étapes incontournables", contenu:["Dépoussiérer et dégraisser avant toute application", "Impression obligatoire sur supports poreux et neufs", "Poncer entre chaque couche (grain 180-220)", "Reboucher les fissures < 1 mm : enduit souple", "Fissures > 1 mm : traiter cause avant rebouchage"]},
+        {type:"conseil", titre:"Finitions et rendus", sous:"Conseils de pro", contenu:["Mat : cache les imperfections, déconseillé dans les zones de passage", "Velours/satiné : bon compromis, lavable", "Brillant : amplifie les défauts, bien préparer le support", "Appliquer en croix puis lisser dans le sens de la lumière", "Jamais 2 couches le même jour en intérieur (risque de craquage)"]}
+    ],
+    "Menuiserie": [
+        {type:"dtu", titre:"DTU 36.1 / 36.5", sous:"Menuiseries extérieures", contenu:["Calfeutrement : fond de joint + mastic souple", "Uw maxi (RE2020) : 1.3 W/m².K pour fenêtres", "Acier de scellement : 2 pattes mini par vantail", "Jeu de fonctionnement dormant/ouvrant : 5-7 mm", "Vitrage argon : Ug ≈ 1.1 W/m².K / krypton : Ug ≈ 0.7"]},
+        {type:"regle", titre:"Pose et étanchéité", sous:"Points clés", contenu:["Réservation : 2 cm de jeu de tous côtés", "Calage : coins à 15 cm des angles, tous les 60 cm", "Bavette d'appui obligatoire en partie basse extérieure", "Membrane précomprimée extérieure : poser avant enduit", "Révision des joints : tous les 10 ans minimum"]},
+        {type:"conseil", titre:"Portes & ferrage", sous:"Bonnes pratiques", contenu:["Paumelles : 3 mini sur porte > 40 kg ou > 2.10 m", "Serrure multipoints : 5 points de fermeture mini", "Seuil PMR : passage libre 0.77 m, seuil < 2 cm", "Huisserie : traiter coupes en bas (bois) avant pose", "Sens d'ouverture : s'assurer de la réglementation incendie"]}
+    ],
+    "Maconnerie": [
+        {type:"dtu", titre:"DTU 20.1 / 23.1", sous:"Maçonnerie & béton", contenu:["Résistance béton C25/30 pour éléments structuraux", "Enrobage armatures : 3 cm en conditions normales, 5 cm extérieur", "Mortier de maçonnerie M5 (usage courant), M10 (charge élevée)", "Joints de maçonnerie : 10 mm d'épaisseur", "Chaînages horizontaux : tous les niveaux obligatoires"]},
+        {type:"regle", titre:"Règles de mise en œuvre", sous:"Points essentiels", contenu:["Humidifier les parpaings avant pose (absorption eau du mortier)", "Décaler les joints verticaux d'un demi-bloc minimum", "Encadrement baies : linteau + tableau + appui", "Chaînage vertical : aux angles et encadrements de baies", "Jointoiement : 48h après pose de la maçonnerie"]},
+        {type:"conseil", titre:"Enduits & finitions", sous:"Bon à savoir", contenu:["Gobetis : couche d'accrochage, séchage 48h avant corps d'enduit", "Corps d'enduit : 10-15 mm en 1 ou 2 passes", "Finition : talochée, frottassée, grattée selon rendu", "Délai entre couches : support doit être ferme mais pas sec", "Protection soleil et vent pendant séchage (7 jours)"]}
+    ],
+    "Charpente": [
+        {type:"dtu", titre:"DTU 31.1 / 31.2", sous:"Charpente bois", contenu:["Classe de résistance C24 mini pour charpente courante", "Contreventement : triangulation ou pannes de contreventement", "Assemblages : boulons M12 mini, connecteurs métalliques", "Entraxe pannes selon portée et charge neige/vent", "Humidité bois maxi à la pose : 18%"]},
+        {type:"regle", titre:"Protection & traitement", sous:"Durabilité", contenu:["Classe d'emploi 2 : bois couvert, sans contact sol (charpente type)", "Classe 3 : bois exposé aux intempéries (bois extérieur)", "Traitement autoclave : vérifier le label CTB-P+ ou CTB-B+", "Ventilation de la toiture : lame d'air 3 cm mini sous couverture", "Pare-pluie HPV (hautement perméable à la vapeur) obligatoire"]},
+        {type:"conseil", titre:"Vérifications avant couverture", sous:"Contrôles essentiels", contenu:["Contrôler l'aplomb et le niveau de tous les arêtiers", "Vérifier la planéité des versants (< 5 mm sur 3 m)", "Tendre un cordeau sur toutes les pannes pour alignement", "Pose des chevrons : commencer par les extrémités", "Fixer les écrans HPV avant chaque rangée de liteaux"]}
+    ],
+    "Couverture": [
+        {type:"dtu", titre:"DTU 40.11 à 40.35", sous:"Couverture & étanchéité", contenu:["Tuiles terre cuite : pente mini 35% (DTU 40.21)", "Ardoises : pente mini 45% (DTU 40.11)", "Zinc joint debout : pente mini 5% (DTU 40.41)", "Bac acier : pente mini 7% selon portée", "Couverture terrasse : pente mini 1% vers évacuation"]},
+        {type:"regle", titre:"Étanchéité et faîtage", sous:"Points critiques", contenu:["Solin en plomb ou zinc sur tous les relevés en façade", "Recouvrement tuiles : 1/3 de la tuile minimum", "Faîtière : mortier de chaux + joints souples aux extrémités", "Noue : largeur 30 cm mini de chaque côté de l'axe", "Egout : débord mini 5 cm hors nu du mur"]},
+        {type:"conseil", titre:"EEP & gouttières", sous:"Évacuation des eaux", contenu:["Section gouttière : 1 cm² pour 1 m² de toiture", "Diamètre descente : 80 mm mini jusqu'à 50 m² de toiture", "Pente gouttière : 5 mm/ml minimum vers la descente", "Fixation gouttière : entraxe 70 cm maxi", "Déboîtement en bas de descente : 30 cm mini du sol"]}
+    ]
+};
+
 
 var React = window.React;
 var ReactDOM = window.ReactDOM;
@@ -458,6 +539,10 @@ function ProduitsListScreen(props) {
     var search = searchState[0]; var setSearch = searchState[1];
     var familleState = useState("all");
     var famille = familleState[0]; var setFamille = familleState[1];
+    var tabState = useState("articles");
+    var tab = tabState[0]; var setTab = tabState[1];
+    var openRessState = useState(null);
+    var openRess = openRessState[0]; var setOpenRess = openRessState[1];
     var ce = props.ce;
 
     var list = props.produits.filter(function(p) {
@@ -470,43 +555,100 @@ function ProduitsListScreen(props) {
     var countMat = props.produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "MATERIAUX"; }).length;
     var countOut = props.produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "OUTILLAGE"; }).length;
 
+    var ressources = RESSOURCES_PRO[ce.label] || [];
+    var typeLabels = {dtu:"DTU", regle:"Règle", conseil:"Conseil", video:"Vidéo"};
+
+    // Vue ressource ouverte
+    if(tab === "ressources" && openRess !== null) {
+        var r = ressources[openRess];
+        return h("div", {className:"screen"},
+            h("div", {className:"header"},
+                h("button", {className:"header-back", onClick:function(){setOpenRess(null);}}, "←"),
+                h("div", null,
+                    h("div", {className:"header-title", style:{fontSize:16}}, r.titre),
+                    h("div", {className:"header-sub"}, r.sous)
+                )
+            ),
+            h("div", {className:"card"},
+                h("span", {className:"ressource-card-type ressource-type-" + r.type}, typeLabels[r.type] || r.type),
+                h("ul", {style:{margin:"10px 0 0 16px"}},
+                    r.contenu.map(function(ligne, i){
+                        return h("li", {key:i, style:{fontSize:13, color:"var(--text2)", lineHeight:1.9, borderBottom: i < r.contenu.length-1 ? "1px solid var(--border)" : "none", paddingBottom:6, marginBottom:6}}, ligne);
+                    })
+                )
+            )
+        );
+    }
+
     return h("div", {className:"screen"},
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
             h("div", null, h("div", {className:"header-title"}, ce.icon + " " + ce.label), h("div", {className:"header-sub"}, list.length + " produit(s)")),
-            h("button", {style:{marginLeft:"auto", background:"transparent", border:"none", fontSize:22, cursor:"pointer"}, onClick:function(){props.nav("photo", null);}}, "➕")
+            tab === "articles" ? h("button", {style:{marginLeft:"auto", background:"transparent", border:"none", fontSize:22, cursor:"pointer"}, onClick:function(){props.nav("photo", null);}}, "➕") : null
         ),
-        h("div", {className:"chips"},
-            h("button", {className:"chip" + (famille==="all"?" active":""), onClick:function(){setFamille("all");}}, "Tout (" + (countMat+countOut) + ")"),
-            h("button", {className:"chip" + (famille==="MATERIAUX"?" active":""), onClick:function(){setFamille("MATERIAUX");}}, "🧱 Matériaux (" + countMat + ")"),
-            h("button", {className:"chip" + (famille==="OUTILLAGE"?" active":""), onClick:function(){setFamille("OUTILLAGE");}}, "🔧 Outillage (" + countOut + ")")
+
+        h("div", {className:"tab-bar"},
+            h("button", {className:"tab-btn" + (tab==="articles"?" active":""), onClick:function(){setTab("articles");}}, "📦 Articles"),
+            h("button", {className:"tab-btn" + (tab==="ressources"?" active":""), onClick:function(){setTab("ressources");}},
+                "📚 Ressources" + (ressources.length > 0 ? " (" + ressources.length + ")" : "")
+            )
         ),
-        h("div", {className:"search-box"},
-            h("span", {style:{color:"var(--text3)"}}, "🔍"),
-            h("input", {placeholder:"Rechercher un produit...", value:search, onChange:function(e){setSearch(e.target.value);}})
-        ),
-        list.length === 0 ? h("div", {className:"empty-state"},
-            h("div", {className:"empty-state-icon"}, "📦"),
-            h("div", {className:"empty-state-text"}, "Aucun produit dans cette catégorie")
+
+        // Onglet Articles
+        tab === "articles" ? h("div", null,
+            h("div", {className:"chips"},
+                h("button", {className:"chip" + (famille==="all"?" active":""), onClick:function(){setFamille("all");}}, "Tout (" + (countMat+countOut) + ")"),
+                h("button", {className:"chip" + (famille==="MATERIAUX"?" active":""), onClick:function(){setFamille("MATERIAUX");}}, "🧱 Matériaux (" + countMat + ")"),
+                h("button", {className:"chip" + (famille==="OUTILLAGE"?" active":""), onClick:function(){setFamille("OUTILLAGE");}}, "🔧 Outillage (" + countOut + ")")
+            ),
+            h("div", {className:"search-box"},
+                h("span", {style:{color:"var(--text3)"}}, "🔍"),
+                h("input", {placeholder:"Rechercher un produit...", value:search, onChange:function(e){setSearch(e.target.value);}})
+            ),
+            list.length === 0 ? h("div", {className:"empty-state"},
+                h("div", {className:"empty-state-icon"}, "📦"),
+                h("div", {className:"empty-state-text"}, "Aucun produit dans cette catégorie")
+            ) : null,
+            list.map(function(p) {
+                var statut = getStatut(p);
+                return h("div", {key:p.id, className:"product-card product-" + statut, onClick:function(){props.nav("produit", p);}},
+                    h("div", {className:"product-thumb"}, p.photo_url ? h("img", {src:p.photo_url}) : "📦"),
+                    h("div", {style:{flex:1}},
+                        h("div", {className:"product-name"}, p.nom),
+                        h("div", {className:"product-meta"},
+                            h("span", {style:{
+                                background: p.famille === "OUTILLAGE" ? "rgba(201,151,58,0.15)" : "rgba(61,84,112,0.1)",
+                                color: p.famille === "OUTILLAGE" ? "var(--gold-dim)" : "var(--navy)",
+                                padding:"1px 6px", borderRadius:6, fontSize:10, fontWeight:700, marginRight:6
+                            }}, p.famille === "OUTILLAGE" ? "🔧" : "🧱"),
+                            (p.emplacement ? p.emplacement : "")
+                        ),
+                        h("span", {className:"badge badge-" + statut}, (statut==="ok"?"✅":statut==="low"?"⚠️":"❌") + " " + (p.quantite||0) + " " + (p.unite||"piece"))
+                    )
+                );
+            })
         ) : null,
-        list.map(function(p) {
-            var statut = getStatut(p);
-            return h("div", {key:p.id, className:"product-card product-" + statut, onClick:function(){props.nav("produit", p);}},
-                h("div", {className:"product-thumb"}, p.photo_url ? h("img", {src:p.photo_url}) : "📦"),
-                h("div", {style:{flex:1}},
-                    h("div", {className:"product-name"}, p.nom),
-                    h("div", {className:"product-meta"},
-                        h("span", {style:{
-                            background: p.famille === "OUTILLAGE" ? "rgba(201,151,58,0.15)" : "rgba(61,84,112,0.1)",
-                            color: p.famille === "OUTILLAGE" ? "var(--gold-dim)" : "var(--navy)",
-                            padding:"1px 6px", borderRadius:6, fontSize:10, fontWeight:700, marginRight:6
-                        }}, p.famille === "OUTILLAGE" ? "🔧" : "🧱"),
-                        (p.emplacement ? p.emplacement : "")
-                    ),
-                    h("span", {className:"badge badge-" + statut}, (statut==="ok"?"✅":statut==="low"?"⚠️":"❌") + " " + (p.quantite||0) + " " + (p.unite||"piece"))
-                )
-            );
-        })
+
+        // Onglet Ressources
+        tab === "ressources" ? h("div", null,
+            ressources.length === 0
+                ? h("div", {className:"empty-state"},
+                    h("div", {className:"empty-state-icon"}, "📚"),
+                    h("div", {className:"empty-state-text"}, "Ressources à venir pour ce corps d'état")
+                  )
+                : ressources.map(function(r, i) {
+                    return h("div", {key:i, className:"ressource-card", onClick:function(){setOpenRess(i);}},
+                        h("div", {className:"ressource-card-header"},
+                            h("div", {style:{flex:1}},
+                                h("span", {className:"ressource-card-type ressource-type-" + r.type}, typeLabels[r.type] || r.type),
+                                h("div", {style:{fontSize:15, fontWeight:800, color:"var(--navy)"}}, r.titre),
+                                h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:2}}, r.sous)
+                            ),
+                            h("span", {style:{fontSize:20, color:"var(--text3)", marginLeft:8}}, "›")
+                        )
+                    );
+                })
+        ) : null
     );
 }
 
@@ -1111,6 +1253,138 @@ function AlertesScreen(props) {
     );
 }
 
+// Contenu des tutoriels
+var TUTOS = [
+    {
+        id:"ajouter",
+        icon:"📷", color:"#E8F0FE", title:"Ajouter un article",
+        sub:"Photo IA ou saisie manuelle",
+        steps:[
+            {title:"Ouvrir le scanner", desc:"Depuis la liste d'un corps d'état, appuie sur ➕ en haut à droite pour ouvrir l'écran photo."},
+            {title:"Prendre une photo", desc:"Pointe l'appareil vers le produit et prends une photo. L'IA identifie automatiquement le nom, la famille et l'unité."},
+            {title:"Vérifier et corriger", desc:"Vérifie les informations pré-remplies. Tu peux corriger le nom, le corps d'état ou l'unité avant de valider."},
+            {title:"Saisie manuelle", desc:"Si tu n'as pas de photo ou si l'IA se trompe, appuie sur ⌨️ Saisie Manuelle pour tout remplir toi-même."},
+            {title:"Valider", desc:"Appuie sur Valider. Le produit est créé dans le stock et le mouvement de création est enregistré."}
+        ]
+    },
+    {
+        id:"mouvements",
+        icon:"📦", color:"#E6F4E8", title:"Entrée / Sortie de stock",
+        sub:"Enregistrer un mouvement",
+        steps:[
+            {title:"Trouver l'article", desc:"Navigue via Gros Oeuvre ou Second Oeuvre → corps d'état → puis clique sur l'article concerné."},
+            {title:"Ajouter du stock", desc:"Dans le bloc ➕ AJOUTER, saisis la quantité reçue et appuie sur Ajouter. Le stock est mis à jour immédiatement."},
+            {title:"Sortir du stock", desc:"Dans le bloc ➖ SORTIR, saisis la quantité utilisée et appuie sur Sortir. Attention, la quantité ne peut pas passer en négatif."},
+            {title:"Historique", desc:"Chaque mouvement est tracé automatiquement avec ton nom, la quantité et l'heure. Visible dans la fiche produit et dans Alertes."}
+        ]
+    },
+    {
+        id:"alertes",
+        icon:"🔔", color:"#FEF3E6", title:"Gérer les alertes stock",
+        sub:"Seuils et ruptures",
+        steps:[
+            {title:"Onglet Alertes", desc:"L'onglet 🔔 affiche en temps réel les ruptures (0 unité) et les stocks bas (sous le seuil défini)."},
+            {title:"Badge rouge", desc:"Si des articles sont en alerte, un badge rouge apparaît sur l'icône 🔔 dans la barre de navigation."},
+            {title:"Configurer un seuil (matériaux)", desc:"Dans la fiche d'un matériau, le bloc ⚠️ SEUIL D'ALERTE permet de définir à partir de quelle quantité l'alerte se déclenche."},
+            {title:"Outillage sans seuil", desc:"Les outils ne déclenchent jamais d'alerte stock bas — seulement rupture si quantité = 0. Un tournevis à 1 exemplaire c'est normal."},
+            {title:"Activité récente", desc:"En bas de l'écran Alertes, le fil d'activité montre les 20 derniers mouvements de tout le stock."}
+        ]
+    },
+    {
+        id:"besoin",
+        icon:"📋", color:"#FDEDEC", title:"Signaler un besoin",
+        sub:"Demande de réapprovisionnement",
+        steps:[
+            {title:"Onglet Besoin", desc:"Appuie sur 📋 dans la barre du bas pour ouvrir l'écran des besoins."},
+            {title:"Créer un besoin", desc:"Remplis le nom du produit, la quantité, l'unité et un commentaire optionnel (chantier, urgence...)."},
+            {title:"Valider", desc:"Appuie sur Créer le besoin. Il apparaît dans la liste visible par toute l'équipe."},
+            {title:"Suppression (admin)", desc:"L'administrateur peut supprimer un besoin une fois qu'il a été traité, via le bouton 🗑️."}
+        ]
+    },
+    {
+        id:"achat",
+        icon:"🛒", color:"#F0FFF4", title:"Enregistrer un achat",
+        sub:"Commande passée fournisseur",
+        steps:[
+            {title:"Onglet Achat", desc:"Appuie sur 🛒 dans la barre du bas pour créer un nouvel achat."},
+            {title:"Remplir la fiche", desc:"Indique le nom du produit, la quantité, l'unité et une note (fournisseur, numéro de commande...)."},
+            {title:"Valider", desc:"Appuie sur Créer l'achat. La commande est enregistrée dans Supabase avec ton identifiant."},
+            {title:"Réception", desc:"Quand la commande arrive, va dans la fiche du produit et fais une Entrée de stock de la quantité reçue."}
+        ]
+    }
+];
+
+// TutoScreen
+function TutoScreen(props) {
+    var openState = useState(null);
+    var open = openState[0]; var setOpen = openState[1];
+
+    var done = JSON.parse(localStorage.getItem("lrb_tutos_done") || "{}");
+
+    function markDone(id) {
+        done[id] = true;
+        localStorage.setItem("lrb_tutos_done", JSON.stringify(done));
+    }
+
+    if(open !== null) {
+        var t = TUTOS[open];
+        return h("div", {className:"screen"},
+            h("div", {className:"header"},
+                h("button", {className:"header-back", onClick:function(){markDone(t.id); setOpen(null);}}, "←"),
+                h("div", null,
+                    h("div", {className:"header-title"}, t.icon + " " + t.title),
+                    h("div", {className:"header-sub"}, t.sub)
+                )
+            ),
+            h("div", {className:"card"},
+                t.steps.map(function(s, i) {
+                    return h("div", {key:i, className:"tuto-step"},
+                        h("div", {className:"tuto-step-num"}, i+1),
+                        h("div", null,
+                            h("div", {className:"tuto-step-title"}, s.title),
+                            h("div", {className:"tuto-step-desc"}, s.desc)
+                        )
+                    );
+                })
+            ),
+            h("button", {
+                className:"btn btn-navy btn-full", style:{marginTop:16},
+                onClick:function(){ markDone(t.id); setOpen(null); }
+            }, "✅ Compris !")
+        );
+    }
+
+    var nbDone = TUTOS.filter(function(t){ return done[t.id]; }).length;
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null,
+                h("div", {className:"header-title"}, "📚 Tutoriels"),
+                h("div", {className:"header-sub"}, nbDone + "/" + TUTOS.length + " consultés")
+            )
+        ),
+        h("div", {style:{height:6, background:"var(--surface2)", borderRadius:4, marginBottom:16, overflow:"hidden"}},
+            h("div", {style:{height:"100%", width:(nbDone/TUTOS.length*100)+"%", background:"var(--navy)", borderRadius:4, transition:"width 0.4s"}})
+        ),
+        TUTOS.map(function(t, i) {
+            var isDone = done[t.id];
+            return h("div", {key:t.id, className:"tuto-card", onClick:function(){setOpen(i);}},
+                h("div", {className:"tuto-card-header"},
+                    h("div", {className:"tuto-card-icon", style:{background:t.color}}, t.icon),
+                    h("div", {style:{flex:1}},
+                        h("div", {className:"tuto-card-title"}, t.title),
+                        h("div", {className:"tuto-card-sub"}, t.sub)
+                    ),
+                    isDone
+                        ? h("span", {className:"tuto-badge-done"}, "✓ Vu")
+                        : h("span", {className:"tuto-card-arrow"}, "›")
+                )
+            );
+        })
+    );
+}
+
 // ProfilScreen
 function ProfilScreen(props) {
     return h("div", {className:"screen"},
@@ -1123,8 +1397,9 @@ function ProfilScreen(props) {
             h("div", {className:"profil-name"}, props.user.name),
             h("div", {className:"profil-role"}, props.user.role === "admin" ? "Administrateur" : "Equipe terrain")
         ),
-        h("div", {className:"card"},
-            h("button", {className:"btn btn-danger btn-full", onClick:props.onLogout}, "Se deconnecter")
+        h("div", {className:"card space-y"},
+            h("button", {className:"btn btn-navy btn-full", onClick:props.onTutos}, "📚 Tutoriels"),
+            h("button", {className:"btn btn-danger btn-full", onClick:props.onLogout}, "Se déconnecter")
         )
     );
 }
@@ -1173,6 +1448,7 @@ function App() {
     
     function nav(dest, d) {
         historyStack.current.push({screen: screen, data: data});
+        window.history.pushState({lrb: true, idx: historyStack.current.length}, "");
         setScreen(dest);
         setData(d);
     }
@@ -1192,7 +1468,32 @@ function App() {
         historyStack.current = [];
         setData(null);
         setScreen(dest);
+        // Remettre une entrée propre dans l'historique navigateur
+        window.history.pushState({lrb: true, idx: 0}, "");
     }
+
+    // Intercepter le bouton retour Android / navigateur
+    useEffect(function() {
+        // Entrée initiale dans l'historique navigateur
+        window.history.pushState({lrb: true, idx: 0}, "");
+
+        function handlePopState(e) {
+            if(historyStack.current.length > 0) {
+                var prev = historyStack.current.pop();
+                setScreen(prev.screen);
+                setData(prev.data);
+                // Repousser une entrée pour pouvoir encore reculer
+                window.history.pushState({lrb: true, idx: historyStack.current.length}, "");
+            } else {
+                setScreen("home");
+                setData(null);
+                window.history.pushState({lrb: true, idx: 0}, "");
+            }
+        }
+
+        window.addEventListener("popstate", handlePopState);
+        return function() { window.removeEventListener("popstate", handlePopState); };
+    }, []);
     
     var GlobalHeader = h("div", {className:"app-header-global"},
         h("img", {src:LRB_LOGO, className:"app-header-global-logo"}),
@@ -1207,7 +1508,7 @@ function App() {
         return h("div", {className:"app"}, GlobalHeader, h(LoginScreen, {onLogin: function(u){setUser(u);}}));
     }
     
-    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list";
+    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list" || screen === "tutos";
     var currentScreen;
     
     switch(screen) {
@@ -1235,8 +1536,11 @@ function App() {
         case "besoin":
             currentScreen = h(BesoinScreen, {user:user, onBack:goBack});
             break;
+        case "tutos":
+            currentScreen = h(TutoScreen, {onBack:goBack});
+            break;
         case "profil":
-            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
+            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onTutos:function(){nav("tutos", null);}, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
             break;
         default:
             currentScreen = h(HomeScreen, {user:user, nav:nav, produits:produits});
