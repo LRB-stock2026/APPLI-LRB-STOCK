@@ -244,6 +244,15 @@ async function uploadPhoto(file, name) {
     return SUPABASE_URL + "/storage/v1/object/public/product-photos/" + path;
 }
 
+
+// Calcul statut selon famille : outillage = jamais "stock bas", seulement rupture
+function getStatut(p) {
+    if((p.quantite||0) <= 0) return "out";
+    if(p.famille === "OUTILLAGE") return "ok";   // 1 outil = OK
+    if((p.quantite||0) <= (p.quantite_min||0)) return "low";
+    return "ok";
+}
+
 // LoginScreen
 function LoginScreen(props) {
     var codeState = useState("");
@@ -317,18 +326,31 @@ function LoginScreen(props) {
 
 // NavBar
 function NavBar(props) {
+    var produits = props.produits || [];
+    var nbAlertes = produits.filter(function(p){ return getStatut(p) !== "ok"; }).length;
+
     var items = [
-        {id:"home", icon:"🏠", label:"Accueil"},
-        {id:"stock", icon:"📦", label:"Stock"},
-        {id:"achat", icon:"🛒", label:"Achat"},
-        {id:"besoin", icon:"📋", label:"Besoin"},
-        {id:"profil", icon:"👤", label:"Profil"}
+        {id:"home",    icon:"🏠", label:"Accueil"},
+        {id:"alertes", icon:"🔔", label:"Alertes", badge: nbAlertes > 0 ? nbAlertes : null},
+        {id:"achat",   icon:"🛒", label:"Achat"},
+        {id:"besoin",  icon:"📋", label:"Besoin"},
+        {id:"profil",  icon:"👤", label:"Profil"}
     ];
     return h("nav", {className:"navbar"},
         items.map(function(item) {
             var active = props.screen === item.id;
             return h("button", {key:item.id, className:"nav-item" + (active ? " active" : ""), onClick:function(){props.onNav(item.id);}},
-                h("span", {className:"nav-emoji"}, item.icon),
+                h("div", {style:{position:"relative", display:"inline-block"}},
+                    h("span", {className:"nav-emoji"}, item.icon),
+                    item.badge ? h("span", {style:{
+                        position:"absolute", top:-4, right:-6,
+                        background:"var(--red)", color:"#fff",
+                        fontSize:9, fontWeight:900,
+                        width:16, height:16, borderRadius:"50%",
+                        display:"flex", alignItems:"center", justifyContent:"center",
+                        border:"1.5px solid var(--navy)"
+                    }}, item.badge > 9 ? "9+" : item.badge) : null
+                ),
                 h("span", {className:"nav-label"}, item.label),
                 h("div", {className:"nav-dot"})
             );
@@ -440,7 +462,7 @@ function ProduitsListScreen(props) {
             h("div", {className:"empty-state-text"}, "Aucun produit dans cette catégorie")
         ) : null,
         list.map(function(p) {
-            var statut = (p.quantite||0) <= 0 ? "out" : ((p.quantite||0) <= (p.quantite_min||1) ? "low" : "ok");
+            var statut = getStatut(p);
             return h("div", {key:p.id, className:"product-card product-" + statut, onClick:function(){props.nav("produit", p);}},
                 h("div", {className:"product-thumb"}, p.photo_url ? h("img", {src:p.photo_url}) : "📦"),
                 h("div", {style:{flex:1}},
@@ -469,7 +491,7 @@ function ProduitDetail(props) {
     var add = addState[0]; var setAdd = addState[1];
     var deletingState = useState(false);
     var deleting = deletingState[0]; var setDeleting = deletingState[1];
-    var statut = (p.quantite||0) <= 0 ? "out" : ((p.quantite||0) <= (p.quantite_min||1) ? "low" : "ok");
+    var statut = getStatut(p);
     
     async function sortir() {
         var q = parseFloat(qty);
@@ -523,6 +545,35 @@ function ProduitDetail(props) {
                 h("input", {className:"input", type:"number", placeholder:"Quantite", value:qty, onChange:function(e){setQty(e.target.value);}}),
                 h("button", {className:"btn btn-gold btn-full", style:{marginTop:8}, onClick:sortir, disabled:!qty}, "Sortir")
             )
+        ),
+        p.famille !== "OUTILLAGE" ? h("div", {className:"card", style:{marginTop:12}},
+            h("div", {className:"section-title"}, "⚠️ SEUIL D'ALERTE"),
+            h("div", {style:{display:"flex", gap:8, alignItems:"center"}},
+                h("input", {
+                    className:"input", type:"number", placeholder:"0",
+                    style:{flex:1},
+                    defaultValue: p.quantite_min || 0,
+                    id:"seuil-input-" + p.id
+                }),
+                h("button", {
+                    className:"btn btn-outline",
+                    style:{whiteSpace:"nowrap"},
+                    onClick: async function() {
+                        var v = parseFloat(document.getElementById("seuil-input-" + p.id).value) || 0;
+                        try {
+                            await supaPatch("produits", p.id, {quantite_min: v});
+                            showToast("✅ Seuil mis à jour : " + v + " " + (p.unite||"pièce"), "success");
+                            props.onRefresh();
+                        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+                    }
+                }, "Enregistrer")
+            ),
+            h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:6}},
+                "Alerte si stock ≤ seuil. Actuellement : " + (p.quantite_min||0) + " " + (p.unite||"pièce")
+            )
+        ) : h("div", {className:"card", style:{marginTop:12, background:"rgba(201,151,58,0.07)", border:"1.5px solid rgba(201,151,58,0.25)"}},
+            h("div", {style:{fontSize:12, color:"var(--gold-dim)", fontWeight:700}}, "🔧 Outillage — pas de seuil d'alerte"),
+            h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:4}}, "L'alerte se déclenche uniquement en cas de rupture (0 unité).")
         ),
         props.isAdmin ? h("button", {
             className:"btn btn-danger btn-full",
@@ -868,59 +919,78 @@ function BesoinScreen(props) {
     );
 }
 
-// StockScreen — vue complete de tout le stock avec filtres
-function StockScreen(props) {
-    var searchState = useState("");
-    var search = searchState[0]; var setSearch = searchState[1];
-    var familleState = useState("all");
-    var famille = familleState[0]; var setFamille = familleState[1];
-    var statutFilterState = useState("all");
-    var statutFilter = statutFilterState[0]; var setStatutFilter = statutFilterState[1];
+// AlertesScreen — ruptures et stocks bas en priorité
+function AlertesScreen(props) {
+    var produits = props.produits || [];
 
-    var list = (props.produits || []).filter(function(p) {
-        if(famille !== "all" && p.famille !== famille) return false;
-        var statut = (p.quantite||0) <= 0 ? "out" : ((p.quantite||0) <= (p.quantite_min||1) ? "low" : "ok");
-        if(statutFilter === "low" && statut !== "low") return false;
-        if(statutFilter === "out" && statut !== "out") return false;
-        if(search && !(p.nom||"").toLowerCase().includes(search.toLowerCase())) return false;
-        return true;
-    });
+    var ruptures = produits.filter(function(p){ return getStatut(p) === "out"; });
+    var basFond  = produits.filter(function(p){ return getStatut(p) === "low"; });
+    var ok       = produits.filter(function(p){ return getStatut(p) === "ok"; });
+
+    function ProductRow(p) {
+        var statut = (p.quantite||0) <= 0 ? "out" : "low";
+        return h("div", {key:p.id, className:"product-card product-"+statut, onClick:function(){props.nav("produit", p);}},
+            h("div", {className:"product-thumb"},
+                p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📦")
+            ),
+            h("div", {style:{flex:1}},
+                h("div", {className:"product-name"}, p.nom),
+                h("div", {className:"product-meta"}, (p.corps_etat||"") + (p.famille ? " · " + p.famille : "")),
+                h("span", {className:"badge badge-"+statut},
+                    (statut==="out"?"❌ Rupture":"⚠️ Stock bas") + " — " + (p.quantite||0) + " " + (p.unite||"pièce")
+                )
+            ),
+            h("span", {style:{fontSize:20, marginLeft:4}}, "›")
+        );
+    }
+
+    var totalProblemes = ruptures.length + basFond.length;
 
     return h("div", {className:"screen"},
         h("div", {style:{paddingTop:12}}),
-        h("div", {className:"search-box"},
-            h("span", {style:{color:"var(--text3)"}}, "🔍"),
-            h("input", {placeholder:"Rechercher dans le stock...", value:search, onChange:function(e){setSearch(e.target.value);}})
+
+        // Résumé en 3 cartes
+        h("div", {className:"grid-2", style:{gridTemplateColumns:"1fr 1fr 1fr", marginBottom:16}},
+            h("div", {className:"card", style:{textAlign:"center", padding:"12px 8px", borderLeft:"3px solid var(--red)"}},
+                h("div", {style:{fontSize:24, fontWeight:900, color:"var(--red)"}}, ruptures.length),
+                h("div", {style:{fontSize:10, fontWeight:700, color:"var(--text3)", marginTop:2}}, "RUPTURE")
+            ),
+            h("div", {className:"card", style:{textAlign:"center", padding:"12px 8px", borderLeft:"3px solid var(--orange)"}},
+                h("div", {style:{fontSize:24, fontWeight:900, color:"var(--orange)"}}, basFond.length),
+                h("div", {style:{fontSize:10, fontWeight:700, color:"var(--text3)", marginTop:2}}, "STOCK BAS")
+            ),
+            h("div", {className:"card", style:{textAlign:"center", padding:"12px 8px", borderLeft:"3px solid var(--green)"}},
+                h("div", {style:{fontSize:24, fontWeight:900, color:"var(--green)"}}, ok.length),
+                h("div", {style:{fontSize:10, fontWeight:700, color:"var(--text3)", marginTop:2}}, "OK")
+            )
         ),
-        h("div", {className:"chips"},
-            h("button", {className:"chip" + (famille==="all"?" active":""), onClick:function(){setFamille("all");}}, "Tout"),
-            h("button", {className:"chip" + (famille==="MATERIAUX"?" active":""), onClick:function(){setFamille("MATERIAUX");}}, "🧱 Matériaux"),
-            h("button", {className:"chip" + (famille==="OUTILLAGE"?" active":""), onClick:function(){setFamille("OUTILLAGE");}}, "🔧 Outillage"),
-            h("button", {className:"chip chip-gold" + (statutFilter==="low"?" active":""), onClick:function(){setStatutFilter(statutFilter==="low"?"all":"low");}}, "⚠️ Stock bas"),
-            h("button", {className:"chip chip-red" + (statutFilter==="out"?" active":""), onClick:function(){setStatutFilter(statutFilter==="out"?"all":"out");}}, "❌ Rupture")
-        ),
-        h("div", {style:{fontSize:11, fontWeight:700, color:"var(--text3)", marginBottom:10}},
-            list.length + " / " + (props.produits||[]).length + " produits"
-        ),
-        list.length === 0 ? h("div", {className:"empty-state"},
-            h("div", {className:"empty-state-icon"}, "📦"),
-            h("div", {className:"empty-state-text"}, "Aucun produit correspondant")
-        ) : null,
-        list.map(function(p) {
-            var statut = (p.quantite||0) <= 0 ? "out" : ((p.quantite||0) <= (p.quantite_min||1) ? "low" : "ok");
-            return h("div", {key:p.id, className:"product-card", onClick:function(){props.nav("produit", p);}},
-                h("div", {className:"product-thumb"},
-                    p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📦")
+
+        totalProblemes === 0
+            ? h("div", {className:"empty-state"},
+                h("div", {className:"empty-state-icon"}, "✅"),
+                h("div", {className:"empty-state-text"}, "Tout le stock est au vert !")
+              )
+            : null,
+
+        // Ruptures
+        ruptures.length > 0
+            ? h("div", null,
+                h("div", {style:{fontSize:11, fontWeight:800, color:"var(--red)", marginBottom:8, letterSpacing:"0.06em"}},
+                    "❌ RUPTURES (" + ruptures.length + ")"
                 ),
-                h("div", {style:{flex:1}},
-                    h("div", {className:"product-name"}, p.nom),
-                    h("div", {className:"product-meta"}, (p.corps_etat||p.famille||"") + (p.emplacement?" · "+p.emplacement:"")),
-                    h("span", {className:"badge badge-"+statut},
-                        (statut==="ok"?"✅":statut==="low"?"⚠️":"❌") + " " + (p.quantite||0) + " " + (p.unite||"piece")
-                    )
-                )
-            );
-        })
+                ruptures.map(ProductRow)
+              )
+            : null,
+
+        // Stock bas
+        basFond.length > 0
+            ? h("div", {style:{marginTop: ruptures.length > 0 ? 16 : 0}},
+                h("div", {style:{fontSize:11, fontWeight:800, color:"var(--orange)", marginBottom:8, letterSpacing:"0.06em"}},
+                    "⚠️ STOCK BAS (" + basFond.length + ")"
+                ),
+                basFond.map(ProductRow)
+              )
+            : null
     );
 }
 
@@ -1027,8 +1097,8 @@ function App() {
         case "home":
             currentScreen = h(HomeScreen, {user:user, nav:nav, produits:produits});
             break;
-        case "stock":
-            currentScreen = h(StockScreen, {produits:produits, nav:nav, user:user});
+        case "alertes":
+            currentScreen = h(AlertesScreen, {produits:produits, nav:nav, user:user});
             break;
         case "corpsdetat":
             currentScreen = h(CorpsDetatScreen, {categorie:data.categorie, onBack:goBack, nav:nav, produits:produits});
@@ -1055,7 +1125,7 @@ function App() {
             currentScreen = h(HomeScreen, {user:user, nav:nav, produits:produits});
     }
     
-    return h("div", {className:"app"}, GlobalHeader, currentScreen, !noNav ? h(NavBar, {screen:screen, onNav:onNav}) : null);
+    return h("div", {className:"app"}, GlobalHeader, currentScreen, !noNav ? h(NavBar, {screen:screen, onNav:onNav, produits:produits}) : null);
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(h(App));
