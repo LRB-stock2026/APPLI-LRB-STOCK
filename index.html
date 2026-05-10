@@ -120,23 +120,22 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script>
-var LRB_LOGO="https://kiomcpwjveppgragajyv.supabase.co/storage/v1/object/public/product-photos/LRB_Logo_300dpi.png";
-var SUPABASE_URL="https://kiomcpwjveppgragajyv.supabase.co";
-var SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpb21jcHdqdmVwcGdyYWdhanl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzYyMDksImV4cCI6MjA5MzY1MjIwOX0.RHBrIC7Hz_5U91R6ZZTpoq8q925gcvN5d3UL5I8QAGU";
-var USERS_LOCAL={"284916":{name:"David",role:"chantier"},"651973":{name:"Jacques",role:"chantier"},"908257":{name:"Mathys",role:"chantier"},"739482":{name:"Administration",role:"admin"}};
-var CORPS_ETAT_GROS=[{id:"maconnerie",label:"Maçonnerie",icon:"🧱"},{id:"demolition",label:"Démolition",icon:"⛏️"},{id:"terrassement",label:"Terrassement",icon:"🚜"},{id:"beton",label:"Béton/Coffrage",icon:"🏗️"},{id:"charpente",label:"Charpente",icon:"🪵"},{id:"couverture",label:"Couverture",icon:"🏠"}];
-var CORPS_ETAT_SECOND=[{id:"platrerie",label:"Plâtrerie",icon:"🪣"},{id:"peinture",label:"Peinture",icon:"🎨"},{id:"menuiserie",label:"Menuiserie",icon:"🪚"},{id:"carrelage",label:"Carrelage",icon:"🟦"},{id:"electricite",label:"Électricité",icon:"⚡"},{id:"plomberie",label:"Plomberie",icon:"🚿"},{id:"isolation",label:"Isolation",icon:"🌡️"},{id:"sols",label:"Revêtements sols",icon:"🦶"},{id:"quincaillerie",label:"Quincaillerie",icon:"🔩"},{id:"consommables",label:"Consommables",icon:"📦"},{id:"finitions",label:"Finitions",icon:"✨"},{id:"securite",label:"Sécurité/EPI",icon:"🦺"},{id:"nettoyage",label:"Nettoyage",icon:"🧹"},{id:"divers",label:"Divers",icon:"📦"}];
-var UNITES=["pièce","boîte","sac","rouleau","cartouche","litre","m²","ml","kg","palette","lot"];
+var LRB_LOGO = "https://kiomcpwjveppgragajyv.supabase.co/storage/v1/object/public/product-photos/LRB_Logo_300dpi.png";
+var SUPABASE_URL = "https://kiomcpwjveppgragajyv.supabase.co";
+var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpb21jcHdqdmVwcGdyYWdhanl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzYyMDksImV4cCI6MjA5MzY1MjIwOX0.RHBrIC7Hz_5U91R6ZZTpoq8q925gcvN5d3UL5I8QAGU";
+var USERS_LOCAL = {"284916":{name:"David",role:"chantier"},"651973":{name:"Jacques",role:"chantier"},"908257":{name:"Mathys",role:"chantier"},"739482":{name:"Administration",role:"admin"}};
+var CORPS_ETAT_GROS = [{id:"maconnerie",label:"Maçonnerie",icon:"🧱"},{id:"demolition",label:"Démolition",icon:"⛏️"},{id:"terrassement",label:"Terrassement",icon:"🚜"},{id:"beton",label:"Béton/Coffrage",icon:"🏗️"},{id:"charpente",label:"Charpente",icon:"🪵"},{id:"couverture",label:"Couverture",icon:"🏠"}];
+var CORPS_ETAT_SECOND = [{id:"platrerie",label:"Plâtrerie",icon:"🪣"},{id:"peinture",label:"Peinture",icon:"🎨"},{id:"menuiserie",label:"Menuiserie",icon:"🪚"},{id:"carrelage",label:"Carrelage",icon:"🟦"},{id:"electricite",label:"Électricité",icon:"⚡"},{id:"plomberie",label:"Plomberie",icon:"🚿"},{id:"isolation",label:"Isolation",icon:"🌡️"},{id:"sols",label:"Revêtements sols",icon:"🦶"},{id:"quincaillerie",label:"Quincaillerie",icon:"🔩"},{id:"consommables",label:"Consommables",icon:"📦"},{id:"finitions",label:"Finitions",icon:"✨"},{id:"securite",label:"Sécurité/EPI",icon:"🦺"},{id:"nettoyage",label:"Nettoyage",icon:"🧹"},{id:"divers",label:"Divers",icon:"📦"}];
+var UNITES = ["pièce","boîte","sac","rouleau","cartouche","litre","m²","ml","kg","palette","lot"];
 
-var useState=React.useState,useEffect=React.useEffect,useCallback=React.useCallback,useRef=React.useRef;
-var h=React.createElement;
+var useState = React.useState, useEffect = React.useEffect, useCallback = React.useCallback, useRef = React.useRef;
+var h = React.createElement;
 
 function showToast(msg,type){document.querySelectorAll(".toast").forEach(function(e){e.remove();});var el=document.createElement("div");el.className="toast"+(type==="success"?" toast-success":type==="error"?" toast-error":"");el.textContent=msg;document.body.appendChild(el);setTimeout(function(){el.remove();},3000);}
 async function supaGet(table,query){var url=SUPABASE_URL+"/rest/v1/"+table+(query?"?"+query:"");var res=await fetch(url,{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Accept":"application/json"}});var text=await res.text();if(!res.ok)throw new Error(text);return JSON.parse(text);}
 async function supaPost(table,data){var res=await fetch(SUPABASE_URL+"/rest/v1/"+table,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Prefer":"return=minimal"},body:JSON.stringify(data)});var text=await res.text();if(!res.ok)throw new Error(text);return text?JSON.parse(text):{};}
 async function supaPatch(table,id,data){var res=await fetch(SUPABASE_URL+"/rest/v1/"+table+"?id=eq."+id,{method:"PATCH",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Prefer":"return=minimal"},body:JSON.stringify(data)});var text=await res.text();if(!res.ok)throw new Error(text);return {};}
 async function uploadPhoto(file,name){var ext=file.name?file.name.split(".").pop():"jpg";var path=name.replace(/[^a-z0-9]/gi,"_").slice(0,20)+"-"+Date.now()+"."+ext;var res=await fetch(SUPABASE_URL+"/storage/v1/object/product-photos/"+path,{method:"POST",headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":file.type||"image/jpeg"},body:file});if(!res.ok)throw new Error("Upload échoué");return SUPABASE_URL+"/storage/v1/object/public/product-photos/"+path;}
-function fileToBase64(file){return new Promise(function(resolve,reject){var reader=new FileReader();reader.onload=function(e){resolve(e.target.result.split(",")[1]);};reader.onerror=reject;reader.readAsDataURL(file);});}
 
 function LoginScreen(props){var s1=useState(""),code=s1[0],setCode=s1[1];var s2=useState(""),err=s2[0],setErr=s2[1];var s3=useState(false),loading=s3[0],setLoading=s3[1];var s4=useState(false),rememberMe=s4[0],setRememberMe=s4[1];
 useEffect(function(){var savedCode=localStorage.getItem("lrb_remembered_code");if(savedCode){setCode(savedCode);setRememberMe(true);}},[]);
@@ -174,8 +173,8 @@ useEffect(function(){var savedCode=localStorage.getItem("lrb_remembered_code");i
 function nav(dest,d){historyStack.current.push({screen:screen,data:data});setScreen(dest);setData(d);}
 function goBack(){if(historyStack.current.length>0){var prev=historyStack.current.pop();setScreen(prev.screen);setData(prev.data);}else{setScreen("home");setData(null);}}
 function onNav(dest){historyStack.current=[];setData(null);setScreen(dest);}
-var AppHeader=h("div",{className:"app-header"},h("img",{src:LRB_LOGO,alt:"LRB",className:"app-header-logo"}),h("div",{className:"app-header-title"},h("h1",null,"LES RÉNOVATEURS BRETONS"),h("p",null,"STOCK")),user?h("div",{className:"app-header-spacer"}):null);
-if(!user)return h("div",{className:"app"},AppHeader,h(LoginScreen,{onLogin:function(u){setUser(u);}}));
+var AppHeader = user ? h("div",{className:"app-header"},h("img",{src:LRB_LOGO,alt:"LRB",className:"app-header-logo"}),h("div",{className:"app-header-title"},h("h1",null,"LES RÉNOVATEURS BRETONS"),h("p",null,"STOCK")),h("div",{className:"app-header-spacer"})) : null;
+if(!user)return h("div",{className:"app"},h(LoginScreen,{onLogin:function(u){setUser(u);}}));
 var noNav=["photo","produit"].includes(screen);function renderScreen(){switch(screen){case"home":return h(HomeScreen,{user:user,nav:nav,produits:produits});case"corpsdetat":return h(CorpsDetatScreen,{categorie:data.categorie,onBack:goBack,nav:nav});case"produits_list":return h(ProduitsListScreen,{produits:produits,ce:data.ce,onBack:goBack,nav:nav});case"produit":return h(ProduitDetail,{user:user,produit:data,onBack:goBack,onRefresh:loadData});case"photo":return h(PhotoScreen,{user:user,onBack:goBack,onRefresh:loadData});case"achat":return h(AchatScreen,{user:user,onBack:goBack,onRefresh:loadData});case"besoin":return h(BesoinScreen,{user:user,onBack:goBack});case"profil":return h(ProfilScreen,{user:user,onBack:goBack,onLogout:function(){setUser(null);setScreen("home");historyStack.current=[];localStorage.removeItem("lrb_remembered_code");}});default:return h(HomeScreen,{user:user,nav:nav,produits:produits});}}
 return h("div",{className:"app"},AppHeader,renderScreen(),!noNav&&h(NavBar,{screen:screen,onNav:onNav}));}
 ReactDOM.createRoot(document.getElementById("root")).render(h(App,null));
