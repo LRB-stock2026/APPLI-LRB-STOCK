@@ -3,121 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LRB Stock</title>
+    <title>LRB Stock Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: sans-serif; background-color: #f0f4f8; }
-        .card { background: white; border-radius: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: all 0.2s; }
-        .card:active { transform: scale(0.98); }
-        .btn-gold { background-color: #d4a017; color: white; }
+        :root { --primary: #d4a017; --bg: #f8fafc; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); }
+        .btn-main { background: white; border-radius: 1.25rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-bottom: 4px solid #e2e8f0; transition: all 0.2s; }
+        .btn-main:active { transform: translateY(2px); border-bottom-width: 2px; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-radius: 2rem; border: 1px solid white; }
     </style>
 </head>
-<body class="p-4">
+<body class="p-5 pb-10">
 
-    <div id="page-accueil">
-        <h1 class="text-2xl font-bold text-slate-800 mb-6 text-center">Gestion de Stock LRB</h1>
-        <div class="grid gap-6">
-            <div onclick="ouvrirAjout('GROS ŒUVRE')" class="card p-8 text-center border-b-4 border-orange-500">
-                <span class="text-4xl mb-2 block">🏗️</span>
-                <span class="text-xl font-bold text-slate-700 uppercase">Gros Œuvre</span>
-            </div>
-            <div onclick="ouvrirAjout('SECOND ŒUVRE')" class="card p-8 text-center border-b-4 border-blue-500">
-                <span class="text-4xl mb-2 block">🔨</span>
-                <span class="text-xl font-bold text-slate-700 uppercase">Second Œuvre</span>
-            </div>
+    <div id="view-home">
+        <div class="mb-8 mt-4 text-center">
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">LRB STOCK</h1>
+            <p class="text-slate-500 font-medium">Gestion de matériel</p>
+        </div>
+
+        <div class="grid gap-5">
+            <button onclick="showAdd('GROS ŒUVRE', '#f97316')" class="btn-main p-8 flex flex-col items-center">
+                <div class="bg-orange-100 p-4 rounded-2xl mb-4"><span class="text-4xl">🏗️</span></div>
+                <span class="text-xl font-bold text-slate-700">GROS ŒUVRE</span>
+            </button>
+
+            <button onclick="showAdd('SECOND ŒUVRE', '#3b82f6')" class="btn-main p-8 flex flex-col items-center">
+                <div class="bg-blue-100 p-4 rounded-2xl mb-4"><span class="text-4xl">🔨</span></div>
+                <span class="text-xl font-bold text-slate-700">SECOND ŒUVRE</span>
+            </button>
         </div>
     </div>
 
-    <div id="page-ajout" class="hidden">
-        <div class="flex items-center mb-6">
-            <button onclick="retourAccueil()" class="p-3 bg-white rounded-full shadow-md mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor font-bold"><path d="M15 19l-7-7 7-7"/></svg>
+    <div id="view-add" class="hidden">
+        <div class="flex items-center justify-between mb-6">
+            <button onclick="goHome()" class="w-12 h-12 flex items-center justify-center bg-white rounded-2xl shadow-sm text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <h2 id="titre-categorie" class="text-xl font-bold text-slate-800 uppercase"></h2>
+            <span id="badge-cat" class="px-4 py-2 rounded-full text-xs font-black text-white uppercase tracking-widest"></span>
         </div>
 
-        <div class="card p-6">
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nom du produit *</label>
-                <input type="text" id="p_nom" class="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-yellow-600 outline-none" placeholder="Nom de l'outil">
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="glass-card p-6 shadow-xl">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">Nouveau produit</h2>
+            
+            <div class="space-y-5">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Famille</label>
-                    <select id="p_famille" class="w-full p-3 border-2 border-slate-200 rounded-xl bg-white">
-                        <option value="OUTILLAGE">OUTILLAGE</option>
-                        <option value="ELECTROPORTATIF">ELECTROPORTATIF</option>
-                        <option value="CONSOMMABLES">CONSOMMABLES</option>
-                        <option value="EPI">EPI</option>
-                        <option value="PLOMBERIE">PLOMBERIE</option>
-                        <option value="ELECTRICITE">ELECTRICITE</option>
-                        <option value="MENUISERIE">MENUISERIE</option>
-                        <option value="PEINTURE">PEINTURE</option>
-                    </select>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block italic">Nom du produit *</label>
+                    <input type="text" id="inp-nom" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-yellow-500 outline-none font-bold text-slate-700">
                 </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block italic">Famille</label>
+                        <select id="inp-famille" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold text-slate-600">
+                            <option>OUTILLAGE</option>
+                            <option>ELECTROPORTATIF</option>
+                            <option>QUINCAILLERIE</option>
+                            <option>CONSOMMABLES</option>
+                            <option>EPI</option>
+                            <option>MENUISERIE</option>
+                            <option>PLOMBERIE</option>
+                            <option>ELECTRICITE</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block italic">Unité</label>
+                        <select id="inp-unite" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold text-slate-600">
+                            <option>pièce</option>
+                            <option>mètre</option>
+                            <option>boite</option>
+                            <option>sac</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Unité</label>
-                    <select id="p_unite" class="w-full p-3 border-2 border-slate-200 rounded-xl bg-white">
-                        <option value="pièce">pièce</option>
-                        <option value="mètre">mètre</option>
-                        <option value="boite">boite</option>
-                    </select>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 block italic">Quantité</label>
+                    <input type="number" id="inp-qte" value="1" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center font-black text-2xl text-yellow-600">
                 </div>
-            </div>
 
-            <div class="mb-6">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Quantité</label>
-                <input type="number" id="p_quantite" class="w-full p-3 border-2 border-slate-200 rounded-xl text-center font-bold text-xl" value="1">
+                <button onclick="saveData()" id="btn-save" class="w-full py-5 bg-slate-800 text-white rounded-3xl font-bold text-lg shadow-lg active:scale-95 transition-transform">
+                    VALIDER L'ENTRÉE
+                </button>
             </div>
-
-            <button onclick="valider()" id="btn-save" class="w-full btn-gold py-4 rounded-2xl font-bold text-lg shadow-lg">
-                ✅ Valider l'entrée
-            </button>
         </div>
     </div>
 
     <script>
-        // TES CLÉS (Vérifiées sur tes captures)
         const supabaseUrl = 'https://les-renovateurs-bretons.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcy1yZW5vdmF0ZXVycy1icmV0b25zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU0Mjk3NzcsImV4cCI6MjAzMTAwNTc3N30.ZzX6a78-2_9_5_7_4_8_9_0_1_2_3_4_5_6_7_8'; // Je remets ta clé courte ici par sécurité
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxlcy1yZW5vdmF0ZXVycy1icmV0b25zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU0Mjk3NzcsImV4cCI6MjAzMTAwNTc3N30.ZzX6a78-2_9_5_7_4_8_9_0_1_2_3_4_5_6_7_8'; 
+        const _client = supabase.createClient(supabaseUrl, supabaseKey);
 
-        function ouvrirAjout(cat) {
-            document.getElementById('page-accueil').classList.add('hidden');
-            document.getElementById('page-ajout').classList.remove('hidden');
-            document.getElementById('titre-categorie').innerText = cat;
+        function showAdd(cat, color) {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-add').classList.remove('hidden');
+            const badge = document.getElementById('badge-cat');
+            badge.innerText = cat;
+            badge.style.backgroundColor = color;
         }
 
-        function retourAccueil() {
-            document.getElementById('page-ajout').classList.add('hidden');
-            document.getElementById('page-accueil').classList.remove('hidden');
+        function goHome() {
+            document.getElementById('view-add').classList.add('hidden');
+            document.getElementById('view-home').classList.remove('hidden');
         }
 
-        async function valider() {
-            const nom = document.getElementById('p_nom').value;
-            const cat = document.getElementById('titre-categorie').innerText;
-            if(!nom) return alert("Nom obligatoire !");
-
+        async function saveData() {
+            const nom = document.getElementById('inp-nom').value;
+            if(!nom) return alert("Indique le nom !");
+            
             const btn = document.getElementById('btn-save');
+            btn.innerText = "CHARGEMENT...";
             btn.disabled = true;
-            btn.innerText = "⏳ Enregistrement...";
 
-            const { error } = await _supabase.from('produits').insert([{
+            const { error } = await _client.from('produits').insert([{
                 nom: nom,
-                corps_detat: cat,
-                famille: document.getElementById('p_famille').value,
-                unite: document.getElementById('p_unite').value,
-                quantite: document.getElementById('p_quantite').value
+                corps_detat: document.getElementById('badge-cat').innerText,
+                famille: document.getElementById('inp-famille').value,
+                unite: document.getElementById('inp-unite').value,
+                quantite: parseInt(document.getElementById('inp-qte').value)
             }]);
 
             if(error) {
                 alert("Erreur: " + error.message);
                 btn.disabled = false;
-                btn.innerText = "✅ Valider l'entrée";
+                btn.innerText = "VALIDER L'ENTRÉE";
             } else {
-                alert("Produit enregistré dans " + cat);
+                alert("✅ Enregistré !");
                 location.reload();
             }
         }
