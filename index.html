@@ -124,22 +124,7 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .edit-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:800;display:flex;flex-direction:column;justify-content:flex-end}
 .edit-sheet{background:#fff;border-radius:24px 24px 0 0;padding:20px 16px 36px;max-height:85vh;overflow-y:auto}
 .edit-sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px}
-.stat-card{background:#fff;border-radius:16px;padding:16px;border:1.5px solid var(--border);text-align:center}
-.stat-value{font-size:32px;font-weight:900;color:var(--navy);line-height:1}
-.stat-label{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:0.07em;margin-top:4px;text-transform:uppercase}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
-.stat-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.top-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
-.top-item:last-child{border-bottom:none}
-.top-rank{width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.invent-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
-.invent-row:last-child{border-bottom:none}
-.invent-current{font-size:13px;font-weight:700;color:var(--text3);min-width:40px;text-align:right}
-.invent-input{width:70px;padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-weight:800;text-align:center;font-family:inherit}
-.invent-input:focus{border-color:var(--navy);outline:none}
-.invent-diff-pos{color:var(--green);font-size:11px;font-weight:800}
-.invent-diff-neg{color:var(--red);font-size:11px;font-weight:800}
-.confirm-modal{position:fixed;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:950;display:flex;align-items:flex-end;justify-content:center}
+.confirm-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:950;display:flex;align-items:flex-end;justify-content:center}
 .confirm-sheet{background:#fff;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;animation:slideUp 0.25s ease}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .confirm-product-name{font-size:18px;font-weight:900;color:var(--navy);margin:10px 0 4px}
@@ -1630,8 +1615,7 @@ function ProduitDetail(props) {
         var isEntree = m.type === "entree" || m.type === "creation";
         var isSuppression = m.type === "suppression";
         var iconClass = m.type === "creation" ? "mvt-icon-creation" : isSuppression ? "mvt-icon-sortie" : (isEntree ? "mvt-icon-entree" : "mvt-icon-sortie");
-        var isInventaire = m.type === "inventaire";
-        var icon = m.type === "creation" ? "🆕" : isSuppression ? "🗑️" : isInventaire ? "📋" : (isEntree ? "➕" : "➖");
+        var icon = m.type === "creation" ? "🆕" : isSuppression ? "🗑️" : (isEntree ? "➕" : "➖");
         var qtyColor = isEntree ? "var(--green)" : "var(--red)";
         return h("div", {key:m.id||i, className:"mvt-row"},
             h("div", {className:"mvt-icon " + iconClass}, icon),
@@ -1654,25 +1638,8 @@ function ProduitDetail(props) {
         h("div", {className:"product-hero"},
             p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📦")
         ),
-        h("div", {style:{display:"flex", alignItems:"center", gap:10, marginBottom:12}},
-            h("span", {className:"badge badge-" + statut, style:{display:"inline-flex"}},
-                (statut==="ok"?"✅ En stock":statut==="low"?"⚠️ Stock bas":"❌ Rupture") + " — " + (p.quantite||0) + " " + (p.unite||"piece")
-            ),
-            h("button", {
-                style:{marginLeft:"auto", background:"#25D366", color:"#fff", border:"none", borderRadius:10, padding:"6px 14px", fontSize:12, fontWeight:800, cursor:"pointer", display:"flex", alignItems:"center", gap:5},
-                onClick:function() {
-                    var txt = "📦 *" + p.nom + "*\n";
-                    if(p.corps_etat) txt += "Corps d'état : " + p.corps_etat + "\n";
-                    if(p.sous_famille) txt += "Catégorie : " + p.sous_famille + "\n";
-                    txt += "Stock : " + (p.quantite||0) + " " + (p.unite||"pièce") + "\n";
-                    if(p.emplacement) txt += "📍 Emplacement : " + p.emplacement + "\n";
-                    if(p.fournisseur) txt += "🏪 Fournisseur : " + p.fournisseur + "\n";
-                    if(p.reference) txt += "Réf : " + p.reference + "\n";
-                    if(p.prix_unitaire) txt += "💶 Prix : " + p.prix_unitaire + " € HT/" + (p.unite||"pièce") + "\n";
-                    txt += "\n— LRB Stock";
-                    window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
-                }
-            }, "📤 WhatsApp")
+        h("span", {className:"badge badge-" + statut, style:{marginBottom:8, display:"inline-flex"}},
+            (statut==="ok"?"✅ En stock":statut==="low"?"⚠️ Stock bas":"❌ Rupture") + " — " + (p.quantite||0) + " " + (p.unite||"piece")
         ),
 
         // Bloc emplacement
@@ -2450,183 +2417,6 @@ function BesoinScreen(props) {
     );
 }
 
-
-
-// InventaireScreen
-function InventaireScreen(props) {
-    var produits = props.produits || [];
-    var searchState = useState(""); var search = searchState[0]; var setSearch = searchState[1];
-    var valeursState = useState({}); var valeurs = valeursState[0]; var setValeurs = valeursState[1];
-    var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
-
-    var list = produits.filter(function(p){
-        if(!search) return true;
-        return (p.nom||"").toLowerCase().includes(search.toLowerCase());
-    });
-
-    function setVal(id, v) {
-        var nv = Object.assign({}, valeurs);
-        nv[id] = v;
-        setValeurs(nv);
-    }
-
-    var nbModif = Object.keys(valeurs).filter(function(id){
-        var p = produits.find(function(x){ return String(x.id) === String(id); });
-        return p && valeurs[id] !== "" && parseFloat(valeurs[id]) !== (p.quantite||0);
-    }).length;
-
-    async function validerInventaire() {
-        setSaving(true);
-        var errors = 0;
-        var updates = Object.keys(valeurs).filter(function(id){
-            var p = produits.find(function(x){ return String(x.id) === String(id); });
-            return p && valeurs[id] !== "" && parseFloat(valeurs[id]) !== (p.quantite||0);
-        });
-        for(var i = 0; i < updates.length; i++) {
-            var id = updates[i];
-            var p = produits.find(function(x){ return String(x.id) === String(id); });
-            var newQty = parseFloat(valeurs[id]);
-            try {
-                await supaPatch("produits", id, {quantite: newQty});
-                await logMouvement({produit_id:id, produit_nom:p.nom, type:"inventaire", quantite:Math.abs(newQty-(p.quantite||0)), quantite_avant:p.quantite||0, quantite_apres:newQty, user_id:props.user.code, user_nom:props.user.name});
-            } catch(e) { errors++; }
-        }
-        setSaving(false);
-        if(errors === 0) {
-            showToast("✅ Inventaire validé — " + updates.length + " article(s) mis à jour", "success");
-            setValeurs({});
-            props.onRefresh();
-        } else {
-            showToast("⚠️ " + errors + " erreur(s) lors de la mise à jour", "error");
-        }
-    }
-
-    return h("div", {className:"screen"},
-        h("div", {className:"header"},
-            h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null,
-                h("div", {className:"header-title"}, "📋 Inventaire"),
-                h("div", {className:"header-sub"}, nbModif + " modification(s) en attente")
-            ),
-            nbModif > 0 ? h("button", {
-                style:{background:"var(--green)", color:"#fff", border:"none", borderRadius:10, padding:"6px 12px", fontWeight:800, fontSize:12, cursor:"pointer"},
-                onClick:validerInventaire, disabled:saving
-            }, saving ? "..." : "✅ Valider") : null
-        ),
-        h("div", {className:"search-box", style:{marginBottom:10}},
-            h("span", {style:{color:"var(--text3)"}}, "🔍"),
-            h("input", {placeholder:"Filtrer les articles...", value:search, onChange:function(e){setSearch(e.target.value);}})
-        ),
-        h("div", {style:{fontSize:11, color:"var(--text3)", marginBottom:10, fontWeight:600}},
-            "Saisissez la quantité réelle comptée. Laissez vide si inchangé."
-        ),
-        h("div", {className:"card"},
-            list.map(function(p) {
-                var val = valeurs[p.id] !== undefined ? valeurs[p.id] : "";
-                var diff = val !== "" ? parseFloat(val) - (p.quantite||0) : null;
-                return h("div", {key:p.id, className:"invent-row"},
-                    h("div", {className:"product-thumb", style:{width:32, height:32, minWidth:32, fontSize:16}},
-                        p.photo_url ? h("img", {src:p.photo_url}) : "📦"
-                    ),
-                    h("div", {style:{flex:1}},
-                        h("div", {style:{fontSize:13, fontWeight:700, color:"var(--navy)"}}, p.nom),
-                        h("div", {style:{fontSize:11, color:"var(--text3)"}}, (p.corps_etat||"") + " · stock actuel : " + (p.quantite||0) + " " + (p.unite||"pce"))
-                    ),
-                    diff !== null ? h("div", {className: diff >= 0 ? "invent-diff-pos" : "invent-diff-neg", style:{minWidth:30, textAlign:"center"}},
-                        (diff >= 0 ? "+" : "") + diff
-                    ) : null,
-                    h("input", {
-                        className:"invent-input",
-                        type:"number", placeholder: String(p.quantite||0),
-                        value:val,
-                        onChange:function(e){ setVal(p.id, e.target.value); },
-                        style:{borderColor: diff !== null ? (diff >= 0 ? "var(--green)" : "var(--red)") : "var(--border)"}
-                    })
-                );
-            })
-        )
-    );
-}
-
-// StatsScreen
-function StatsScreen(props) {
-    var produits = props.produits || [];
-    var mvtsState = useState([]); var mvts = mvtsState[0]; var setMvts = mvtsState[1];
-    var loadingState = useState(true); var loading = loadingState[0]; var setLoading = loadingState[1];
-
-    useEffect(function() {
-        supaGet("mouvements", "order=created_at.desc&limit=200").then(function(r){
-            setMvts(Array.isArray(r) ? r : []);
-        }).catch(function(){}).finally(function(){ setLoading(false); });
-    }, []);
-
-    var totalArticles = produits.length;
-    var valeurTotale = produits.reduce(function(s, p){ return s + ((p.quantite||0) * (p.prix_unitaire||0)); }, 0);
-    var nbRuptures = produits.filter(function(p){ return getStatut(p) === "out"; }).length;
-    var nbStockBas = produits.filter(function(p){ return getStatut(p) === "low"; }).length;
-    var nbOk = produits.filter(function(p){ return getStatut(p) === "ok"; }).length;
-
-    // Top 5 articles les plus sortis (30 derniers jours)
-    var since30 = Date.now() - 30*24*3600*1000;
-    var sorties = mvts.filter(function(m){ return m.type === "sortie" && new Date(m.created_at).getTime() > since30; });
-    var sortiesMap = {};
-    sorties.forEach(function(m){ sortiesMap[m.produit_nom] = (sortiesMap[m.produit_nom]||0) + (m.quantite||0); });
-    var top5 = Object.keys(sortiesMap).map(function(k){ return {nom:k, qty:sortiesMap[k]}; })
-        .sort(function(a,b){ return b.qty - a.qty; }).slice(0, 5);
-
-    // Mouvements par jour (7 derniers jours)
-    var mvtsSemaine = mvts.filter(function(m){ return new Date(m.created_at).getTime() > Date.now() - 7*24*3600*1000; });
-    var entreesSemaine = mvtsSemaine.filter(function(m){ return m.type === "entree" || m.type === "creation"; }).length;
-    var sortiesSemaine = mvtsSemaine.filter(function(m){ return m.type === "sortie"; }).length;
-
-    return h("div", {className:"screen"},
-        h("div", {className:"header"},
-            h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null, h("div", {className:"header-title"}, "📊 Statistiques"), h("div", {className:"header-sub"}, "Vue d'ensemble du stock"))
-        ),
-        h("div", {className:"stat-grid"},
-            h("div", {className:"stat-card"},
-                h("div", {className:"stat-value"}, totalArticles),
-                h("div", {className:"stat-label"}, "Références")
-            ),
-            h("div", {className:"stat-card", style:{borderColor: nbRuptures > 0 ? "var(--red)" : "var(--border)"}},
-                h("div", {className:"stat-value", style:{color: nbRuptures > 0 ? "var(--red)" : "var(--navy)"}}, nbRuptures),
-                h("div", {className:"stat-label"}, "Ruptures")
-            ),
-            h("div", {className:"stat-card", style:{borderColor: nbStockBas > 0 ? "var(--orange)" : "var(--border)"}},
-                h("div", {className:"stat-value", style:{color: nbStockBas > 0 ? "var(--orange)" : "var(--navy)"}}, nbStockBas),
-                h("div", {className:"stat-label"}, "Stock bas")
-            )
-        ),
-        valeurTotale > 0 ? h("div", {className:"card", style:{marginBottom:14, textAlign:"center"}},
-            h("div", {style:{fontSize:11, fontWeight:800, color:"var(--text3)", marginBottom:4}}, "💶 VALEUR TOTALE DU STOCK (HT)"),
-            h("div", {style:{fontSize:28, fontWeight:900, color:"var(--navy)"}}, valeurTotale.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " €"),
-            h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:4}}, "Basé sur " + produits.filter(function(p){return p.prix_unitaire;}).length + " articles avec prix renseigné")
-        ) : null,
-        h("div", {className:"stat-grid-2", style:{marginBottom:14}},
-            h("div", {className:"stat-card"},
-                h("div", {className:"stat-value", style:{color:"var(--green)"}}, "+" + entreesSemaine),
-                h("div", {className:"stat-label"}, "Entrées / 7j")
-            ),
-            h("div", {className:"stat-card"},
-                h("div", {className:"stat-value", style:{color:"var(--orange)"}}, "-" + sortiesSemaine),
-                h("div", {className:"stat-label"}, "Sorties / 7j")
-            )
-        ),
-        loading ? h("div", {style:{textAlign:"center", padding:20}}, h("div", {className:"spinner", style:{width:28, height:28, borderWidth:3}})) :
-        top5.length > 0 ? h("div", {className:"card"},
-            h("div", {className:"section-title"}, "🔥 TOP 5 LES PLUS UTILISÉS (30 JOURS)"),
-            top5.map(function(item, i) {
-                return h("div", {key:i, className:"top-item"},
-                    h("div", {className:"top-rank"}, i+1),
-                    h("div", {style:{flex:1, fontSize:13, fontWeight:700, color:"var(--navy)"}}, item.nom),
-                    h("div", {style:{fontSize:13, fontWeight:900, color:"var(--text2)"}}, item.qty + " sorties")
-                );
-            })
-        ) : null
-    );
-}
-
 // AlertesScreen — ruptures, stocks bas et activité récente
 function AlertesScreen(props) {
     var produits = props.produits || [];
@@ -2957,8 +2747,6 @@ function ProfilScreen(props) {
         ),
         h("div", {className:"card space-y"},
             h("button", {className:"btn btn-navy btn-full", onClick:props.onTutos}, "📚 Tutoriels"),
-            h("button", {className:"btn btn-outline btn-full", onClick:props.onStats}, "📊 Statistiques"),
-            h("button", {className:"btn btn-outline btn-full", onClick:props.onInventaire}, "📋 Inventaire physique"),
             props.user.role === "admin" ? h("button", {className:"btn btn-outline btn-full", onClick:props.onUsers}, "👥 Gérer les utilisateurs") : null,
             h("button", {className:"btn btn-danger btn-full", onClick:props.onLogout}, "Se déconnecter")
         )
@@ -3117,7 +2905,7 @@ function App() {
         return h("div", {className:"app"}, GlobalHeader, h(LoginScreen, {onLogin: function(u){setUser(u);}}));
     }
     
-    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list" || screen === "tutos" || screen === "users" || screen === "stats" || screen === "inventaire";
+    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list" || screen === "tutos" || screen === "users";
     var currentScreen;
     
     switch(screen) {
@@ -3126,12 +2914,6 @@ function App() {
             break;
         case "alertes":
             currentScreen = h(AlertesScreen, {produits:produits, nav:nav, user:user});
-            break;
-        case "stats":
-            currentScreen = h(StatsScreen, {produits:produits, onBack:goBack});
-            break;
-        case "inventaire":
-            currentScreen = h(InventaireScreen, {produits:produits, onBack:goBack, onRefresh:loadData, user:user});
             break;
         case "corpsdetat":
             currentScreen = h(CorpsDetatScreen, {categorie:data.categorie, onBack:goBack, nav:nav, produits:produits});
@@ -3158,7 +2940,7 @@ function App() {
             currentScreen = h(UsersScreen, {onBack:goBack, user:user});
             break;
         case "profil":
-            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onTutos:function(){nav("tutos", null);}, onStats:function(){nav("stats", null);}, onInventaire:function(){nav("inventaire", null);}, onUsers:function(){nav("users", null);}, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
+            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onTutos:function(){nav("tutos", null);}, onUsers:function(){nav("users", null);}, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
             break;
         default:
             currentScreen = h(HomeScreen, {user:user, nav:nav, produits:produits});
