@@ -914,6 +914,21 @@ function getStatut(p) {
     return "ok";
 }
 
+// Trouver les sous-familles pour un corps d'état — tolérant aux accents/casse/variantes
+function getSousFamilles(corpsEtat) {
+    if(!corpsEtat) return SOUS_FAMILLES["Divers"] || [];
+    var norm = function(s){ return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").trim(); };
+    var ce = norm(corpsEtat);
+    // Recherche exacte normalisée
+    var key = Object.keys(SOUS_FAMILLES).find(function(k){ return norm(k) === ce; });
+    if(key) return SOUS_FAMILLES[key];
+    // Recherche partielle (contient)
+    key = Object.keys(SOUS_FAMILLES).find(function(k){ return ce.includes(norm(k)) || norm(k).includes(ce); });
+    if(key) return SOUS_FAMILLES[key];
+    // Fallback : liste commune Outillage + Consommables + Divers
+    return ["Matériaux","Outillage","Consommables","Non classé"];
+}
+
 // SplashScreen
 function SplashScreen(props) {
     var hideState = useState(false);
@@ -1649,17 +1664,9 @@ function ProduitDetail(props) {
                 }
             },
                 h("option", {value:""}, "— Non classé —"),
-                (function(){
-                    // Recherche insensible à la casse et aux accents
-                    var ce = p.corps_etat || "";
-                    var key = Object.keys(SOUS_FAMILLES).find(function(k){
-                        return k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"") ===
-                               ce.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-                    });
-                    return (SOUS_FAMILLES[key] || SOUS_FAMILLES[ce] || []).map(function(sf){
-                        return h("option", {key:sf, value:sf}, sf);
-                    });
-                })()
+                getSousFamilles(p.corps_etat).map(function(sf){
+                    return h("option", {key:sf, value:sf}, sf);
+                })
             )
         ),
         h("div", {className:"card", style:{marginBottom:12}},
@@ -2142,6 +2149,9 @@ function AchatScreen(props) {
     var loadingState = useState(false); var loading = loadingState[0]; var setLoading = loadingState[1];
     var achatsState = useState([]); var achats = achatsState[0]; var setAchats = achatsState[1];
     var showFormState = useState(false); var showForm = showFormState[0]; var setShowForm = showFormState[1];
+    var scanningState = useState(false); var scanning = scanningState[0]; var setScanning = scanningState[1];
+    var scanVideoRef = useRef(null);
+    var scanStreamRef = useRef(null);
 
     function loadAchats() {
         supaGet("achats", "order=created_at.desc&limit=30").then(function(r){ setAchats(Array.isArray(r)?r:[]); }).catch(function(){});
@@ -2158,6 +2168,52 @@ function AchatScreen(props) {
             loadAchats();
         } catch(e) { showToast("❌ Erreur: " + e.message, "error"); }
         setLoading(false);
+    }
+
+    function startScanAchat() {
+        setScanning(true);
+        navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(function(stream){
+            scanStreamRef.current = stream;
+            setTimeout(function(){
+                if(scanVideoRef.current){ scanVideoRef.current.srcObject = stream; scanVideoRef.current.play(); }
+            }, 100);
+            if(window.BarcodeDetector) {
+                var det = new BarcodeDetector({formats:["ean_13","ean_8","code_128","qr_code","code_39"]});
+                var interval = setInterval(async function(){
+                    if(!scanVideoRef.current){ clearInterval(interval); return; }
+                    try {
+                        var codes = await det.detect(scanVideoRef.current);
+                        if(codes && codes.length > 0){
+                            clearInterval(interval);
+                            stopScanAchat();
+                            var code = codes[0].rawValue;
+                            // Chercher dans les produits existants (par référence ou nom)
+                            var match = (props.produits||[]).find(function(p){
+                                return (p.reference||"").toLowerCase() === code.toLowerCase()
+                                    || (p.nom||"").toLowerCase().includes(code.toLowerCase().slice(0,8));
+                            });
+                            if(match) {
+                                setNom(match.nom);
+                                setUnite(match.unite||"piece");
+                                showToast("✅ Article trouvé : " + match.nom, "success");
+                            } else {
+                                setNom(code);
+                                showToast("📷 Code scanné — article non trouvé dans le stock", "success");
+                            }
+                            setShowForm(true);
+                        }
+                    } catch(e){}
+                }, 400);
+            } else {
+                showToast("Scanner non supporté — utilisez Chrome sur Android", "error");
+                setTimeout(stopScanAchat, 2000);
+            }
+        }).catch(function(e){ showToast("Caméra inaccessible", "error"); setScanning(false); });
+    }
+
+    function stopScanAchat() {
+        if(scanStreamRef.current){ scanStreamRef.current.getTracks().forEach(function(t){t.stop();}); scanStreamRef.current=null; }
+        setScanning(false);
     }
 
     var recuModalState = useState(null); // {achat}
@@ -2207,8 +2263,22 @@ function AchatScreen(props) {
                 h("div", {className:"header-title"}, "🛒 Achats"),
                 h("div", {className:"header-sub"}, achats.length + " commande(s)")
             ),
-            h("button", {style:{marginLeft:"auto", background:"var(--gold)", color:"#fff", border:"none", borderRadius:10, padding:"6px 12px", fontWeight:800, fontSize:13, cursor:"pointer"}, onClick:function(){setShowForm(!showForm);}}, showForm ? "✕" : "＋ Nouveau")
+            h("div", {style:{marginLeft:"auto", display:"flex", gap:8}},
+                h("button", {style:{background:"var(--navy)", color:"#fff", border:"none", borderRadius:10, padding:"6px 12px", fontWeight:800, fontSize:13, cursor:"pointer"}, onClick:startScanAchat}, "📷 Scanner"),
+                h("button", {style:{background:"var(--gold)", color:"#fff", border:"none", borderRadius:10, padding:"6px 12px", fontWeight:800, fontSize:13, cursor:"pointer"}, onClick:function(){setShowForm(!showForm);}}, showForm ? "✕" : "＋")
+            )
         ),
+
+        // Overlay scanner
+        scanning ? h("div", {className:"scanner-overlay"},
+            h("div", {style:{color:"#fff", fontSize:15, fontWeight:700, marginBottom:16}}, "📷 Scanner le code-barres ou QR code"),
+            h("div", {className:"scanner-frame"},
+                h("video", {ref:scanVideoRef, playsInline:true, muted:true, style:{width:"100%", height:"100%", objectFit:"cover"}}),
+                h("div", {className:"scanner-line"})
+            ),
+            h("div", {style:{color:"rgba(255,255,255,0.6)", fontSize:12, marginTop:12, textAlign:"center"}}, "L'article est automatiquement reconnu"),
+            h("button", {className:"btn btn-danger", style:{marginTop:20}, onClick:stopScanAchat}, "✕ Annuler")
+        ) : null,
 
         showForm ? h("div", {className:"card space-y", style:{marginBottom:14}},
             h("div", {className:"input-group"},
