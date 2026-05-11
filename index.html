@@ -1278,14 +1278,20 @@ function ProduitsListScreen(props) {
                 h("button", {className:"chip" + (famille==="MATERIAUX"?" active":""), onClick:function(){setFamille("MATERIAUX");setSousFam("all");}}, "🧱 Matériaux (" + countMat + ")"),
                 h("button", {className:"chip" + (famille==="OUTILLAGE"?" active":""), onClick:function(){setFamille("OUTILLAGE");setSousFam("all");}}, "🔧 Outillage (" + countOut + ")")
             ),
-            (SOUS_FAMILLES[ce.label] || []).length > 0 ? h("div", {className:"chips"},
-                h("button", {className:"chip" + (sousFam==="all"?" active":""), onClick:function(){setSousFam("all");}}, "Tout"),
-                (SOUS_FAMILLES[ce.label] || []).map(function(sf) {
-                    var cnt = props.produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && (p.sous_famille||"") === sf; }).length;
-                    return h("button", {key:sf, className:"chip" + (sousFam===sf?" active":""), onClick:function(){setSousFam(sf);}},
-                        sf + (cnt > 0 ? " (" + cnt + ")" : "")
-                    );
-                })
+            (SOUS_FAMILLES[ce.label] || []).length > 0 ? h("div", {style:{marginBottom:12}},
+                h("select", {
+                    className:"select",
+                    value: sousFam,
+                    onChange: function(e){ setSousFam(e.target.value); }
+                },
+                    h("option", {value:"all"}, "🏷️ Toutes les sous-familles"),
+                    (SOUS_FAMILLES[ce.label] || []).map(function(sf) {
+                        var cnt = props.produits.filter(function(p){
+                            return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && (p.sous_famille||"") === sf;
+                        }).length;
+                        return h("option", {key:sf, value:sf}, sf + (cnt > 0 ? "  (" + cnt + ")" : ""));
+                    })
+                )
             ) : null,
             h("div", {className:"search-box"},
                 h("span", {style:{color:"var(--text3)"}}, "🔍"),
