@@ -113,6 +113,19 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .lieu-chip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;border:2px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;white-space:nowrap}
 .lieu-chip.selected{background:var(--navy);color:#fff;border-color:var(--navy)}
 .lieu-chip.none{background:var(--surface2);color:var(--text3);border-color:var(--border)}
+.search-global{position:relative;margin:0 0 12px 0}
+.search-global input{width:100%;padding:13px 16px 13px 42px;border-radius:14px;border:2px solid var(--border);font-size:15px;font-family:inherit;background:#fff;box-sizing:border-box}
+.search-global input:focus{border-color:var(--navy);outline:none}
+.search-global .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none}
+.search-results{background:#fff;border-radius:16px;border:1.5px solid var(--border);overflow:hidden;margin-bottom:12px}
+.search-result-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer}
+.search-result-item:last-child{border-bottom:none}
+.search-result-item:hover{background:var(--surface2)}
+.edit-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:800;display:flex;flex-direction:column;justify-content:flex-end}
+.edit-sheet{background:#fff;border-radius:24px 24px 0 0;padding:20px 16px 36px;max-height:85vh;overflow-y:auto}
+.edit-sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px}
+.chantier-input{background:rgba(61,84,112,0.06);border:none;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit;width:100%;box-sizing:border-box;color:var(--navy)}
+.chantier-input:focus{outline:2px solid var(--navy)}
 .sous-fam-tag{display:inline-block;background:rgba(201,151,58,0.13);color:var(--gold-dim);font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;margin-top:2px}
 .lieu-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(61,84,112,0.10);color:var(--navy);font-size:12px;font-weight:800;padding:4px 10px;border-radius:10px;margin-bottom:10px}
 .product-card-actions{display:flex;gap:8px;margin-top:10px}
@@ -1163,12 +1176,65 @@ function NavBar(props) {
 function HomeScreen(props) {
     var produits = props.produits || [];
     var totalArticles = produits.length;
+    var searchState = useState("");
+    var search = searchState[0]; var setSearch = searchState[1];
 
     var grossIds = CORPS_ETAT_GROS.map(function(c){ return c.label.toLowerCase(); });
     var countGros = produits.filter(function(p){ return grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
     var countSecond = produits.filter(function(p){ return !grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
 
+    var results = search.length >= 2 ? produits.filter(function(p){
+        var q = search.toLowerCase();
+        return (p.nom||"").toLowerCase().includes(q)
+            || (p.corps_etat||"").toLowerCase().includes(q)
+            || (p.sous_famille||"").toLowerCase().includes(q)
+            || (p.fournisseur||"").toLowerCase().includes(q)
+            || (p.reference||"").toLowerCase().includes(q);
+    }).slice(0, 12) : [];
+
     return h("div", {className:"screen"},
+        h("div", {className:"search-global"},
+            h("span", {className:"icon"}, "🔍"),
+            h("input", {
+                placeholder:"Rechercher dans tout le stock...",
+                value:search,
+                onChange:function(e){ setSearch(e.target.value); }
+            })
+        ),
+        search.length >= 2 ? h("div", {className:"search-results"},
+            results.length === 0
+                ? h("div", {style:{padding:"16px", textAlign:"center", color:"var(--text3)", fontSize:13}}, "Aucun résultat : " + search)
+                : results.map(function(p) {
+                    var editingState = useState(false);
+    var editing = editingState[0]; var setEditing = editingState[1];
+    var editNomState = useState(p.nom || "");
+    var editNom = editNomState[0]; var setEditNom = editNomState[1];
+    var editCEState = useState(p.corps_etat || "");
+    var editCE = editCEState[0]; var setEditCE = editCEState[1];
+    var editFamilleState = useState(p.famille || "MATERIAUX");
+    var editFamille = editFamilleState[0]; var setEditFamille = editFamilleState[1];
+    var editUniteState = useState(p.unite || "piece");
+    var editUnite = editUniteState[0]; var setEditUnite = editUniteState[1];
+    var editSavingState = useState(false);
+    var editSaving = editSavingState[0]; var setEditSaving = editSavingState[1];
+    var editFileRef = useRef(null);
+    var chantierState = useState("");
+    var chantier = chantierState[0]; var setChantier = chantierState[1];
+    var chantiersState = useState([]);
+    var chantiersSugg = chantiersState[0]; var setChantiersSugg = chantiersState[1];
+    var statut = getStatut(p);
+                    return h("div", {key:p.id, className:"search-result-item", onClick:function(){ setSearch(""); props.nav("produit", p); }},
+                        h("div", {className:"product-thumb", style:{width:36, height:36, minWidth:36}},
+                            p.photo_url ? h("img", {src:p.photo_url}) : "📦"
+                        ),
+                        h("div", {style:{flex:1}},
+                            h("div", {style:{fontSize:14, fontWeight:700, color:"var(--navy)"}}, p.nom),
+                            h("div", {style:{fontSize:11, color:"var(--text3)"}}, (p.corps_etat||"") + (p.sous_famille ? " · " + p.sous_famille : ""))
+                        ),
+                        h("span", {className:"badge badge-"+statut, style:{fontSize:11}}, (p.quantite||0) + " " + (p.unite||"pce"))
+                    );
+                })
+        ) : null,
         h("div", {className:"home-buttons"},
             h("button", {className:"home-btn btn-gros", onClick:function(){props.nav("corpsdetat", {categorie:"gros"});}},
                 h("span", {className:"home-btn-icon"}, "🏗️"),
@@ -1417,9 +1483,9 @@ function ProduitDetail(props) {
         var apres = Math.max(0, avant - q);
         try {
             await supaPatch("produits", p.id, {quantite: apres});
-            await logMouvement({produit_id:p.id, produit_nom:p.nom, type:"sortie", quantite:q, quantite_avant:avant, quantite_apres:apres, user_id:props.user.code, user_nom:props.user.name});
-            showToast("➖ " + q + " sorti(s)", "success");
-            setQty(""); props.onRefresh(); props.onBack();
+            await logMouvement({produit_id:p.id, produit_nom:p.nom, type:"sortie", quantite:q, quantite_avant:avant, quantite_apres:apres, user_id:props.user.code, user_nom:props.user.name, chantier: chantier.trim() || null});
+            showToast("➖ " + q + " sorti(s)" + (chantier ? " — " + chantier : ""), "success");
+            setQty(""); setChantier(""); props.onRefresh(); props.onBack();
         } catch(e) { showToast("Erreur: " + e.message, "error"); }
     }
 
@@ -1446,11 +1512,41 @@ function ProduitDetail(props) {
         } catch(e) { showToast("Erreur: " + e.message, "error"); setDeleting(false); }
     }
 
+    async function saveEdit() {
+        if(!editNom.trim()) return;
+        setEditSaving(true);
+        try {
+            var patch = {nom: editNom.trim(), corps_etat: editCE, famille: editFamille, unite: editUnite};
+            await supaPatch("produits", p.id, patch);
+            showToast("✅ Article mis à jour", "success");
+            setEditing(false);
+            props.onRefresh();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+        setEditSaving(false);
+    }
+
+    async function changePhoto(file) {
+        if(!file) return;
+        try {
+            var pu = await uploadPhoto(file, (p.nom||"produit").replace(/[^a-z0-9]/gi,"_").slice(0,15) + "_edit");
+            await supaPatch("produits", p.id, {photo_url: pu});
+            showToast("✅ Photo mise à jour", "success");
+            props.onRefresh();
+        } catch(e) { showToast("Erreur photo: " + e.message, "error"); }
+    }
+
     useEffect(function() {
         fetchLieuxCustom().then(function(custom) {
             setLieux(EMPLACEMENTS_DEFAUT.concat(custom));
             setLieuxLoaded(true);
         });
+        // Charger chantiers récents pour autocomplete
+        supaGet("mouvements", "type=eq.sortie&order=created_at.desc&limit=50").then(function(rows) {
+            if(!Array.isArray(rows)) return;
+            var seen = {}; var list = [];
+            rows.forEach(function(r){ if(r.chantier && !seen[r.chantier]){ seen[r.chantier]=1; list.push(r.chantier); }});
+            setChantiersSugg(list.slice(0, 8));
+        }).catch(function(){});
     }, []);
 
     async function saveFournisseurPrix() {
@@ -1495,7 +1591,8 @@ function ProduitDetail(props) {
     return h("div", {className:"screen"},
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null, h("div", {className:"header-title", style:{fontSize:18}}, p.nom), h("div", {className:"header-sub"}, p.corps_etat || p.famille || ""))
+            h("div", null, h("div", {className:"header-title", style:{fontSize:18}}, p.nom), h("div", {className:"header-sub"}, p.corps_etat || p.famille || "")),
+            h("button", {style:{background:"none", border:"none", cursor:"pointer", fontSize:20, padding:"0 4px"}, onClick:function(){ setEditNom(p.nom||""); setEditCE(p.corps_etat||""); setEditFamille(p.famille||"MATERIAUX"); setEditUnite(p.unite||"piece"); setEditing(true); }}, "✏️")
         ),
         h("div", {className:"product-hero"},
             p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📦")
@@ -1616,8 +1713,20 @@ function ProduitDetail(props) {
             ),
             h("div", {className:"card"},
                 h("div", {className:"section-title"}, "➖ SORTIR"),
-                h("input", {className:"input", type:"number", placeholder:"Quantite", value:qty, onChange:function(e){setQty(e.target.value);}}),
-                h("button", {className:"btn btn-gold btn-full", style:{marginTop:8}, onClick:sortir, disabled:!qty}, "Sortir")
+                h("input", {className:"input", type:"number", placeholder:"Quantité", value:qty, onChange:function(e){setQty(e.target.value);}, style:{marginBottom:8}}),
+                h("div", {style:{position:"relative", marginBottom:8}},
+                    h("input", {
+                        className:"chantier-input",
+                        placeholder:"🏗️ Chantier (optionnel)",
+                        value:chantier,
+                        list:"chantiers-list",
+                        onChange:function(e){setChantier(e.target.value);}
+                    }),
+                    h("datalist", {id:"chantiers-list"},
+                        chantiersSugg.map(function(c){ return h("option", {key:c, value:c}); })
+                    )
+                ),
+                h("button", {className:"btn btn-gold btn-full", onClick:sortir, disabled:!qty}, "Sortir")
             )
         ),
         p.famille !== "OUTILLAGE" ? h("div", {className:"card", style:{marginTop:12}},
@@ -1702,7 +1811,57 @@ function ProduitDetail(props) {
             style:{marginTop:12},
             onClick:supprimer,
             disabled:deleting
-        }, deleting ? "..." : "🗑️ Supprimer ce produit") : null
+        }, deleting ? "..." : "🗑️ Supprimer ce produit") : null,
+
+        // Bottom sheet édition
+        editing ? h("div", {className:"edit-overlay", onClick:function(e){ if(e.target.className==="edit-overlay") setEditing(false); }},
+            h("div", {className:"edit-sheet"},
+                h("div", {className:"edit-sheet-handle"}),
+                h("div", {className:"section-title", style:{marginBottom:14}}, "✏️ MODIFIER L'ARTICLE"),
+                h("input", {ref:editFileRef, type:"file", accept:"image/*", style:{display:"none"}, onChange:function(e){ changePhoto(e.target.files[0]); }}),
+                h("div", {style:{display:"flex", gap:10, marginBottom:14, alignItems:"center"}},
+                    h("div", {className:"product-hero", style:{width:80, height:80, minWidth:80, borderRadius:12, marginBottom:0, fontSize:32, cursor:"pointer"},
+                        onClick:function(){ editFileRef.current && editFileRef.current.click(); }},
+                        p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📷")
+                    ),
+                    h("div", {style:{fontSize:11, color:"var(--text3)"}}, "Tap pour changer la photo")
+                ),
+                h("div", {className:"input-group space-y"},
+                    h("div", {className:"input-group"},
+                        h("label", {className:"input-label"}, "Nom *"),
+                        h("input", {className:"input", value:editNom, onChange:function(e){setEditNom(e.target.value);}})
+                    ),
+                    h("div", {className:"grid-2"},
+                        h("div", {className:"input-group"},
+                            h("label", {className:"input-label"}, "Corps d'état"),
+                            h("select", {className:"select", value:editCE, onChange:function(e){setEditCE(e.target.value);}},
+                                h("option", {value:""}, "— Choisir —"),
+                                CORPS_ETAT_GROS.concat(CORPS_ETAT_SECOND).map(function(ce){
+                                    return h("option", {key:ce.id, value:ce.label}, ce.icon + " " + ce.label);
+                                })
+                            )
+                        ),
+                        h("div", {className:"input-group"},
+                            h("label", {className:"input-label"}, "Famille"),
+                            h("select", {className:"select", value:editFamille, onChange:function(e){setEditFamille(e.target.value);}},
+                                h("option", {value:"MATERIAUX"}, "🧱 Matériaux"),
+                                h("option", {value:"OUTILLAGE"}, "🔧 Outillage")
+                            )
+                        )
+                    ),
+                    h("div", {className:"input-group"},
+                        h("label", {className:"input-label"}, "Unité"),
+                        h("select", {className:"select", value:editUnite, onChange:function(e){setEditUnite(e.target.value);}},
+                            UNITES.map(function(u){ return h("option", {key:u, value:u}, u); })
+                        )
+                    ),
+                    h("div", {style:{display:"flex", gap:10, marginTop:8}},
+                        h("button", {className:"btn btn-outline", style:{flex:1}, onClick:function(){setEditing(false);}}, "Annuler"),
+                        h("button", {className:"btn btn-navy", style:{flex:2}, onClick:saveEdit, disabled:!editNom.trim()||editSaving}, editSaving ? "..." : "✅ Enregistrer")
+                    )
+                )
+            )
+        ) : null
     );
 }
 
@@ -2192,7 +2351,7 @@ function AlertesScreen(props) {
             h("div", {className:"mvt-icon " + iconClass}, icon),
             h("div", {style:{flex:1}},
                 h("div", {className:"mvt-nom"}, m.produit_nom || "—"),
-                h("div", {className:"mvt-meta"}, (m.user_nom||"") + " · " + formatDate(m.created_at))
+                h("div", {className:"mvt-meta"}, (m.user_nom||"") + " · " + formatDate(m.created_at) + (m.chantier ? " · 🏗️ " + m.chantier : ""))
             ),
             h("div", {className:"mvt-qty", style:{color: qtyColor}},
                 (isEntree ? "+" : "-") + (m.quantite||0)
