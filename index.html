@@ -2179,20 +2179,27 @@ function AchatScreen(props) {
             var dataUrl = ev.target.result;
             var b64 = dataUrl.split(",")[1];
             var mtype = dataUrl.split(",")[0].replace("data:","").replace(";base64","") || "image/jpeg";
-            fetch("/api/anthropic", {
+            fetch("/api/analyze", {
                 method:"POST",
                 headers:{"Content-Type":"application/json"},
                 body:JSON.stringify({
-                    model:"claude-opus-4-20250514", max_tokens:800,
-                    messages:[{role:"user", content:[
-                        {type:"image", source:{type:"base64", media_type:mtype, data:b64}},
-                        {type:"text", text:"Analyse ce bon de livraison. Extrais tous les articles avec quantités et unités. Reponds UNIQUEMENT en JSON valide sans markdown: {\"articles\":[{\"nom\":\"...\"  ,\"quantite\":0,\"unite\":\"piece\"}]}. Si aucun article: {\"articles\":[]}."}
-                    ]}]
+                    image: b64,
+                    mediaType: mtype,
+                    mode: "bon_livraison"
                 })
             }).then(function(r){ return r.json(); }).then(function(data){
-                var text = (data.content||[]).map(function(c){return c.text||"";}).join("").replace(/```json|```/g,"").trim();
-                var parsed = JSON.parse(text);
-                var articles = parsed.articles || [];
+                // analyze.js retourne directement les données ou on adapte
+                var articles = [];
+                if(data.articles) {
+                    articles = data.articles;
+                } else if(data.nom) {
+                    // Format article unique — on crée une liste
+                    articles = [{nom:data.nom, quantite:data.quantite_estimee||1, unite:data.unite||"piece"}];
+                } else if(data.content) {
+                    var text = (data.content||[]).map(function(c){return c.text||"";}).join("").replace(/```json|```/g,"").trim();
+                    var parsed = JSON.parse(text);
+                    articles = parsed.articles || [];
+                }
                 if(articles.length === 0) return showToast("Aucun article détecté — photo du bon lisible ?","error");
                 setBonResults(articles);
                 showToast("✅ " + articles.length + " article(s) détecté(s)","success");
