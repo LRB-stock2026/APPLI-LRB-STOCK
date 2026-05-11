@@ -298,7 +298,7 @@ var SOUS_FAMILLES = {
 var UNITES = ["piece","boite","sac","rouleau","cartouche","litre","m2","ml","kg","palette","lot"];
 
 // Cle Anthropic pour l'IA photo (a remplir)
-var ANTHROPIC_KEY = "";
+var ANTHROPIC_KEY = ""; // Clé gérée côté serveur via /api/anthropic
 
 // Emplacements prédéfinis fixes
 var EMPLACEMENTS_DEFAUT = ["Camion 1","Camion 2","Camion 3","Magasin","Dépôt"];
@@ -860,14 +860,11 @@ function formatDate(iso) {
 }
 
 async function analyzeImageWithClaude(base64Data, mediaType) {
-    if(!ANTHROPIC_KEY) throw new Error("Cle Anthropic non configuree");
-    var res = await fetch("https://api.anthropic.com/v1/messages", {
+    
+    var res = await fetch("/api/anthropic", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
-            "x-api-key": ANTHROPIC_KEY,
-            "anthropic-version": "2023-06-01",
-            "anthropic-dangerous-direct-browser-ipc": "true"
+            "Content-Type": "application/json"
         },
         body: JSON.stringify({
             model: "claude-opus-4-20250514",
@@ -2149,9 +2146,7 @@ function AchatScreen(props) {
     var loadingState = useState(false); var loading = loadingState[0]; var setLoading = loadingState[1];
     var achatsState = useState([]); var achats = achatsState[0]; var setAchats = achatsState[1];
     var showFormState = useState(false); var showForm = showFormState[0]; var setShowForm = showFormState[1];
-    var scanningState = useState(false); var scanning = scanningState[0]; var setScanning = scanningState[1];
-    var scanVideoRef = useRef(null);
-    var scanStreamRef = useRef(null);
+
 
     function loadAchats() {
         supaGet("achats", "order=created_at.desc&limit=30").then(function(r){ setAchats(Array.isArray(r)?r:[]); }).catch(function(){});
@@ -2170,50 +2165,58 @@ function AchatScreen(props) {
         setLoading(false);
     }
 
-    function startScanAchat() {
-        setScanning(true);
-        navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(function(stream){
-            scanStreamRef.current = stream;
-            setTimeout(function(){
-                if(scanVideoRef.current){ scanVideoRef.current.srcObject = stream; scanVideoRef.current.play(); }
-            }, 100);
-            if(window.BarcodeDetector) {
-                var det = new BarcodeDetector({formats:["ean_13","ean_8","code_128","qr_code","code_39"]});
-                var interval = setInterval(async function(){
-                    if(!scanVideoRef.current){ clearInterval(interval); return; }
-                    try {
-                        var codes = await det.detect(scanVideoRef.current);
-                        if(codes && codes.length > 0){
-                            clearInterval(interval);
-                            stopScanAchat();
-                            var code = codes[0].rawValue;
-                            // Chercher dans les produits existants (par référence ou nom)
-                            var match = (props.produits||[]).find(function(p){
-                                return (p.reference||"").toLowerCase() === code.toLowerCase()
-                                    || (p.nom||"").toLowerCase().includes(code.toLowerCase().slice(0,8));
-                            });
-                            if(match) {
-                                setNom(match.nom);
-                                setUnite(match.unite||"piece");
-                                showToast("✅ Article trouvé : " + match.nom, "success");
-                            } else {
-                                setNom(code);
-                                showToast("📷 Code scanné — article non trouvé dans le stock", "success");
-                            }
-                            setShowForm(true);
-                        }
-                    } catch(e){}
-                }, 400);
-            } else {
-                showToast("Scanner non supporté — utilisez Chrome sur Android", "error");
-                setTimeout(stopScanAchat, 2000);
-            }
-        }).catch(function(e){ showToast("Caméra inaccessible", "error"); setScanning(false); });
+    var bonFileRef = useRef(null);
+    var bonLoadingState = useState(false); var bonLoading = bonLoadingState[0]; var setBonLoading = bonLoadingState[1];
+    var bonResultsState = useState(null); var bonResults = bonResultsState[0]; var setBonResults = bonResultsState[1];
+
+    function scanBonLivraison(file) {
+        if(!file) return;
+        
+        setBonLoading(true);
+        setBonResults(null);
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+            var dataUrl = ev.target.result;
+            var b64 = dataUrl.split(",")[1];
+            var mtype = dataUrl.split(",")[0].replace("data:","").replace(";base64","") || "image/jpeg";
+            fetch("/api/anthropic", {
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({
+                    model:"claude-opus-4-20250514", max_tokens:800,
+                    messages:[{role:"user", content:[
+                        {type:"image", source:{type:"base64", media_type:mtype, data:b64}},
+                        {type:"text", text:"Analyse ce bon de livraison. Extrais tous les articles avec quantités et unités. Reponds UNIQUEMENT en JSON valide sans markdown: {\"articles\":[{\"nom\":\"...\"  ,\"quantite\":0,\"unite\":\"piece\"}]}. Si aucun article: {\"articles\":[]}."}
+                    ]}]
+                })
+            }).then(function(r){ return r.json(); }).then(function(data){
+                var text = (data.content||[]).map(function(c){return c.text||"";}).join("").replace(/```json|```/g,"").trim();
+                var parsed = JSON.parse(text);
+                var articles = parsed.articles || [];
+                if(articles.length === 0) return showToast("Aucun article détecté — photo du bon lisible ?","error");
+                setBonResults(articles);
+                showToast("✅ " + articles.length + " article(s) détecté(s)","success");
+            }).catch(function(e){ showToast("Erreur IA : " + e.message,"error"); })
+            .finally(function(){ setBonLoading(false); });
+        };
+        reader.readAsDataURL(file);
     }
 
-    function stopScanAchat() {
-        if(scanStreamRef.current){ scanStreamRef.current.getTracks().forEach(function(t){t.stop();}); scanStreamRef.current=null; }
-        setScanning(false);
+    async function importerBon() {
+        if(!bonResults||bonResults.length===0) return;
+        setBonLoading(true);
+        var ok=0;
+        for(var i=0;i<bonResults.length;i++){
+            var a = bonResults[i];
+            if(!a.nom) continue;
+            try {
+                await supaPost("achats",{nom:a.nom, quantite:a.quantite||1, unite:a.unite||"piece", commentaire:"Importé depuis bon de livraison", user_id:props.user.code, statut:"recu"});
+                ok++;
+            } catch(e){}
+        }
+        showToast("✅ " + ok + " achat(s) créés depuis le bon","success");
+        setBonResults(null); loadAchats();
+        setBonLoading(false);
     }
 
     var recuModalState = useState(null); // {achat}
@@ -2264,20 +2267,38 @@ function AchatScreen(props) {
                 h("div", {className:"header-sub"}, achats.length + " commande(s)")
             ),
             h("div", {style:{marginLeft:"auto", display:"flex", gap:8}},
-                h("button", {style:{background:"var(--navy)", color:"#fff", border:"none", borderRadius:10, padding:"6px 12px", fontWeight:800, fontSize:13, cursor:"pointer"}, onClick:startScanAchat}, "📷 Scanner"),
+                h("input", {ref:bonFileRef, type:"file", accept:"image/*", capture:"environment", style:{display:"none"}, onChange:function(e){scanBonLivraison(e.target.files[0]);}}),
+                h("button", {style:{background:"var(--navy)", color:"#fff", border:"none", borderRadius:10, padding:"6px 12px", fontWeight:800, fontSize:13, cursor:"pointer"}, onClick:function(){bonFileRef.current&&bonFileRef.current.click();}}, "📄 Scanner bon"),
                 h("button", {style:{background:"var(--gold)", color:"#fff", border:"none", borderRadius:10, padding:"6px 12px", fontWeight:800, fontSize:13, cursor:"pointer"}, onClick:function(){setShowForm(!showForm);}}, showForm ? "✕" : "＋")
             )
         ),
 
-        // Overlay scanner
-        scanning ? h("div", {className:"scanner-overlay"},
-            h("div", {style:{color:"#fff", fontSize:15, fontWeight:700, marginBottom:16}}, "📷 Scanner le code-barres ou QR code"),
-            h("div", {className:"scanner-frame"},
-                h("video", {ref:scanVideoRef, playsInline:true, muted:true, style:{width:"100%", height:"100%", objectFit:"cover"}}),
-                h("div", {className:"scanner-line"})
-            ),
-            h("div", {style:{color:"rgba(255,255,255,0.6)", fontSize:12, marginTop:12, textAlign:"center"}}, "L'article est automatiquement reconnu"),
-            h("button", {className:"btn btn-danger", style:{marginTop:20}, onClick:stopScanAchat}, "✕ Annuler")
+        // Indicateur chargement IA
+        bonLoading ? h("div", {className:"card", style:{marginBottom:14, textAlign:"center", padding:20}},
+            h("div", {className:"spinner", style:{width:32, height:32, borderWidth:3, margin:"0 auto 12px"}}),
+            h("div", {style:{fontSize:13, fontWeight:700, color:"var(--navy)"}}, "📄 Analyse du bon de livraison en cours..."),
+            h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:4}}, "L'IA extrait les articles et quantités")
+        ) : null,
+
+        // Résultats du bon de livraison
+        bonResults && !bonLoading ? h("div", {className:"card", style:{marginBottom:14}},
+            h("div", {className:"section-title"}, "📄 BON DE LIVRAISON — " + bonResults.length + " ARTICLE(S) DÉTECTÉ(S)"),
+            bonResults.map(function(a, i){
+                return h("div", {key:i, style:{display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:"1px solid var(--border)"}},
+                    h("div", {style:{flex:1}},
+                        h("div", {style:{fontSize:13, fontWeight:700, color:"var(--navy)"}}, a.nom),
+                        h("div", {style:{fontSize:11, color:"var(--text3)"}}, (a.quantite||1) + " " + (a.unite||"pièce"))
+                    ),
+                    h("button", {style:{background:"none", border:"none", cursor:"pointer", fontSize:16, color:"var(--red)"}, onClick:function(){
+                        var nr = bonResults.filter(function(_,j){return j!==i;});
+                        setBonResults(nr.length>0?nr:null);
+                    }}, "✕")
+                );
+            }),
+            h("div", {style:{display:"flex", gap:10, marginTop:12}},
+                h("button", {className:"btn btn-outline", style:{flex:1}, onClick:function(){setBonResults(null);}}, "Annuler"),
+                h("button", {className:"btn btn-navy", style:{flex:2}, onClick:importerBon}, "✅ Importer dans les achats")
+            )
         ) : null,
 
         showForm ? h("div", {className:"card space-y", style:{marginBottom:14}},
