@@ -124,18 +124,6 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .edit-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:800;display:flex;flex-direction:column;justify-content:flex-end}
 .edit-sheet{background:#fff;border-radius:24px 24px 0 0;padding:20px 16px 36px;max-height:85vh;overflow-y:auto}
 .edit-sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px}
-.confirm-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:950;display:flex;align-items:flex-end;justify-content:center}
-.confirm-sheet{background:#fff;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;animation:slideUp 0.25s ease}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.confirm-product-name{font-size:18px;font-weight:900;color:var(--navy);margin:10px 0 4px}
-.confirm-warning{font-size:13px;color:var(--red);font-weight:600;background:#FFF0F0;padding:10px 14px;border-radius:10px;margin:12px 0}
-.recu-modal{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px}
-.recu-modal-box{background:#fff;border-radius:20px;padding:22px;width:100%;max-width:380px}
-.user-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
-.user-row:last-child{border-bottom:none}
-.user-code{font-size:18px;font-weight:900;color:var(--navy);background:rgba(61,84,112,0.1);padding:6px 12px;border-radius:10px;font-family:monospace}
-.sort-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.sort-bar select{flex:1;padding:7px 10px;border-radius:10px;border:1.5px solid var(--border);font-size:12px;font-family:inherit;background:#fff;color:var(--navy);font-weight:700}
 .chantier-input{background:rgba(61,84,112,0.06);border:none;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit;width:100%;box-sizing:border-box;color:var(--navy)}
 .chantier-input:focus{outline:2px solid var(--navy)}
 .sous-fam-tag{display:inline-block;background:rgba(201,151,58,0.13);color:var(--gold-dim);font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;margin-top:2px}
@@ -1317,26 +1305,12 @@ function ProduitsListScreen(props) {
     var openRess = openRessState[0]; var setOpenRess = openRessState[1];
     var ce = props.ce;
 
-    var triState = useState("az");
-    var tri = triState[0]; var setTri = triState[1];
-
     var list = props.produits.filter(function(p) {
         if(!(p.corps_etat || "").toLowerCase().includes(ce.label.toLowerCase())) return false;
         if(famille !== "all" && (p.famille || "") !== famille) return false;
         if(sousFam !== "all" && (p.sous_famille || "") !== sousFam) return false;
         if(search && !(p.nom || "").toLowerCase().includes(search.toLowerCase())) return false;
         return true;
-    }).slice().sort(function(a, b) {
-        if(tri === "az") return (a.nom||"").localeCompare(b.nom||"", "fr");
-        if(tri === "za") return (b.nom||"").localeCompare(a.nom||"", "fr");
-        if(tri === "stock_asc") return (a.quantite||0) - (b.quantite||0);
-        if(tri === "stock_desc") return (b.quantite||0) - (a.quantite||0);
-        if(tri === "alertes") {
-            var sa = getStatut(a) === "ok" ? 1 : 0;
-            var sb = getStatut(b) === "ok" ? 1 : 0;
-            return sa - sb;
-        }
-        return 0;
     });
 
     var countMat = props.produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "MATERIAUX"; }).length;
@@ -1407,16 +1381,6 @@ function ProduitsListScreen(props) {
                 h("span", {style:{color:"var(--text3)"}}, "🔍"),
                 h("input", {placeholder:"Rechercher un produit...", value:search, onChange:function(e){setSearch(e.target.value);}})
             ),
-            h("div", {className:"sort-bar"},
-                h("span", {style:{fontSize:11, fontWeight:700, color:"var(--text3)"}}, "Trier :"),
-                h("select", {value:tri, onChange:function(e){setTri(e.target.value);}},
-                    h("option", {value:"az"}, "A → Z"),
-                    h("option", {value:"za"}, "Z → A"),
-                    h("option", {value:"stock_asc"}, "Stock ↑"),
-                    h("option", {value:"stock_desc"}, "Stock ↓"),
-                    h("option", {value:"alertes"}, "⚠️ Alertes en premier")
-                )
-            ),
             list.length === 0 ? h("div", {className:"empty-state"},
                 h("div", {className:"empty-state-icon"}, "📦"),
                 h("div", {className:"empty-state-text"}, "Aucun produit dans cette catégorie")
@@ -1485,8 +1449,6 @@ function ProduitDetail(props) {
     var add = addState[0]; var setAdd = addState[1];
     var deletingState = useState(false);
     var deleting = deletingState[0]; var setDeleting = deletingState[1];
-    var confirmState = useState(false);
-    var confirmOpen = confirmState[0]; var setConfirmOpen = confirmState[1];
     var mvtsState = useState([]);
     var mvts = mvtsState[0]; var setMvts = mvtsState[1];
     var mvtLoadingState = useState(true);
@@ -1541,13 +1503,11 @@ function ProduitDetail(props) {
     }
 
     async function supprimer() {
+        if(!window.confirm("Supprimer définitivement ce produit ?")) return;
         setDeleting(true);
-        setConfirmOpen(false);
         try {
-            // Tracer la suppression avant de supprimer
-            await logMouvement({produit_nom:p.nom, type:"suppression", quantite:p.quantite||0, quantite_avant:p.quantite||0, quantite_apres:0, user_id:props.user.code, user_nom:props.user.name});
             await supaDelete("produits", p.id);
-            showToast("🗑️ " + p.nom + " supprimé par " + props.user.name, "success");
+            showToast("🗑️ Produit supprimé", "success");
             props.onRefresh(); props.onBack();
         } catch(e) { showToast("Erreur: " + e.message, "error"); setDeleting(false); }
     }
@@ -1613,10 +1573,9 @@ function ProduitDetail(props) {
 
     function MvtRow(m, i) {
         var isEntree = m.type === "entree" || m.type === "creation";
-        var isSuppression = m.type === "suppression";
-        var iconClass = m.type === "creation" ? "mvt-icon-creation" : isSuppression ? "mvt-icon-sortie" : (isEntree ? "mvt-icon-entree" : "mvt-icon-sortie");
-        var icon = m.type === "creation" ? "🆕" : isSuppression ? "🗑️" : (isEntree ? "➕" : "➖");
-        var qtyColor = isEntree ? "var(--green)" : "var(--red)";
+        var iconClass = m.type === "creation" ? "mvt-icon-creation" : (isEntree ? "mvt-icon-entree" : "mvt-icon-sortie");
+        var icon = m.type === "creation" ? "🆕" : (isEntree ? "➕" : "➖");
+        var qtyColor = isEntree ? "var(--green)" : "var(--orange)";
         return h("div", {key:m.id||i, className:"mvt-row"},
             h("div", {className:"mvt-icon " + iconClass}, icon),
             h("div", {style:{flex:1}},
@@ -1847,29 +1806,12 @@ function ProduitDetail(props) {
                     : mvts.map(MvtRow)
         ),
 
-        h("button", {
+        props.isAdmin ? h("button", {
             className:"btn btn-danger btn-full",
-            style:{marginTop:12, opacity: deleting ? 0.6 : 1},
-            onClick:function(){ setConfirmOpen(true); },
+            style:{marginTop:12},
+            onClick:supprimer,
             disabled:deleting
-        }, deleting ? "Suppression..." : "🗑️ Supprimer cet article"),
-
-        // Modal de confirmation
-        confirmOpen ? h("div", {className:"confirm-modal", onClick:function(e){ if(e.target.className==="confirm-modal") setConfirmOpen(false); }},
-            h("div", {className:"confirm-sheet"},
-                h("div", {style:{width:40, height:4, background:"var(--border)", borderRadius:2, margin:"0 auto 18px"}}),
-                h("div", {style:{fontSize:13, color:"var(--text3)", fontWeight:700}}, "SUPPRIMER UN ARTICLE"),
-                h("div", {className:"confirm-product-name"}, p.nom),
-                h("div", {style:{fontSize:12, color:"var(--text3)", marginBottom:4}}, (p.quantite||0) + " " + (p.unite||"pièce") + " en stock · " + (p.corps_etat||"")),
-                h("div", {className:"confirm-warning"},
-                    "⚠️ Cette action est irréversible. L'article sera définitivement supprimé du stock. La suppression sera enregistrée dans l'historique."
-                ),
-                h("div", {style:{display:"flex", gap:10, marginTop:16}},
-                    h("button", {className:"btn btn-outline", style:{flex:1}, onClick:function(){setConfirmOpen(false);}}, "Annuler"),
-                    h("button", {className:"btn btn-danger", style:{flex:2}, onClick:supprimer}, "🗑️ Confirmer la suppression")
-                )
-            )
-        ) : null,
+        }, deleting ? "..." : "🗑️ Supprimer ce produit") : null,
 
         // Bottom sheet édition
         editing ? h("div", {className:"edit-overlay", onClick:function(e){ if(e.target.className==="edit-overlay") setEditing(false); }},
@@ -2193,44 +2135,12 @@ function AchatScreen(props) {
         setLoading(false);
     }
 
-    var recuModalState = useState(null); // {achat}
-    var recuModal = recuModalState[0]; var setRecuModal = recuModalState[1];
-    var recuProduitState = useState(null); // produit trouvé
-    var recuProduit = recuProduitState[0]; var setRecuProduit = recuProduitState[1];
-    var recuQtyState = useState(""); var recuQty = recuQtyState[0]; var setRecuQty = recuQtyState[1];
-    var recuLoadingState = useState(false); var recuLoading = recuLoadingState[0]; var setRecuLoading = recuLoadingState[1];
-
-    async function changeStatut(id, statut, achat) {
+    async function changeStatut(id, statut) {
         try {
             await supaPatch("achats", id, {statut: statut});
             loadAchats();
-            if(statut === "recu") {
-                // Chercher le produit correspondant
-                var matches = (props.produits || []).filter(function(p){
-                    return (p.nom||"").toLowerCase().includes((achat.nom||"").toLowerCase().slice(0,6))
-                        || (achat.nom||"").toLowerCase().includes((p.nom||"").toLowerCase().slice(0,6));
-                });
-                setRecuProduit(matches.length === 1 ? matches[0] : null);
-                setRecuQty(String(achat.quantite || ""));
-                setRecuModal(achat);
-            }
+            if(statut === "recu") showToast("✅ Marqué reçu — pense à mettre à jour le stock !", "success");
         } catch(e) { showToast("Erreur: " + e.message, "error"); }
-    }
-
-    async function validerEntreeStock() {
-        var q = parseFloat(recuQty);
-        if(!q || !recuProduit) { setRecuModal(null); return; }
-        setRecuLoading(true);
-        try {
-            var avant = recuProduit.quantite || 0;
-            var apres = avant + q;
-            await supaPatch("produits", recuProduit.id, {quantite: apres});
-            await logMouvement({produit_id:recuProduit.id, produit_nom:recuProduit.nom, type:"entree", quantite:q, quantite_avant:avant, quantite_apres:apres, user_id:props.user.code, user_nom:props.user.name});
-            showToast("✅ " + q + " " + (recuProduit.unite||"pièce") + " ajouté(s) au stock", "success");
-            props.onRefresh();
-        } catch(e) { showToast("Erreur stock: " + e.message, "error"); }
-        setRecuLoading(false);
-        setRecuModal(null);
     }
 
     return h("div", {className:"screen"},
@@ -2272,28 +2182,6 @@ function AchatScreen(props) {
             h("div", {className:"empty-state-text"}, "Aucun achat enregistré")
         ) : null,
 
-        // Modal entrée stock automatique
-        recuModal ? h("div", {className:"recu-modal"},
-            h("div", {className:"recu-modal-box"},
-                h("div", {style:{fontSize:16, fontWeight:900, color:"var(--navy)", marginBottom:8}}, "✅ Achat reçu — mise à jour stock"),
-                h("div", {style:{fontSize:13, color:"var(--text2)", marginBottom:14}}, "Réceptionné : " + (recuModal.nom||"") + " — Ajouter au stock ?"),
-                recuProduit ? h("div", {style:{background:"rgba(61,84,112,0.08)", borderRadius:12, padding:"10px 14px", marginBottom:12, fontSize:13}},
-                    h("div", {style:{fontWeight:800, color:"var(--navy)"}}, "📦 " + recuProduit.nom),
-                    h("div", {style:{color:"var(--text3)", fontSize:11}}, "Stock actuel : " + (recuProduit.quantite||0) + " " + (recuProduit.unite||"pièce"))
-                ) : h("div", {style:{background:"var(--orange-bg)", borderRadius:12, padding:"10px 14px", marginBottom:12, fontSize:12, color:"var(--orange)"}},
-                    "⚠️ Produit non trouvé automatiquement — saisie manuelle depuis la fiche produit"
-                ),
-                recuProduit ? h("div", {style:{display:"flex", gap:8, alignItems:"center", marginBottom:14}},
-                    h("label", {className:"input-label", style:{whiteSpace:"nowrap"}}, "Qté reçue"),
-                    h("input", {className:"input", type:"number", value:recuQty, onChange:function(e){setRecuQty(e.target.value);}, style:{flex:1}})
-                ) : null,
-                h("div", {style:{display:"flex", gap:10}},
-                    h("button", {className:"btn btn-outline", style:{flex:1}, onClick:function(){setRecuModal(null);}}, "Ignorer"),
-                    recuProduit ? h("button", {className:"btn btn-navy", style:{flex:2}, onClick:validerEntreeStock, disabled:recuLoading||!recuQty}, recuLoading ? "..." : "➕ Ajouter au stock") : null
-                )
-            )
-        ) : null,
-
         achats.map(function(a) {
             var s = STATUTS_ACHAT.find(function(x){ return x.id === (a.statut||"en_attente"); }) || STATUTS_ACHAT[0];
             return h("div", {key:a.id, className:"achat-row"},
@@ -2307,7 +2195,7 @@ function AchatScreen(props) {
                 h("div", {style:{display:"flex", gap:6, flexWrap:"wrap"}},
                     STATUTS_ACHAT.map(function(st) {
                         if(st.id === (a.statut||"en_attente")) return null;
-                        return h("button", {key:st.id, className:"statut-chip " + st.cls, style:{opacity:0.6, fontSize:10, padding:"3px 8px"}, onClick:function(){changeStatut(a.id, st.id, a);}}, st.icon + " " + st.label);
+                        return h("button", {key:st.id, className:"statut-chip " + st.cls, style:{opacity:0.6, fontSize:10, padding:"3px 8px"}, onClick:function(){changeStatut(a.id, st.id);}}, st.icon + " " + st.label);
                     })
                 )
             );
@@ -2657,83 +2545,6 @@ function TutoScreen(props) {
 }
 
 // ProfilScreen
-function UsersScreen(props) {
-    var usersState = useState([]); var users = usersState[0]; var setUsers = usersState[1];
-    var loadingState = useState(true); var loading = loadingState[0]; var setLoading = loadingState[1];
-    var newNomState = useState(""); var newNom = newNomState[0]; var setNewNom = newNomState[1];
-    var newCodeState = useState(""); var newCode = newCodeState[0]; var setNewCode = newCodeState[1];
-    var newRoleState = useState("chantier"); var newRole = newRoleState[0]; var setNewRole = newRoleState[1];
-    var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
-
-    function loadUsers() {
-        setLoading(true);
-        supaGet("utilisateurs", "order=nom.asc").then(function(rows){
-            setUsers(Array.isArray(rows) ? rows : []);
-        }).catch(function(){ setUsers([]); }).finally(function(){ setLoading(false); });
-    }
-    useEffect(function(){ loadUsers(); }, []);
-
-    async function addUser() {
-        if(!newNom.trim() || newCode.length < 4) return;
-        setSaving(true);
-        try {
-            await supaPost("utilisateurs", {nom: newNom.trim(), code: newCode, role: newRole});
-            showToast("✅ Utilisateur ajouté", "success");
-            setNewNom(""); setNewCode(""); setNewRole("chantier");
-            loadUsers();
-        } catch(e) { showToast("Erreur: " + e.message, "error"); }
-        setSaving(false);
-    }
-
-    async function deleteUser(id, nom) {
-        if(!window.confirm("Supprimer " + nom + " ?")) return;
-        try {
-            await supaDelete("utilisateurs", id);
-            showToast("🗑️ Utilisateur supprimé", "success");
-            loadUsers();
-        } catch(e) { showToast("Erreur: " + e.message, "error"); }
-    }
-
-    return h("div", {className:"screen"},
-        h("div", {className:"header"},
-            h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null, h("div", {className:"header-title"}, "👥 Utilisateurs"), h("div", {className:"header-sub"}, users.length + " compte(s)"))
-        ),
-        h("div", {className:"card space-y", style:{marginBottom:16}},
-            h("div", {className:"section-title"}, "➕ AJOUTER UN UTILISATEUR"),
-            h("div", {className:"input-group"},
-                h("label", {className:"input-label"}, "Prénom / Nom *"),
-                h("input", {className:"input", placeholder:"Ex: David Martin", value:newNom, onChange:function(e){setNewNom(e.target.value);}})
-            ),
-            h("div", {className:"grid-2"},
-                h("div", {className:"input-group"},
-                    h("label", {className:"input-label"}, "Code (4-6 chiffres) *"),
-                    h("input", {className:"input", type:"tel", maxLength:6, placeholder:"123456", value:newCode, onChange:function(e){setNewCode(e.target.value);}})
-                ),
-                h("div", {className:"input-group"},
-                    h("label", {className:"input-label"}, "Rôle"),
-                    h("select", {className:"select", value:newRole, onChange:function(e){setNewRole(e.target.value);}},
-                        h("option", {value:"chantier"}, "👷 Équipe terrain"),
-                        h("option", {value:"admin"}, "⚙️ Administrateur")
-                    )
-                )
-            ),
-            h("button", {className:"btn btn-navy btn-full", onClick:addUser, disabled:!newNom.trim()||newCode.length<4||saving}, saving ? "..." : "✅ Créer l'utilisateur")
-        ),
-        loading ? h("div", {style:{textAlign:"center", padding:24}}, h("div", {className:"spinner", style:{width:28, height:28, borderWidth:3}})) : null,
-        users.map(function(u) {
-            return h("div", {key:u.id, className:"user-row"},
-                h("div", {className:"user-code"}, u.code),
-                h("div", {style:{flex:1}},
-                    h("div", {style:{fontSize:14, fontWeight:800, color:"var(--navy)"}}, u.nom),
-                    h("div", {style:{fontSize:11, color:"var(--text3)"}}, u.role === "admin" ? "⚙️ Administrateur" : "👷 Terrain")
-                ),
-                h("button", {className:"btn btn-danger btn-sm", onClick:function(){deleteUser(u.id, u.nom);}}, "🗑️")
-            );
-        })
-    );
-}
-
 function ProfilScreen(props) {
     return h("div", {className:"screen"},
         h("div", {className:"header"},
@@ -2743,11 +2554,10 @@ function ProfilScreen(props) {
         h("div", {style:{textAlign:"center", padding:"20px 0"}},
             h("div", {className:"profil-avatar"}, "👷"),
             h("div", {className:"profil-name"}, props.user.name),
-            h("div", {className:"profil-role"}, props.user.role === "admin" ? "⚙️ Administrateur" : "👷 Équipe terrain")
+            h("div", {className:"profil-role"}, props.user.role === "admin" ? "Administrateur" : "Equipe terrain")
         ),
         h("div", {className:"card space-y"},
             h("button", {className:"btn btn-navy btn-full", onClick:props.onTutos}, "📚 Tutoriels"),
-            props.user.role === "admin" ? h("button", {className:"btn btn-outline btn-full", onClick:props.onUsers}, "👥 Gérer les utilisateurs") : null,
             h("button", {className:"btn btn-danger btn-full", onClick:props.onLogout}, "Se déconnecter")
         )
     );
@@ -2905,7 +2715,7 @@ function App() {
         return h("div", {className:"app"}, GlobalHeader, h(LoginScreen, {onLogin: function(u){setUser(u);}}));
     }
     
-    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list" || screen === "tutos" || screen === "users";
+    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list" || screen === "tutos";
     var currentScreen;
     
     switch(screen) {
@@ -2928,7 +2738,7 @@ function App() {
             currentScreen = h(PhotoScreen, {user:user, onBack:goBack, onRefresh:loadData});
             break;
         case "achat":
-            currentScreen = h(AchatScreen, {user:user, onBack:goBack, onRefresh:loadData, produits:produits});
+            currentScreen = h(AchatScreen, {user:user, onBack:goBack, onRefresh:loadData});
             break;
         case "besoin":
             currentScreen = h(BesoinScreen, {user:user, onBack:goBack});
@@ -2936,11 +2746,8 @@ function App() {
         case "tutos":
             currentScreen = h(TutoScreen, {onBack:goBack});
             break;
-        case "users":
-            currentScreen = h(UsersScreen, {onBack:goBack, user:user});
-            break;
         case "profil":
-            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onTutos:function(){nav("tutos", null);}, onUsers:function(){nav("users", null);}, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
+            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onTutos:function(){nav("tutos", null);}, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
             break;
         default:
             currentScreen = h(HomeScreen, {user:user, nav:nav, produits:produits});
