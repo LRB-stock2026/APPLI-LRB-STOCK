@@ -1251,6 +1251,11 @@ function HomeScreen(props) {
     var countGros = produits.filter(function(p){ return grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
     var countSecond = produits.filter(function(p){ return !grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
 
+    var nbAlertes = produits.filter(function(p){ return getStatut(p) !== "ok"; }).length;
+    var heure = new Date().getHours();
+    var salut = heure < 12 ? "Bonjour" : heure < 18 ? "Bon après-midi" : "Bonsoir";
+    var prenom = (props.user.name||"").split(" ")[0];
+
     var results = search.length >= 2 ? produits.filter(function(p){
         var q = search.toLowerCase();
         return (p.nom||"").toLowerCase().includes(q)
@@ -1261,6 +1266,16 @@ function HomeScreen(props) {
     }).slice(0, 12) : [];
 
     return h("div", {className:"screen"},
+        h("div", {style:{padding:"12px 0 8px"}},
+            h("div", {style:{fontSize:22, fontWeight:900, color:"var(--navy)"}}, salut + ", " + prenom + " 👋"),
+            nbAlertes > 0
+                ? h("div", {style:{fontSize:13, color:"var(--red)", fontWeight:700, marginTop:4}},
+                    "⚠️ " + nbAlertes + " article" + (nbAlertes>1?"s":"") + " en alerte de stock"
+                  )
+                : h("div", {style:{fontSize:13, color:"var(--green)", fontWeight:600, marginTop:4}},
+                    "✅ Tout le stock est au vert"
+                  )
+        ),
         h("div", {className:"search-global"},
             h("span", {className:"icon"}, "🔍"),
             h("input", {
@@ -1812,8 +1827,21 @@ function ProduitDetail(props) {
                 p.prix_unitaire ? h("span", {className:"prix-badge"}, "💶 " + Number(p.prix_unitaire).toFixed(2) + " € / " + (p.unite||"pièce")) : null
             ),
             h("div", {className:"input-group", style:{marginBottom:8}},
-                h("label", {className:"input-label"}, "Fournisseur / Référence"),
-                h("input", {className:"input", placeholder:"Ex: Point P — REF 45821", value:fournisseur, onChange:function(e){setFournisseur(e.target.value);}})
+                h("label", {className:"input-label"}, "Fournisseur"),
+                h("div", {style:{display:"flex", gap:8}},
+                    h("input", {className:"input", style:{flex:1}, placeholder:"Nom ou sélectionner ci-dessous", value:fournisseur, onChange:function(e){setFournisseur(e.target.value);}}),
+                    h("button", {
+                        className:"btn btn-outline", style:{whiteSpace:"nowrap", padding:"8px 10px"},
+                        onClick:function(){
+                            supaGet("fournisseurs","order=nom.asc").then(function(rows){
+                                if(!Array.isArray(rows)||rows.length===0) return showToast("Aucun fournisseur enregistré — ajoutez-en dans Profil","error");
+                                var noms = rows.map(function(r){return r.nom;}).join("\n");
+                                var choix = window.prompt("Choisir :\n" + noms);
+                                if(choix) setFournisseur(choix.trim());
+                            });
+                        }
+                    }, "📋")
+                )
             ),
             h("div", {style:{display:"flex", gap:8, alignItems:"flex-end"}},
                 h("div", {className:"input-group", style:{flex:1}},
@@ -3836,29 +3864,66 @@ function UsersScreen(props) {
 }
 
 function ProfilScreen(props) {
+    var confirmLogoutState = useState(false);
+    var confirmLogout = confirmLogoutState[0]; var setConfirmLogout = confirmLogoutState[1];
+
+    function SectionTitle(label) {
+        return h("div", {style:{fontSize:10, fontWeight:800, color:"var(--text3)", letterSpacing:"0.08em", padding:"14px 0 6px"}}, label);
+    }
+
     return h("div", {className:"screen"},
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null, h("div", {className:"header-title"}, "Profil"))
+            h("div", null, h("div", {className:"header-title"}, "Mon profil"))
         ),
-        h("div", {style:{textAlign:"center", padding:"20px 0"}},
+
+        // Carte identité
+        h("div", {className:"card", style:{textAlign:"center", marginBottom:16}},
             h("div", {className:"profil-avatar"}, "👷"),
             h("div", {className:"profil-name"}, props.user.name),
             h("div", {className:"profil-role"}, props.user.role === "admin" ? "⚙️ Administrateur" : "👷 Équipe terrain")
         ),
-        h("div", {className:"card space-y"},
-            h("button", {className:"btn btn-navy btn-full", onClick:props.onTutos}, "📚 Tutoriels"),
+
+        // Section Outils
+        SectionTitle("OUTILS"),
+        h("div", {className:"card space-y", style:{marginBottom:0}},
             h("button", {className:"btn btn-outline btn-full", onClick:props.onStats}, "📊 Statistiques"),
             h("button", {className:"btn btn-outline btn-full", onClick:props.onInventaire}, "📋 Inventaire physique"),
-            h("button", {className:"btn btn-outline btn-full", onClick:props.onBonSortie}, "📋 Bon de sortie chantier"),
-            h("button", {className:"btn btn-outline btn-full", onClick:props.onChantiers}, "🏗️ Vue par chantier"),
-            h("button", {className:"btn btn-outline btn-full", onClick:props.onExport}, "📤 Export CSV du stock"),
-            h("button", {className:"btn btn-outline btn-full", onClick:props.onRapportPDF}, "📄 Rapport PDF"),
-            h("button", {className:"btn btn-outline btn-full", onClick:props.onFournisseurs}, "🏪 Fournisseurs"),
-            h("button", {className:"btn btn-outline btn-full", onClick:props.onImport}, "📥 Import CSV"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onBonSortie}, "📋 Bon de sortie"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onChantiers}, "📍 Vue par chantier"),
             h("button", {className:"btn btn-outline btn-full", onClick:props.onFicheChantier}, "🏗️ Fiches chantier"),
-            props.user.role === "admin" ? h("button", {className:"btn btn-outline btn-full", onClick:props.onUsers}, "👥 Gérer les utilisateurs") : null,
-            h("button", {className:"btn btn-danger btn-full", onClick:props.onLogout}, "Se déconnecter")
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onFournisseurs}, "🏪 Fournisseurs")
+        ),
+
+        // Section Données
+        SectionTitle("DONNÉES"),
+        h("div", {className:"card space-y", style:{marginBottom:0}},
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onExport}, "📤 Export CSV"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onRapportPDF}, "📄 Rapport PDF"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onImport}, "📥 Import CSV")
+        ),
+
+        // Section Admin (uniquement admin)
+        props.user.role === "admin" ? SectionTitle("ADMINISTRATION") : null,
+        props.user.role === "admin" ? h("div", {className:"card space-y", style:{marginBottom:0}},
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onUsers}, "👥 Gérer les utilisateurs"),
+            h("button", {className:"btn btn-navy btn-full", onClick:props.onTutos}, "📚 Tutoriels")
+        ) : null,
+
+        // Déconnexion avec confirmation
+        SectionTitle("COMPTE"),
+        h("div", {className:"card space-y"},
+            !confirmLogout
+                ? h("button", {className:"btn btn-danger btn-full", onClick:function(){setConfirmLogout(true);}}, "Se déconnecter")
+                : h("div", null,
+                    h("div", {style:{fontSize:13, color:"var(--text2)", textAlign:"center", marginBottom:10, fontWeight:600}},
+                        "Confirmer la déconnexion ?"
+                    ),
+                    h("div", {style:{display:"flex", gap:10}},
+                        h("button", {className:"btn btn-outline", style:{flex:1}, onClick:function(){setConfirmLogout(false);}}, "Annuler"),
+                        h("button", {className:"btn btn-danger", style:{flex:1}, onClick:props.onLogout}, "Déconnecter")
+                    )
+                )
         )
     );
 }
