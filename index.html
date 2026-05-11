@@ -113,6 +113,67 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .lieu-chip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;border:2px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;white-space:nowrap}
 .lieu-chip.selected{background:var(--navy);color:#fff;border-color:var(--navy)}
 .lieu-chip.none{background:var(--surface2);color:var(--text3);border-color:var(--border)}
+.search-global{position:relative;margin:0 0 12px 0}
+.search-global input{width:100%;padding:13px 16px 13px 42px;border-radius:14px;border:2px solid var(--border);font-size:15px;font-family:inherit;background:#fff;box-sizing:border-box}
+.search-global input:focus{border-color:var(--navy);outline:none}
+.search-global .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none}
+.search-results{background:#fff;border-radius:16px;border:1.5px solid var(--border);overflow:hidden;margin-bottom:12px}
+.search-result-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer}
+.search-result-item:last-child{border-bottom:none}
+.search-result-item:hover{background:var(--surface2)}
+.edit-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:800;display:flex;flex-direction:column;justify-content:flex-end}
+.edit-sheet{background:#fff;border-radius:24px 24px 0 0;padding:20px 16px 36px;max-height:85vh;overflow-y:auto}
+.edit-sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px}
+.stat-card{background:#fff;border-radius:16px;padding:16px;border:1.5px solid var(--border);text-align:center}
+.stat-value{font-size:32px;font-weight:900;color:var(--navy);line-height:1}
+.stat-label{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:0.07em;margin-top:4px;text-transform:uppercase}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.chantier-fiche{background:#fff;border-radius:16px;border:1.5px solid var(--border);padding:16px;margin-bottom:10px}
+.chantier-statut-encours{background:#D4EDDA;color:#155724;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
+.chantier-statut-termine{background:#E2E3E5;color:#383d41;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
+.chantier-statut-pause{background:#FFF3CD;color:#856404;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
+.import-zone{border:2px dashed var(--border);border-radius:16px;padding:32px;text-align:center;cursor:pointer;background:var(--surface2)}
+.import-zone:hover{border-color:var(--navy);background:rgba(61,84,112,0.05)}
+.import-col-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.import-col-row:last-child{border-bottom:none}
+.chantier-fiche{background:#fff;border-radius:16px;border:1.5px solid var(--border);padding:16px;margin-bottom:10px}
+.statut-encours{background:#D4EDDA;color:#155724;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
+.statut-termine{background:#E2E3E5;color:#383d41;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
+.statut-pause{background:#FFF3CD;color:#856404;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
+.import-zone{border:2px dashed var(--border);border-radius:16px;padding:32px;text-align:center;cursor:pointer;background:var(--surface2)}
+.chantier-card{background:#fff;border-radius:16px;border:1.5px solid var(--border);margin-bottom:10px;overflow:hidden}
+.chantier-card-header{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer}
+.chantier-badge{background:var(--navy);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px}
+.bon-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.bon-item:last-child{border-bottom:none}
+.bon-qty{font-size:16px;font-weight:900;color:var(--navy);min-width:50px;text-align:right}
+.bon-input{width:60px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-weight:800;text-align:center;font-family:inherit}
+.bon-input:focus{border-color:var(--navy);outline:none}
+.top-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.top-item:last-child{border-bottom:none}
+.top-rank{width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.invent-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.invent-row:last-child{border-bottom:none}
+.invent-current{font-size:13px;font-weight:700;color:var(--text3);min-width:40px;text-align:right}
+.invent-input{width:70px;padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-weight:800;text-align:center;font-family:inherit}
+.invent-input:focus{border-color:var(--navy);outline:none}
+.invent-diff-pos{color:var(--green);font-size:11px;font-weight:800}
+.invent-diff-neg{color:var(--red);font-size:11px;font-weight:800}
+.confirm-modal{position:fixed;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:950;display:flex;align-items:flex-end;justify-content:center}
+.confirm-sheet{background:#fff;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;animation:slideUp 0.25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.confirm-product-name{font-size:18px;font-weight:900;color:var(--navy);margin:10px 0 4px}
+.confirm-warning{font-size:13px;color:var(--red);font-weight:600;background:#FFF0F0;padding:10px 14px;border-radius:10px;margin:12px 0}
+.recu-modal{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px}
+.recu-modal-box{background:#fff;border-radius:20px;padding:22px;width:100%;max-width:380px}
+.user-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.user-row:last-child{border-bottom:none}
+.user-code{font-size:18px;font-weight:900;color:var(--navy);background:rgba(61,84,112,0.1);padding:6px 12px;border-radius:10px;font-family:monospace}
+.sort-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sort-bar select{flex:1;padding:7px 10px;border-radius:10px;border:1.5px solid var(--border);font-size:12px;font-family:inherit;background:#fff;color:var(--navy);font-weight:700}
+.chantier-input{background:rgba(61,84,112,0.06);border:none;border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit;width:100%;box-sizing:border-box;color:var(--navy)}
+.chantier-input:focus{outline:2px solid var(--navy)}
 .sous-fam-tag{display:inline-block;background:rgba(201,151,58,0.13);color:var(--gold-dim);font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;margin-top:2px}
 .lieu-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(61,84,112,0.10);color:var(--navy);font-size:12px;font-weight:800;padding:4px 10px;border-radius:10px;margin-bottom:10px}
 .product-card-actions{display:flex;gap:8px;margin-top:10px}
@@ -1163,12 +1224,65 @@ function NavBar(props) {
 function HomeScreen(props) {
     var produits = props.produits || [];
     var totalArticles = produits.length;
+    var searchState = useState("");
+    var search = searchState[0]; var setSearch = searchState[1];
 
     var grossIds = CORPS_ETAT_GROS.map(function(c){ return c.label.toLowerCase(); });
     var countGros = produits.filter(function(p){ return grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
     var countSecond = produits.filter(function(p){ return !grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
 
+    var results = search.length >= 2 ? produits.filter(function(p){
+        var q = search.toLowerCase();
+        return (p.nom||"").toLowerCase().includes(q)
+            || (p.corps_etat||"").toLowerCase().includes(q)
+            || (p.sous_famille||"").toLowerCase().includes(q)
+            || (p.fournisseur||"").toLowerCase().includes(q)
+            || (p.reference||"").toLowerCase().includes(q);
+    }).slice(0, 12) : [];
+
     return h("div", {className:"screen"},
+        h("div", {className:"search-global"},
+            h("span", {className:"icon"}, "🔍"),
+            h("input", {
+                placeholder:"Rechercher dans tout le stock...",
+                value:search,
+                onChange:function(e){ setSearch(e.target.value); }
+            })
+        ),
+        search.length >= 2 ? h("div", {className:"search-results"},
+            results.length === 0
+                ? h("div", {style:{padding:"16px", textAlign:"center", color:"var(--text3)", fontSize:13}}, "Aucun résultat : " + search)
+                : results.map(function(p) {
+                    var editingState = useState(false);
+    var editing = editingState[0]; var setEditing = editingState[1];
+    var editNomState = useState(p.nom || "");
+    var editNom = editNomState[0]; var setEditNom = editNomState[1];
+    var editCEState = useState(p.corps_etat || "");
+    var editCE = editCEState[0]; var setEditCE = editCEState[1];
+    var editFamilleState = useState(p.famille || "MATERIAUX");
+    var editFamille = editFamilleState[0]; var setEditFamille = editFamilleState[1];
+    var editUniteState = useState(p.unite || "piece");
+    var editUnite = editUniteState[0]; var setEditUnite = editUniteState[1];
+    var editSavingState = useState(false);
+    var editSaving = editSavingState[0]; var setEditSaving = editSavingState[1];
+    var editFileRef = useRef(null);
+    var chantierState = useState("");
+    var chantier = chantierState[0]; var setChantier = chantierState[1];
+    var chantiersState = useState([]);
+    var chantiersSugg = chantiersState[0]; var setChantiersSugg = chantiersState[1];
+    var statut = getStatut(p);
+                    return h("div", {key:p.id, className:"search-result-item", onClick:function(){ setSearch(""); props.nav("produit", p); }},
+                        h("div", {className:"product-thumb", style:{width:36, height:36, minWidth:36}},
+                            p.photo_url ? h("img", {src:p.photo_url}) : "📦"
+                        ),
+                        h("div", {style:{flex:1}},
+                            h("div", {style:{fontSize:14, fontWeight:700, color:"var(--navy)"}}, p.nom),
+                            h("div", {style:{fontSize:11, color:"var(--text3)"}}, (p.corps_etat||"") + (p.sous_famille ? " · " + p.sous_famille : ""))
+                        ),
+                        h("span", {className:"badge badge-"+statut, style:{fontSize:11}}, (p.quantite||0) + " " + (p.unite||"pce"))
+                    );
+                })
+        ) : null,
         h("div", {className:"home-buttons"},
             h("button", {className:"home-btn btn-gros", onClick:function(){props.nav("corpsdetat", {categorie:"gros"});}},
                 h("span", {className:"home-btn-icon"}, "🏗️"),
@@ -1239,12 +1353,26 @@ function ProduitsListScreen(props) {
     var openRess = openRessState[0]; var setOpenRess = openRessState[1];
     var ce = props.ce;
 
+    var triState = useState("az");
+    var tri = triState[0]; var setTri = triState[1];
+
     var list = props.produits.filter(function(p) {
         if(!(p.corps_etat || "").toLowerCase().includes(ce.label.toLowerCase())) return false;
         if(famille !== "all" && (p.famille || "") !== famille) return false;
         if(sousFam !== "all" && (p.sous_famille || "") !== sousFam) return false;
         if(search && !(p.nom || "").toLowerCase().includes(search.toLowerCase())) return false;
         return true;
+    }).slice().sort(function(a, b) {
+        if(tri === "az") return (a.nom||"").localeCompare(b.nom||"", "fr");
+        if(tri === "za") return (b.nom||"").localeCompare(a.nom||"", "fr");
+        if(tri === "stock_asc") return (a.quantite||0) - (b.quantite||0);
+        if(tri === "stock_desc") return (b.quantite||0) - (a.quantite||0);
+        if(tri === "alertes") {
+            var sa = getStatut(a) === "ok" ? 1 : 0;
+            var sb = getStatut(b) === "ok" ? 1 : 0;
+            return sa - sb;
+        }
+        return 0;
     });
 
     var countMat = props.produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "MATERIAUX"; }).length;
@@ -1315,6 +1443,16 @@ function ProduitsListScreen(props) {
                 h("span", {style:{color:"var(--text3)"}}, "🔍"),
                 h("input", {placeholder:"Rechercher un produit...", value:search, onChange:function(e){setSearch(e.target.value);}})
             ),
+            h("div", {className:"sort-bar"},
+                h("span", {style:{fontSize:11, fontWeight:700, color:"var(--text3)"}}, "Trier :"),
+                h("select", {value:tri, onChange:function(e){setTri(e.target.value);}},
+                    h("option", {value:"az"}, "A → Z"),
+                    h("option", {value:"za"}, "Z → A"),
+                    h("option", {value:"stock_asc"}, "Stock ↑"),
+                    h("option", {value:"stock_desc"}, "Stock ↓"),
+                    h("option", {value:"alertes"}, "⚠️ Alertes en premier")
+                )
+            ),
             list.length === 0 ? h("div", {className:"empty-state"},
                 h("div", {className:"empty-state-icon"}, "📦"),
                 h("div", {className:"empty-state-text"}, "Aucun produit dans cette catégorie")
@@ -1383,6 +1521,8 @@ function ProduitDetail(props) {
     var add = addState[0]; var setAdd = addState[1];
     var deletingState = useState(false);
     var deleting = deletingState[0]; var setDeleting = deletingState[1];
+    var confirmState = useState(false);
+    var confirmOpen = confirmState[0]; var setConfirmOpen = confirmState[1];
     var mvtsState = useState([]);
     var mvts = mvtsState[0]; var setMvts = mvtsState[1];
     var mvtLoadingState = useState(true);
@@ -1417,9 +1557,9 @@ function ProduitDetail(props) {
         var apres = Math.max(0, avant - q);
         try {
             await supaPatch("produits", p.id, {quantite: apres});
-            await logMouvement({produit_id:p.id, produit_nom:p.nom, type:"sortie", quantite:q, quantite_avant:avant, quantite_apres:apres, user_id:props.user.code, user_nom:props.user.name});
-            showToast("➖ " + q + " sorti(s)", "success");
-            setQty(""); props.onRefresh(); props.onBack();
+            await logMouvement({produit_id:p.id, produit_nom:p.nom, type:"sortie", quantite:q, quantite_avant:avant, quantite_apres:apres, user_id:props.user.code, user_nom:props.user.name, chantier: chantier.trim() || null});
+            showToast("➖ " + q + " sorti(s)" + (chantier ? " — " + chantier : ""), "success");
+            setQty(""); setChantier(""); props.onRefresh(); props.onBack();
         } catch(e) { showToast("Erreur: " + e.message, "error"); }
     }
 
@@ -1437,13 +1577,38 @@ function ProduitDetail(props) {
     }
 
     async function supprimer() {
-        if(!window.confirm("Supprimer définitivement ce produit ?")) return;
         setDeleting(true);
+        setConfirmOpen(false);
         try {
+            // Tracer la suppression avant de supprimer
+            await logMouvement({produit_nom:p.nom, type:"suppression", quantite:p.quantite||0, quantite_avant:p.quantite||0, quantite_apres:0, user_id:props.user.code, user_nom:props.user.name});
             await supaDelete("produits", p.id);
-            showToast("🗑️ Produit supprimé", "success");
+            showToast("🗑️ " + p.nom + " supprimé par " + props.user.name, "success");
             props.onRefresh(); props.onBack();
         } catch(e) { showToast("Erreur: " + e.message, "error"); setDeleting(false); }
+    }
+
+    async function saveEdit() {
+        if(!editNom.trim()) return;
+        setEditSaving(true);
+        try {
+            var patch = {nom: editNom.trim(), corps_etat: editCE, famille: editFamille, unite: editUnite};
+            await supaPatch("produits", p.id, patch);
+            showToast("✅ Article mis à jour", "success");
+            setEditing(false);
+            props.onRefresh();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+        setEditSaving(false);
+    }
+
+    async function changePhoto(file) {
+        if(!file) return;
+        try {
+            var pu = await uploadPhoto(file, (p.nom||"produit").replace(/[^a-z0-9]/gi,"_").slice(0,15) + "_edit");
+            await supaPatch("produits", p.id, {photo_url: pu});
+            showToast("✅ Photo mise à jour", "success");
+            props.onRefresh();
+        } catch(e) { showToast("Erreur photo: " + e.message, "error"); }
     }
 
     useEffect(function() {
@@ -1451,6 +1616,13 @@ function ProduitDetail(props) {
             setLieux(EMPLACEMENTS_DEFAUT.concat(custom));
             setLieuxLoaded(true);
         });
+        // Charger chantiers récents pour autocomplete
+        supaGet("mouvements", "type=eq.sortie&order=created_at.desc&limit=50").then(function(rows) {
+            if(!Array.isArray(rows)) return;
+            var seen = {}; var list = [];
+            rows.forEach(function(r){ if(r.chantier && !seen[r.chantier]){ seen[r.chantier]=1; list.push(r.chantier); }});
+            setChantiersSugg(list.slice(0, 8));
+        }).catch(function(){});
     }, []);
 
     async function saveFournisseurPrix() {
@@ -1477,9 +1649,11 @@ function ProduitDetail(props) {
 
     function MvtRow(m, i) {
         var isEntree = m.type === "entree" || m.type === "creation";
-        var iconClass = m.type === "creation" ? "mvt-icon-creation" : (isEntree ? "mvt-icon-entree" : "mvt-icon-sortie");
-        var icon = m.type === "creation" ? "🆕" : (isEntree ? "➕" : "➖");
-        var qtyColor = isEntree ? "var(--green)" : "var(--orange)";
+        var isSuppression = m.type === "suppression";
+        var iconClass = m.type === "creation" ? "mvt-icon-creation" : isSuppression ? "mvt-icon-sortie" : (isEntree ? "mvt-icon-entree" : "mvt-icon-sortie");
+        var isInventaire = m.type === "inventaire";
+        var icon = m.type === "creation" ? "🆕" : isSuppression ? "🗑️" : isInventaire ? "📋" : (isEntree ? "➕" : "➖");
+        var qtyColor = isEntree ? "var(--green)" : "var(--red)";
         return h("div", {key:m.id||i, className:"mvt-row"},
             h("div", {className:"mvt-icon " + iconClass}, icon),
             h("div", {style:{flex:1}},
@@ -1495,13 +1669,31 @@ function ProduitDetail(props) {
     return h("div", {className:"screen"},
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null, h("div", {className:"header-title", style:{fontSize:18}}, p.nom), h("div", {className:"header-sub"}, p.corps_etat || p.famille || ""))
+            h("div", null, h("div", {className:"header-title", style:{fontSize:18}}, p.nom), h("div", {className:"header-sub"}, p.corps_etat || p.famille || "")),
+            h("button", {style:{background:"none", border:"none", cursor:"pointer", fontSize:20, padding:"0 4px"}, onClick:function(){ setEditNom(p.nom||""); setEditCE(p.corps_etat||""); setEditFamille(p.famille||"MATERIAUX"); setEditUnite(p.unite||"piece"); setEditing(true); }}, "✏️")
         ),
         h("div", {className:"product-hero"},
             p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📦")
         ),
-        h("span", {className:"badge badge-" + statut, style:{marginBottom:8, display:"inline-flex"}},
-            (statut==="ok"?"✅ En stock":statut==="low"?"⚠️ Stock bas":"❌ Rupture") + " — " + (p.quantite||0) + " " + (p.unite||"piece")
+        h("div", {style:{display:"flex", alignItems:"center", gap:10, marginBottom:12}},
+            h("span", {className:"badge badge-" + statut, style:{display:"inline-flex"}},
+                (statut==="ok"?"✅ En stock":statut==="low"?"⚠️ Stock bas":"❌ Rupture") + " — " + (p.quantite||0) + " " + (p.unite||"piece")
+            ),
+            h("button", {
+                style:{marginLeft:"auto", background:"#25D366", color:"#fff", border:"none", borderRadius:10, padding:"6px 14px", fontSize:12, fontWeight:800, cursor:"pointer", display:"flex", alignItems:"center", gap:5},
+                onClick:function() {
+                    var txt = "📦 *" + p.nom + "*\n";
+                    if(p.corps_etat) txt += "Corps d'état : " + p.corps_etat + "\n";
+                    if(p.sous_famille) txt += "Catégorie : " + p.sous_famille + "\n";
+                    txt += "Stock : " + (p.quantite||0) + " " + (p.unite||"pièce") + "\n";
+                    if(p.emplacement) txt += "📍 Emplacement : " + p.emplacement + "\n";
+                    if(p.fournisseur) txt += "🏪 Fournisseur : " + p.fournisseur + "\n";
+                    if(p.reference) txt += "Réf : " + p.reference + "\n";
+                    if(p.prix_unitaire) txt += "💶 Prix : " + p.prix_unitaire + " € HT/" + (p.unite||"pièce") + "\n";
+                    txt += "\n— LRB Stock";
+                    window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+                }
+            }, "📤 WhatsApp")
         ),
 
         // Bloc emplacement
@@ -1616,8 +1808,20 @@ function ProduitDetail(props) {
             ),
             h("div", {className:"card"},
                 h("div", {className:"section-title"}, "➖ SORTIR"),
-                h("input", {className:"input", type:"number", placeholder:"Quantite", value:qty, onChange:function(e){setQty(e.target.value);}}),
-                h("button", {className:"btn btn-gold btn-full", style:{marginTop:8}, onClick:sortir, disabled:!qty}, "Sortir")
+                h("input", {className:"input", type:"number", placeholder:"Quantité", value:qty, onChange:function(e){setQty(e.target.value);}, style:{marginBottom:8}}),
+                h("div", {style:{position:"relative", marginBottom:8}},
+                    h("input", {
+                        className:"chantier-input",
+                        placeholder:"🏗️ Chantier (optionnel)",
+                        value:chantier,
+                        list:"chantiers-list",
+                        onChange:function(e){setChantier(e.target.value);}
+                    }),
+                    h("datalist", {id:"chantiers-list"},
+                        chantiersSugg.map(function(c){ return h("option", {key:c, value:c}); })
+                    )
+                ),
+                h("button", {className:"btn btn-gold btn-full", onClick:sortir, disabled:!qty}, "Sortir")
             )
         ),
         p.famille !== "OUTILLAGE" ? h("div", {className:"card", style:{marginTop:12}},
@@ -1697,12 +1901,79 @@ function ProduitDetail(props) {
                     : mvts.map(MvtRow)
         ),
 
-        props.isAdmin ? h("button", {
+        h("button", {
             className:"btn btn-danger btn-full",
-            style:{marginTop:12},
-            onClick:supprimer,
+            style:{marginTop:12, opacity: deleting ? 0.6 : 1},
+            onClick:function(){ setConfirmOpen(true); },
             disabled:deleting
-        }, deleting ? "..." : "🗑️ Supprimer ce produit") : null
+        }, deleting ? "Suppression..." : "🗑️ Supprimer cet article"),
+
+        // Modal de confirmation
+        confirmOpen ? h("div", {className:"confirm-modal", onClick:function(e){ if(e.target.className==="confirm-modal") setConfirmOpen(false); }},
+            h("div", {className:"confirm-sheet"},
+                h("div", {style:{width:40, height:4, background:"var(--border)", borderRadius:2, margin:"0 auto 18px"}}),
+                h("div", {style:{fontSize:13, color:"var(--text3)", fontWeight:700}}, "SUPPRIMER UN ARTICLE"),
+                h("div", {className:"confirm-product-name"}, p.nom),
+                h("div", {style:{fontSize:12, color:"var(--text3)", marginBottom:4}}, (p.quantite||0) + " " + (p.unite||"pièce") + " en stock · " + (p.corps_etat||"")),
+                h("div", {className:"confirm-warning"},
+                    "⚠️ Cette action est irréversible. L'article sera définitivement supprimé du stock. La suppression sera enregistrée dans l'historique."
+                ),
+                h("div", {style:{display:"flex", gap:10, marginTop:16}},
+                    h("button", {className:"btn btn-outline", style:{flex:1}, onClick:function(){setConfirmOpen(false);}}, "Annuler"),
+                    h("button", {className:"btn btn-danger", style:{flex:2}, onClick:supprimer}, "🗑️ Confirmer la suppression")
+                )
+            )
+        ) : null,
+
+        // Bottom sheet édition
+        editing ? h("div", {className:"edit-overlay", onClick:function(e){ if(e.target.className==="edit-overlay") setEditing(false); }},
+            h("div", {className:"edit-sheet"},
+                h("div", {className:"edit-sheet-handle"}),
+                h("div", {className:"section-title", style:{marginBottom:14}}, "✏️ MODIFIER L'ARTICLE"),
+                h("input", {ref:editFileRef, type:"file", accept:"image/*", style:{display:"none"}, onChange:function(e){ changePhoto(e.target.files[0]); }}),
+                h("div", {style:{display:"flex", gap:10, marginBottom:14, alignItems:"center"}},
+                    h("div", {className:"product-hero", style:{width:80, height:80, minWidth:80, borderRadius:12, marginBottom:0, fontSize:32, cursor:"pointer"},
+                        onClick:function(){ editFileRef.current && editFileRef.current.click(); }},
+                        p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📷")
+                    ),
+                    h("div", {style:{fontSize:11, color:"var(--text3)"}}, "Tap pour changer la photo")
+                ),
+                h("div", {className:"input-group space-y"},
+                    h("div", {className:"input-group"},
+                        h("label", {className:"input-label"}, "Nom *"),
+                        h("input", {className:"input", value:editNom, onChange:function(e){setEditNom(e.target.value);}})
+                    ),
+                    h("div", {className:"grid-2"},
+                        h("div", {className:"input-group"},
+                            h("label", {className:"input-label"}, "Corps d'état"),
+                            h("select", {className:"select", value:editCE, onChange:function(e){setEditCE(e.target.value);}},
+                                h("option", {value:""}, "— Choisir —"),
+                                CORPS_ETAT_GROS.concat(CORPS_ETAT_SECOND).map(function(ce){
+                                    return h("option", {key:ce.id, value:ce.label}, ce.icon + " " + ce.label);
+                                })
+                            )
+                        ),
+                        h("div", {className:"input-group"},
+                            h("label", {className:"input-label"}, "Famille"),
+                            h("select", {className:"select", value:editFamille, onChange:function(e){setEditFamille(e.target.value);}},
+                                h("option", {value:"MATERIAUX"}, "🧱 Matériaux"),
+                                h("option", {value:"OUTILLAGE"}, "🔧 Outillage")
+                            )
+                        )
+                    ),
+                    h("div", {className:"input-group"},
+                        h("label", {className:"input-label"}, "Unité"),
+                        h("select", {className:"select", value:editUnite, onChange:function(e){setEditUnite(e.target.value);}},
+                            UNITES.map(function(u){ return h("option", {key:u, value:u}, u); })
+                        )
+                    ),
+                    h("div", {style:{display:"flex", gap:10, marginTop:8}},
+                        h("button", {className:"btn btn-outline", style:{flex:1}, onClick:function(){setEditing(false);}}, "Annuler"),
+                        h("button", {className:"btn btn-navy", style:{flex:2}, onClick:saveEdit, disabled:!editNom.trim()||editSaving}, editSaving ? "..." : "✅ Enregistrer")
+                    )
+                )
+            )
+        ) : null
     );
 }
 
@@ -1976,12 +2247,44 @@ function AchatScreen(props) {
         setLoading(false);
     }
 
-    async function changeStatut(id, statut) {
+    var recuModalState = useState(null); // {achat}
+    var recuModal = recuModalState[0]; var setRecuModal = recuModalState[1];
+    var recuProduitState = useState(null); // produit trouvé
+    var recuProduit = recuProduitState[0]; var setRecuProduit = recuProduitState[1];
+    var recuQtyState = useState(""); var recuQty = recuQtyState[0]; var setRecuQty = recuQtyState[1];
+    var recuLoadingState = useState(false); var recuLoading = recuLoadingState[0]; var setRecuLoading = recuLoadingState[1];
+
+    async function changeStatut(id, statut, achat) {
         try {
             await supaPatch("achats", id, {statut: statut});
             loadAchats();
-            if(statut === "recu") showToast("✅ Marqué reçu — pense à mettre à jour le stock !", "success");
+            if(statut === "recu") {
+                // Chercher le produit correspondant
+                var matches = (props.produits || []).filter(function(p){
+                    return (p.nom||"").toLowerCase().includes((achat.nom||"").toLowerCase().slice(0,6))
+                        || (achat.nom||"").toLowerCase().includes((p.nom||"").toLowerCase().slice(0,6));
+                });
+                setRecuProduit(matches.length === 1 ? matches[0] : null);
+                setRecuQty(String(achat.quantite || ""));
+                setRecuModal(achat);
+            }
         } catch(e) { showToast("Erreur: " + e.message, "error"); }
+    }
+
+    async function validerEntreeStock() {
+        var q = parseFloat(recuQty);
+        if(!q || !recuProduit) { setRecuModal(null); return; }
+        setRecuLoading(true);
+        try {
+            var avant = recuProduit.quantite || 0;
+            var apres = avant + q;
+            await supaPatch("produits", recuProduit.id, {quantite: apres});
+            await logMouvement({produit_id:recuProduit.id, produit_nom:recuProduit.nom, type:"entree", quantite:q, quantite_avant:avant, quantite_apres:apres, user_id:props.user.code, user_nom:props.user.name});
+            showToast("✅ " + q + " " + (recuProduit.unite||"pièce") + " ajouté(s) au stock", "success");
+            props.onRefresh();
+        } catch(e) { showToast("Erreur stock: " + e.message, "error"); }
+        setRecuLoading(false);
+        setRecuModal(null);
     }
 
     return h("div", {className:"screen"},
@@ -2023,6 +2326,28 @@ function AchatScreen(props) {
             h("div", {className:"empty-state-text"}, "Aucun achat enregistré")
         ) : null,
 
+        // Modal entrée stock automatique
+        recuModal ? h("div", {className:"recu-modal"},
+            h("div", {className:"recu-modal-box"},
+                h("div", {style:{fontSize:16, fontWeight:900, color:"var(--navy)", marginBottom:8}}, "✅ Achat reçu — mise à jour stock"),
+                h("div", {style:{fontSize:13, color:"var(--text2)", marginBottom:14}}, "Réceptionné : " + (recuModal.nom||"") + " — Ajouter au stock ?"),
+                recuProduit ? h("div", {style:{background:"rgba(61,84,112,0.08)", borderRadius:12, padding:"10px 14px", marginBottom:12, fontSize:13}},
+                    h("div", {style:{fontWeight:800, color:"var(--navy)"}}, "📦 " + recuProduit.nom),
+                    h("div", {style:{color:"var(--text3)", fontSize:11}}, "Stock actuel : " + (recuProduit.quantite||0) + " " + (recuProduit.unite||"pièce"))
+                ) : h("div", {style:{background:"var(--orange-bg)", borderRadius:12, padding:"10px 14px", marginBottom:12, fontSize:12, color:"var(--orange)"}},
+                    "⚠️ Produit non trouvé automatiquement — saisie manuelle depuis la fiche produit"
+                ),
+                recuProduit ? h("div", {style:{display:"flex", gap:8, alignItems:"center", marginBottom:14}},
+                    h("label", {className:"input-label", style:{whiteSpace:"nowrap"}}, "Qté reçue"),
+                    h("input", {className:"input", type:"number", value:recuQty, onChange:function(e){setRecuQty(e.target.value);}, style:{flex:1}})
+                ) : null,
+                h("div", {style:{display:"flex", gap:10}},
+                    h("button", {className:"btn btn-outline", style:{flex:1}, onClick:function(){setRecuModal(null);}}, "Ignorer"),
+                    recuProduit ? h("button", {className:"btn btn-navy", style:{flex:2}, onClick:validerEntreeStock, disabled:recuLoading||!recuQty}, recuLoading ? "..." : "➕ Ajouter au stock") : null
+                )
+            )
+        ) : null,
+
         achats.map(function(a) {
             var s = STATUTS_ACHAT.find(function(x){ return x.id === (a.statut||"en_attente"); }) || STATUTS_ACHAT[0];
             return h("div", {key:a.id, className:"achat-row"},
@@ -2036,7 +2361,7 @@ function AchatScreen(props) {
                 h("div", {style:{display:"flex", gap:6, flexWrap:"wrap"}},
                     STATUTS_ACHAT.map(function(st) {
                         if(st.id === (a.statut||"en_attente")) return null;
-                        return h("button", {key:st.id, className:"statut-chip " + st.cls, style:{opacity:0.6, fontSize:10, padding:"3px 8px"}, onClick:function(){changeStatut(a.id, st.id);}}, st.icon + " " + st.label);
+                        return h("button", {key:st.id, className:"statut-chip " + st.cls, style:{opacity:0.6, fontSize:10, padding:"3px 8px"}, onClick:function(){changeStatut(a.id, st.id, a);}}, st.icon + " " + st.label);
                     })
                 )
             );
@@ -2082,6 +2407,16 @@ function BesoinScreen(props) {
     async function supprBesoin(id) {
         try {
             await supaDelete("besoins", id);
+            loadBesoins();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+    }
+
+    async function convertirEnAchat(b) {
+        try {
+            await supaPost("achats", {nom:b.nom, quantite:b.quantite, unite:b.unite||"piece",
+                commentaire:(b.commentaire||"") + " (converti depuis besoin)", user_id:props.user.code, statut:"en_attente"});
+            await supaDelete("besoins", b.id);
+            showToast("✅ Besoin converti en achat", "success");
             loadBesoins();
         } catch(e) { showToast("Erreur: " + e.message, "error"); }
     }
@@ -2146,6 +2481,677 @@ function BesoinScreen(props) {
     );
 }
 
+
+
+
+// ExportScreen — Export CSV du stock
+function ExportScreen(props) {
+    var produits = props.produits || [];
+    var exportingState = useState(false);
+    var exporting = exportingState[0]; var setExporting = exportingState[1];
+
+    function exportCSV() {
+        setExporting(true);
+        var headers = ["Nom","Famille","Corps d'état","Sous-famille","Quantite","Unite","Emplacement","Fournisseur","Reference","Prix HT","Seuil alerte","Statut"];
+        var rows = produits.map(function(p) {
+            var statut = getStatut(p) === "ok" ? "OK" : getStatut(p) === "low" ? "Stock bas" : "Rupture";
+            return [
+                p.nom||"", p.famille||"", p.corps_etat||"", p.sous_famille||"",
+                p.quantite||0, p.unite||"piece", p.emplacement||"",
+                p.fournisseur||"", p.reference||"",
+                p.prix_unitaire ? String(p.prix_unitaire).replace(".",",") : "",
+                p.quantite_min||0, statut
+            ].map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(";");
+        });
+        var csv = "\uFEFF" + headers.map(function(h){ return '"'+h+'"'; }).join(";") + "\n" + rows.join("\n");
+        var blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = "LRB_Stock_" + new Date().toISOString().slice(0,10) + ".csv";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setExporting(false);
+        showToast("✅ Export téléchargé — " + produits.length + " articles", "success");
+    }
+
+    var valeurTotale = produits.reduce(function(s,p){ return s + ((p.quantite||0)*(p.prix_unitaire||0)); },0);
+    var nbRuptures = produits.filter(function(p){ return getStatut(p) === "out"; }).length;
+    var nbBas = produits.filter(function(p){ return getStatut(p) === "low"; }).length;
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null, h("div", {className:"header-title"}, "📤 Export CSV"), h("div", {className:"header-sub"}, produits.length + " articles"))
+        ),
+        h("div", {className:"card space-y", style:{marginBottom:14}},
+            h("div", {className:"section-title"}, "CONTENU DE L'EXPORT"),
+            h("div", {style:{fontSize:13, color:"var(--text2)", lineHeight:1.8}},
+                "✅ " + produits.length + " références au total", h("br"),
+                "❌ " + nbRuptures + " rupture(s)", h("br"),
+                "⚠️ " + nbBas + " stock(s) bas", h("br"),
+                valeurTotale > 0 ? "💶 Valeur totale : " + valeurTotale.toFixed(2) + " € HT" : "💶 Prix non renseignés"
+            )
+        ),
+        h("div", {className:"card space-y", style:{marginBottom:14}},
+            h("div", {className:"section-title"}, "COLONNES EXPORTÉES"),
+            h("div", {style:{fontSize:12, color:"var(--text3)", lineHeight:2}},
+                "Nom · Famille · Corps d'état · Sous-famille · Quantité · Unité · Emplacement · Fournisseur · Référence · Prix HT · Seuil alerte · Statut"
+            )
+        ),
+        h("button", {className:"btn btn-navy btn-full", onClick:exportCSV, disabled:exporting},
+            exporting ? "Génération..." : "⬇️ Télécharger le fichier CSV"
+        ),
+        h("div", {style:{fontSize:11, color:"var(--text3)", textAlign:"center", marginTop:10}},
+            "Compatible Excel, Google Sheets, LibreOffice"
+        )
+    );
+}
+
+// BonSortieScreen — Bon de sortie pour un chantier
+function BonSortieScreen(props) {
+    var produits = props.produits || [];
+    var chantierState = useState(""); var chantier = chantierState[0]; var setChantier = chantierState[1];
+    var searchState = useState(""); var search = searchState[0]; var setSearch = searchState[1];
+    var lignesState = useState({}); var lignes = lignesState[0]; var setLignes = lignesState[1];
+    var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
+    var previewState = useState(false); var preview = previewState[0]; var setPreview = previewState[1];
+
+    var filtered = search.length >= 2 ? produits.filter(function(p){
+        return (p.nom||"").toLowerCase().includes(search.toLowerCase());
+    }).slice(0,10) : [];
+
+    var lignesArray = Object.keys(lignes).map(function(id){
+        var p = produits.find(function(x){ return String(x.id) === String(id); });
+        return p ? {p:p, qty:lignes[id]} : null;
+    }).filter(Boolean).filter(function(l){ return l.qty > 0; });
+
+    function setLigne(id, qty) {
+        var nl = Object.assign({}, lignes);
+        if(!qty || parseFloat(qty) <= 0) delete nl[id];
+        else nl[id] = parseFloat(qty);
+        setLignes(nl);
+    }
+
+    async function validerBon() {
+        if(!chantier.trim() || lignesArray.length === 0) return;
+        setSaving(true);
+        try {
+            for(var i=0; i<lignesArray.length; i++) {
+                var l = lignesArray[i];
+                var avant = l.p.quantite||0;
+                var apres = Math.max(0, avant - l.qty);
+                await supaPatch("produits", l.p.id, {quantite: apres});
+                await logMouvement({produit_id:l.p.id, produit_nom:l.p.nom, type:"sortie", quantite:l.qty, quantite_avant:avant, quantite_apres:apres, user_id:props.user.code, user_nom:props.user.name, chantier:chantier.trim()});
+            }
+            showToast("✅ Bon de sortie validé — " + lignesArray.length + " articles sortis", "success");
+            props.onRefresh();
+            setLignes({}); setChantier(""); setSearch(""); setPreview(false);
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+        setSaving(false);
+    }
+
+    function partagerWhatsApp() {
+        var txt = "📋 *BON DE SORTIE — LRB*\n";
+        txt += "🏗️ Chantier : *" + chantier + "*\n";
+        txt += "👷 " + props.user.name + " · " + new Date().toLocaleDateString("fr-FR") + "\n\n";
+        lignesArray.forEach(function(l){
+            txt += "• " + l.p.nom + " : *" + l.qty + " " + (l.p.unite||"pce") + "*\n";
+        });
+        txt += "\n— Les Rénovateurs Bretons";
+        window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+    }
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null, h("div", {className:"header-title"}, "📋 Bon de sortie"), h("div", {className:"header-sub"}, lignesArray.length + " article(s) sélectionné(s)"))
+        ),
+        h("div", {className:"input-group", style:{marginBottom:12}},
+            h("label", {className:"input-label"}, "🏗️ Chantier *"),
+            h("input", {className:"input", placeholder:"Ex: Brest — Rue de Siam", value:chantier, onChange:function(e){setChantier(e.target.value);}})
+        ),
+        h("div", {className:"search-box", style:{marginBottom:8}},
+            h("span", {style:{color:"var(--text3)"}}, "🔍"),
+            h("input", {placeholder:"Ajouter un article au bon...", value:search, onChange:function(e){setSearch(e.target.value);}})
+        ),
+        filtered.length > 0 ? h("div", {className:"search-results", style:{marginBottom:12}},
+            filtered.map(function(p) {
+                return h("div", {key:p.id, className:"search-result-item", onClick:function(){
+                    if(!lignes[p.id]) setLigne(p.id, 1);
+                    setSearch("");
+                }},
+                    h("div", {className:"product-thumb", style:{width:32, height:32, minWidth:32, fontSize:16}},
+                        p.photo_url ? h("img", {src:p.photo_url}) : "📦"
+                    ),
+                    h("div", {style:{flex:1}},
+                        h("div", {style:{fontSize:13, fontWeight:700, color:"var(--navy)"}}, p.nom),
+                        h("div", {style:{fontSize:11, color:"var(--text3)"}}, "Stock : " + (p.quantite||0) + " " + (p.unite||"pce"))
+                    ),
+                    lignes[p.id] ? h("span", {style:{fontSize:11, color:"var(--green)", fontWeight:800}}, "✓ Ajouté") : h("span", {style:{fontSize:18, color:"var(--text3)"}}, "＋")
+                );
+            })
+        ) : null,
+        lignesArray.length > 0 ? h("div", {className:"card", style:{marginBottom:12}},
+            h("div", {className:"section-title"}, "ARTICLES DU BON"),
+            lignesArray.map(function(l) {
+                return h("div", {key:l.p.id, className:"bon-item"},
+                    h("div", {style:{flex:1}},
+                        h("div", {style:{fontSize:13, fontWeight:700, color:"var(--navy)"}}, l.p.nom),
+                        h("div", {style:{fontSize:11, color:"var(--text3)"}}, "Dispo : " + (l.p.quantite||0) + " " + (l.p.unite||"pce"))
+                    ),
+                    h("input", {className:"bon-input", type:"number", value:l.qty, min:1, max:l.p.quantite||999,
+                        onChange:function(e){ setLigne(l.p.id, e.target.value); }
+                    }),
+                    h("span", {style:{fontSize:12, color:"var(--text3)", marginLeft:4, minWidth:30}}, l.p.unite||"pce"),
+                    h("button", {style:{background:"none", border:"none", cursor:"pointer", fontSize:18, color:"var(--red)", padding:"0 4px"},
+                        onClick:function(){ setLigne(l.p.id, 0); }
+                    }, "✕")
+                );
+            })
+        ) : null,
+        lignesArray.length > 0 && chantier.trim() ? h("div", {style:{display:"flex", gap:10}},
+            h("button", {className:"btn btn-outline", style:{flex:1}, onClick:partagerWhatsApp}, "📤 WhatsApp"),
+            h("button", {className:"btn btn-navy", style:{flex:2}, onClick:validerBon, disabled:saving}, saving ? "..." : "✅ Valider & Sortir du stock")
+        ) : null
+    );
+}
+
+
+// ============================================================
+// FichesChantiersScreen
+// ============================================================
+function FichesChantiersScreen(props) {
+    var chantiersState = useState([]); var chantiers = chantiersState[0]; var setChantiers = chantiersState[1];
+    var loadingState = useState(true); var loading = loadingState[0]; var setLoading = loadingState[1];
+    var showFormState = useState(false); var showForm = showFormState[0]; var setShowForm = showFormState[1];
+    var selectedState = useState(null); var selected = selectedState[0]; var setSelected = selectedState[1];
+    var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
+    var formState = useState({nom:"",client:"",adresse:"",date_debut:"",date_fin:"",budget_materiaux:"",statut:"en_cours"});
+    var form = formState[0]; var setForm = formState[1];
+
+    function upd(k){ return function(e){ var nf=Object.assign({},form); nf[k]=e.target.value; setForm(nf); }; }
+
+    function loadChantiers() {
+        setLoading(true);
+        supaGet("chantiers","order=created_at.desc").then(function(r){
+            setChantiers(Array.isArray(r)?r:[]);
+        }).catch(function(){setChantiers([]);}).finally(function(){setLoading(false);});
+    }
+    useEffect(function(){ loadChantiers(); },[]);
+
+    async function saveChantier() {
+        if(!form.nom.trim()) return;
+        setSaving(true);
+        try {
+            var data = {nom:form.nom.trim(),client:form.client||null,adresse:form.adresse||null,
+                date_debut:form.date_debut||null,date_fin:form.date_fin||null,
+                budget_materiaux:parseFloat(form.budget_materiaux)||null,statut:form.statut||"en_cours"};
+            if(selected) await supaPatch("chantiers",selected.id,data);
+            else await supaPost("chantiers",data);
+            showToast("✅ Chantier "+(selected?"mis à jour":"créé"),"success");
+            setShowForm(false); setSelected(null);
+            setForm({nom:"",client:"",adresse:"",date_debut:"",date_fin:"",budget_materiaux:"",statut:"en_cours"});
+            loadChantiers();
+        } catch(e){ showToast("Erreur: "+e.message,"error"); }
+        setSaving(false);
+    }
+
+    async function deleteChantier(id, nom) {
+        if(!window.confirm("Supprimer "+nom+" ?")) return;
+        try { await supaDelete("chantiers",id); showToast("Supprimé","success"); loadChantiers(); }
+        catch(e){ showToast("Erreur: "+e.message,"error"); }
+    }
+
+    function editChantier(c) {
+        setForm({nom:c.nom||"",client:c.client||"",adresse:c.adresse||"",date_debut:c.date_debut||"",
+            date_fin:c.date_fin||"",budget_materiaux:c.budget_materiaux||"",statut:c.statut||"en_cours"});
+        setSelected(c); setShowForm(true);
+    }
+
+    var sCls = {en_cours:"statut-encours",termine:"statut-termine",pause:"statut-pause"};
+    var sLbl = {en_cours:"En cours",termine:"Terminé",pause:"En pause"};
+
+    if(showForm) return h("div",{className:"screen"},
+        h("div",{className:"header"},
+            h("button",{className:"header-back",onClick:function(){setShowForm(false);setSelected(null);}}, "←"),
+            h("div",null,h("div",{className:"header-title"},selected?"✏️ Modifier":"🏗️ Nouveau chantier"))
+        ),
+        h("div",{className:"card space-y"},
+            h("div",{className:"input-group"},h("label",{className:"input-label"},"Nom *"),h("input",{className:"input",placeholder:"Ex: Brest — Rue de Siam",value:form.nom,onChange:upd("nom")})),
+            h("div",{className:"input-group"},h("label",{className:"input-label"},"Client"),h("input",{className:"input",placeholder:"Nom du client",value:form.client,onChange:upd("client")})),
+            h("div",{className:"input-group"},h("label",{className:"input-label"},"Adresse"),h("input",{className:"input",placeholder:"Adresse",value:form.adresse,onChange:upd("adresse")})),
+            h("div",{className:"grid-2"},
+                h("div",{className:"input-group"},h("label",{className:"input-label"},"Début"),h("input",{className:"input",type:"date",value:form.date_debut,onChange:upd("date_debut")})),
+                h("div",{className:"input-group"},h("label",{className:"input-label"},"Fin prévue"),h("input",{className:"input",type:"date",value:form.date_fin,onChange:upd("date_fin")}))
+            ),
+            h("div",{className:"grid-2"},
+                h("div",{className:"input-group"},h("label",{className:"input-label"},"Budget matériaux HT (€)"),h("input",{className:"input",type:"number",placeholder:"0",value:form.budget_materiaux,onChange:upd("budget_materiaux")})),
+                h("div",{className:"input-group"},h("label",{className:"input-label"},"Statut"),
+                    h("select",{className:"select",value:form.statut,onChange:upd("statut")},
+                        h("option",{value:"en_cours"},"🟢 En cours"),
+                        h("option",{value:"pause"},"🟡 En pause"),
+                        h("option",{value:"termine"},"⚫ Terminé")
+                    )
+                )
+            ),
+            h("button",{className:"btn btn-navy btn-full",onClick:saveChantier,disabled:!form.nom.trim()||saving},
+                saving?"...":(selected?"✅ Enregistrer":"✅ Créer le chantier"))
+        )
+    );
+
+    return h("div",{className:"screen"},
+        h("div",{className:"header"},
+            h("button",{className:"header-back",onClick:props.onBack},"←"),
+            h("div",null,h("div",{className:"header-title"},"🏗️ Fiches chantier"),h("div",{className:"header-sub"},chantiers.length+" chantier(s)")),
+            h("button",{style:{background:"var(--gold)",color:"#fff",border:"none",borderRadius:10,padding:"6px 12px",fontWeight:800,fontSize:13,cursor:"pointer"},
+                onClick:function(){setForm({nom:"",client:"",adresse:"",date_debut:"",date_fin:"",budget_materiaux:"",statut:"en_cours"});setSelected(null);setShowForm(true);}
+            },"＋ Nouveau")
+        ),
+        loading ? h("div",{style:{textAlign:"center",padding:32}},h("div",{className:"spinner",style:{width:28,height:28,borderWidth:3}})) : null,
+        chantiers.length===0 && !loading ? h("div",{className:"empty-state"},h("div",{className:"empty-state-icon"},"🏗️"),h("div",{className:"empty-state-text"},"Aucun chantier")) : null,
+        chantiers.map(function(c){
+            return h("div",{key:c.id,className:"chantier-fiche"},
+                h("div",{style:{display:"flex",alignItems:"flex-start",gap:10,marginBottom:8}},
+                    h("div",{style:{flex:1}},
+                        h("div",{style:{fontSize:16,fontWeight:900,color:"var(--navy)"}},c.nom),
+                        c.client?h("div",{style:{fontSize:12,color:"var(--text3)"}},"👤 "+c.client):null,
+                        c.adresse?h("div",{style:{fontSize:12,color:"var(--text3)"}},"📍 "+c.adresse):null
+                    ),
+                    h("span",{className:sCls[c.statut]||"statut-encours"},sLbl[c.statut]||c.statut)
+                ),
+                h("div",{style:{display:"flex",gap:12,fontSize:12,color:"var(--text3)",marginBottom:10,flexWrap:"wrap"}},
+                    c.date_debut?h("span",null,"📅 "+new Date(c.date_debut).toLocaleDateString("fr-FR")):null,
+                    c.date_fin?h("span",null,"→ "+new Date(c.date_fin).toLocaleDateString("fr-FR")):null,
+                    c.budget_materiaux?h("span",{style:{color:"var(--navy)",fontWeight:700}},"💶 Budget : "+c.budget_materiaux+" €"):null
+                ),
+                h("div",{style:{display:"flex",gap:8}},
+                    h("button",{className:"btn btn-outline btn-sm",style:{flex:1},onClick:function(){editChantier(c);}},"✏️ Modifier"),
+                    h("button",{className:"btn btn-danger btn-sm",onClick:function(){deleteChantier(c.id,c.nom);}},"🗑️")
+                )
+            );
+        })
+    );
+}
+
+// ============================================================
+// ImportCSVScreen
+// ============================================================
+function ImportCSVScreen(props) {
+    var fileState = useState(null); var file = fileState[0]; var setFile = fileState[1];
+    var rowsState = useState([]); var rows = rowsState[0]; var setRows = rowsState[1];
+    var headersState = useState([]); var headers = headersState[0]; var setHeaders = headersState[1];
+    var mappingState = useState({}); var mapping = mappingState[0]; var setMapping = mappingState[1];
+    var importingState = useState(false); var importing = importingState[0]; var setImporting = importingState[1];
+    var resultState = useState(null); var result = resultState[0]; var setResult = resultState[1];
+    var fileRef = useRef(null);
+
+    var CHAMPS = [
+        {id:"nom",label:"Nom *"},{id:"quantite",label:"Quantité"},{id:"unite",label:"Unité"},
+        {id:"corps_etat",label:"Corps d'état"},{id:"famille",label:"Famille"},
+        {id:"sous_famille",label:"Sous-famille"},{id:"emplacement",label:"Emplacement"},
+        {id:"fournisseur",label:"Fournisseur"},{id:"reference",label:"Référence"},
+        {id:"prix_unitaire",label:"Prix HT"},{id:"quantite_min",label:"Seuil alerte"}
+    ];
+
+    function parseCSV(text) {
+        var sep = text.includes(";") ? ";" : ",";
+        var lines = text.split(/\r?\n/).filter(function(l){ return l.trim(); });
+        if(lines.length < 2) return;
+        var hdrs = lines[0].split(sep).map(function(h){ return h.replace(/^"|"$/g,"").trim(); });
+        setHeaders(hdrs);
+        var data = lines.slice(1,51).map(function(line){
+            var cols = line.split(sep).map(function(v){ return v.replace(/^"|"$/g,"").trim(); });
+            var obj = {};
+            hdrs.forEach(function(h,i){ obj[h] = cols[i]||""; });
+            return obj;
+        });
+        setRows(data);
+        var autoMap = {};
+        hdrs.forEach(function(h){
+            var hl = h.toLowerCase();
+            if(hl.includes("nom")) autoMap["nom"]=h;
+            else if(hl.includes("qté")||hl.includes("quantit")) autoMap["quantite"]=h;
+            else if(hl.includes("unit")) autoMap["unite"]=h;
+            else if(hl.includes("corps")) autoMap["corps_etat"]=h;
+            else if(hl.includes("sous")) autoMap["sous_famille"]=h;
+            else if(hl.includes("famil")) autoMap["famille"]=h;
+            else if(hl.includes("empla")) autoMap["emplacement"]=h;
+            else if(hl.includes("fourn")) autoMap["fournisseur"]=h;
+            else if(hl.includes("ref")) autoMap["reference"]=h;
+            else if(hl.includes("prix")) autoMap["prix_unitaire"]=h;
+            else if(hl.includes("seuil")||hl.includes("min")) autoMap["quantite_min"]=h;
+        });
+        setMapping(autoMap);
+    }
+
+    function handleFile(e) {
+        var f = e.target.files[0];
+        if(!f) return;
+        setFile(f); setRows([]); setHeaders([]); setMapping({}); setResult(null);
+        var reader = new FileReader();
+        reader.onload = function(ev){ parseCSV(ev.target.result); };
+        reader.readAsText(f,"UTF-8");
+    }
+
+    async function doImport() {
+        if(!mapping["nom"]||rows.length===0) return;
+        setImporting(true);
+        var ok=0; var err=0;
+        for(var i=0;i<rows.length;i++){
+            var row=rows[i];
+            var nom=row[mapping["nom"]];
+            if(!nom){err++;continue;}
+            try{
+                var obj={nom:nom,famille:"MATERIAUX"};
+                ["quantite","prix_unitaire","quantite_min"].forEach(function(f){
+                    if(mapping[f]&&row[mapping[f]]) obj[f]=parseFloat(row[mapping[f]].replace(",","."))||0;
+                });
+                ["unite","corps_etat","famille","sous_famille","emplacement","fournisseur","reference"].forEach(function(f){
+                    if(mapping[f]&&row[mapping[f]]) obj[f]=row[mapping[f]];
+                });
+                await supaPost("produits",obj);
+                ok++;
+            }catch(e){err++;}
+        }
+        setImporting(false);
+        setResult({ok:ok,err:err});
+        if(ok>0) props.onRefresh();
+        showToast("✅ "+ok+" importé(s)"+(err>0?" · "+err+" erreur(s)":""),ok>0?"success":"error");
+    }
+
+    return h("div",{className:"screen"},
+        h("div",{className:"header"},
+            h("button",{className:"header-back",onClick:props.onBack},"←"),
+            h("div",null,h("div",{className:"header-title"},"📥 Import CSV"),
+                h("div",{className:"header-sub"},rows.length>0?rows.length+" lignes":"Importer un inventaire"))
+        ),
+        result ? h("div",{className:"card",style:{marginBottom:14,textAlign:"center"}},
+            h("div",{style:{fontSize:22,fontWeight:900,color:result.err===0?"var(--green)":"var(--orange)"}},
+                result.ok+" importé(s)"+(result.err>0?" · "+result.err+" erreur(s)":"")),
+            h("button",{className:"btn btn-outline btn-full",style:{marginTop:12},onClick:function(){setResult(null);setRows([]);setFile(null);}}, "Nouvel import")
+        ) : null,
+        !result ? h("div",null,
+            h("input",{ref:fileRef,type:"file",accept:".csv,.txt",style:{display:"none"},onChange:handleFile}),
+            rows.length===0 ? h("div",{className:"import-zone",onClick:function(){fileRef.current&&fileRef.current.click();}},
+                h("div",{style:{fontSize:48,marginBottom:12}},"📄"),
+                h("div",{style:{fontSize:16,fontWeight:700,color:"var(--navy)",marginBottom:8}},"Charger un fichier CSV"),
+                h("div",{style:{fontSize:12,color:"var(--text3)"}},"Séparateur ; ou , · UTF-8 · Excel compatible")
+            ) : null,
+            rows.length>0 ? h("div",null,
+                h("div",{className:"card",style:{marginBottom:12}},
+                    h("div",{className:"section-title"},"MAPPING DES COLONNES"),
+                    h("div",{style:{fontSize:11,color:"var(--text3)",marginBottom:10}},"Associe chaque champ à la colonne de ton fichier"),
+                    CHAMPS.map(function(ch){
+                        return h("div",{key:ch.id,className:"import-col-row"},
+                            h("div",{style:{flex:1,fontWeight:700,color:"var(--navy)"}},[ch.label]),
+                            h("select",{style:{flex:1,padding:"4px 8px",borderRadius:8,border:"1.5px solid var(--border)",fontSize:12,fontFamily:"inherit"},
+                                value:mapping[ch.id]||"",
+                                onChange:function(e){ var nm=Object.assign({},mapping); nm[ch.id]=e.target.value; setMapping(nm); }
+                            },
+                                h("option",{value:""},"— Ignorer —"),
+                                headers.map(function(hh){ return h("option",{key:hh,value:hh},hh); })
+                            )
+                        );
+                    })
+                ),
+                h("div",{className:"card",style:{marginBottom:12}},
+                    h("div",{className:"section-title"},"APERÇU (5 PREMIÈRES LIGNES)"),
+                    rows.slice(0,5).map(function(row,i){
+                        return h("div",{key:i,style:{fontSize:12,padding:"6px 0",borderBottom:"1px solid var(--border)",color:"var(--text2)"}},
+                            (row[mapping["nom"]]||"?") + (row[mapping["quantite"]]?" — "+row[mapping["quantite"]]+" "+(row[mapping["unite"]]||""):"")
+                        );
+                    })
+                ),
+                h("button",{className:"btn btn-navy btn-full",onClick:doImport,disabled:!mapping["nom"]||importing},
+                    importing?"Import en cours...":"⬇️ Importer "+rows.length+" articles")
+            ) : null
+        ) : null
+    );
+}
+
+// ============================================================
+// Besoin → Achat : modifier BesoinScreen pour ajouter le bouton
+// ============================================================
+
+// ChantiersScreen — Vue par chantier
+function ChantiersScreen(props) {
+    var mvtsState = useState([]); var mvts = mvtsState[0]; var setMvts = mvtsState[1];
+    var loadingState = useState(true); var loading = loadingState[0]; var setLoading = loadingState[1];
+    var openState = useState(null); var openChantier = openState[0]; var setOpenChantier = openState[1];
+
+    useEffect(function() {
+        supaGet("mouvements", "type=eq.sortie&order=created_at.desc&limit=500").then(function(r){
+            setMvts(Array.isArray(r) ? r : []);
+        }).catch(function(){}).finally(function(){ setLoading(false); });
+    }, []);
+
+    // Grouper par chantier
+    var grouped = {};
+    mvts.forEach(function(m) {
+        var k = m.chantier || "— Sans chantier —";
+        if(!grouped[k]) grouped[k] = {nom:k, mvts:[], total:0};
+        grouped[k].mvts.push(m);
+        grouped[k].total += (m.quantite||0);
+    });
+    var chantiers = Object.values(grouped).sort(function(a,b){
+        return new Date(b.mvts[0].created_at) - new Date(a.mvts[0].created_at);
+    });
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null, h("div", {className:"header-title"}, "🏗️ Chantiers"), h("div", {className:"header-sub"}, chantiers.length + " chantier(s)"))
+        ),
+        loading ? h("div", {style:{textAlign:"center", padding:32}}, h("div", {className:"spinner", style:{width:28, height:28, borderWidth:3}})) : null,
+        chantiers.length === 0 && !loading ? h("div", {className:"empty-state"},
+            h("div", {className:"empty-state-icon"}, "🏗️"),
+            h("div", {className:"empty-state-text"}, "Aucune sortie de stock associée à un chantier")
+        ) : null,
+        chantiers.map(function(c) {
+            var isOpen = openChantier === c.nom;
+            return h("div", {key:c.nom, className:"chantier-card"},
+                h("div", {className:"chantier-card-header", onClick:function(){setOpenChantier(isOpen ? null : c.nom);}},
+                    h("div", {style:{flex:1}},
+                        h("div", {style:{fontSize:15, fontWeight:800, color:"var(--navy)"}}, c.nom),
+                        h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:2}},
+                            c.mvts.length + " mouvement(s) · " + formatDate(c.mvts[0].created_at)
+                        )
+                    ),
+                    h("span", {className:"chantier-badge"}, c.mvts.length),
+                    h("span", {style:{fontSize:18, color:"var(--text3)", marginLeft:8}}, isOpen ? "▲" : "▼")
+                ),
+                isOpen ? h("div", {style:{padding:"0 14px 14px"}},
+                    c.mvts.map(function(m, i) {
+                        return h("div", {key:i, className:"mvt-row"},
+                            h("div", {className:"mvt-icon mvt-icon-sortie"}, "➖"),
+                            h("div", {style:{flex:1}},
+                                h("div", {className:"mvt-nom"}, m.produit_nom||"—"),
+                                h("div", {className:"mvt-meta"}, (m.user_nom||"") + " · " + formatDate(m.created_at))
+                            ),
+                            h("div", {className:"mvt-qty", style:{color:"var(--orange)"}}, "-" + (m.quantite||0))
+                        );
+                    })
+                ) : null
+            );
+        })
+    );
+}
+
+// InventaireScreen
+function InventaireScreen(props) {
+    var produits = props.produits || [];
+    var searchState = useState(""); var search = searchState[0]; var setSearch = searchState[1];
+    var valeursState = useState({}); var valeurs = valeursState[0]; var setValeurs = valeursState[1];
+    var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
+
+    var list = produits.filter(function(p){
+        if(!search) return true;
+        return (p.nom||"").toLowerCase().includes(search.toLowerCase());
+    });
+
+    function setVal(id, v) {
+        var nv = Object.assign({}, valeurs);
+        nv[id] = v;
+        setValeurs(nv);
+    }
+
+    var nbModif = Object.keys(valeurs).filter(function(id){
+        var p = produits.find(function(x){ return String(x.id) === String(id); });
+        return p && valeurs[id] !== "" && parseFloat(valeurs[id]) !== (p.quantite||0);
+    }).length;
+
+    async function validerInventaire() {
+        setSaving(true);
+        var errors = 0;
+        var updates = Object.keys(valeurs).filter(function(id){
+            var p = produits.find(function(x){ return String(x.id) === String(id); });
+            return p && valeurs[id] !== "" && parseFloat(valeurs[id]) !== (p.quantite||0);
+        });
+        for(var i = 0; i < updates.length; i++) {
+            var id = updates[i];
+            var p = produits.find(function(x){ return String(x.id) === String(id); });
+            var newQty = parseFloat(valeurs[id]);
+            try {
+                await supaPatch("produits", id, {quantite: newQty});
+                await logMouvement({produit_id:id, produit_nom:p.nom, type:"inventaire", quantite:Math.abs(newQty-(p.quantite||0)), quantite_avant:p.quantite||0, quantite_apres:newQty, user_id:props.user.code, user_nom:props.user.name});
+            } catch(e) { errors++; }
+        }
+        setSaving(false);
+        if(errors === 0) {
+            showToast("✅ Inventaire validé — " + updates.length + " article(s) mis à jour", "success");
+            setValeurs({});
+            props.onRefresh();
+        } else {
+            showToast("⚠️ " + errors + " erreur(s) lors de la mise à jour", "error");
+        }
+    }
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null,
+                h("div", {className:"header-title"}, "📋 Inventaire"),
+                h("div", {className:"header-sub"}, nbModif + " modification(s) en attente")
+            ),
+            nbModif > 0 ? h("button", {
+                style:{background:"var(--green)", color:"#fff", border:"none", borderRadius:10, padding:"6px 12px", fontWeight:800, fontSize:12, cursor:"pointer"},
+                onClick:validerInventaire, disabled:saving
+            }, saving ? "..." : "✅ Valider") : null
+        ),
+        h("div", {className:"search-box", style:{marginBottom:10}},
+            h("span", {style:{color:"var(--text3)"}}, "🔍"),
+            h("input", {placeholder:"Filtrer les articles...", value:search, onChange:function(e){setSearch(e.target.value);}})
+        ),
+        h("div", {style:{fontSize:11, color:"var(--text3)", marginBottom:10, fontWeight:600}},
+            "Saisissez la quantité réelle comptée. Laissez vide si inchangé."
+        ),
+        h("div", {className:"card"},
+            list.map(function(p) {
+                var val = valeurs[p.id] !== undefined ? valeurs[p.id] : "";
+                var diff = val !== "" ? parseFloat(val) - (p.quantite||0) : null;
+                return h("div", {key:p.id, className:"invent-row"},
+                    h("div", {className:"product-thumb", style:{width:32, height:32, minWidth:32, fontSize:16}},
+                        p.photo_url ? h("img", {src:p.photo_url}) : "📦"
+                    ),
+                    h("div", {style:{flex:1}},
+                        h("div", {style:{fontSize:13, fontWeight:700, color:"var(--navy)"}}, p.nom),
+                        h("div", {style:{fontSize:11, color:"var(--text3)"}}, (p.corps_etat||"") + " · stock actuel : " + (p.quantite||0) + " " + (p.unite||"pce"))
+                    ),
+                    diff !== null ? h("div", {className: diff >= 0 ? "invent-diff-pos" : "invent-diff-neg", style:{minWidth:30, textAlign:"center"}},
+                        (diff >= 0 ? "+" : "") + diff
+                    ) : null,
+                    h("input", {
+                        className:"invent-input",
+                        type:"number", placeholder: String(p.quantite||0),
+                        value:val,
+                        onChange:function(e){ setVal(p.id, e.target.value); },
+                        style:{borderColor: diff !== null ? (diff >= 0 ? "var(--green)" : "var(--red)") : "var(--border)"}
+                    })
+                );
+            })
+        )
+    );
+}
+
+// StatsScreen
+function StatsScreen(props) {
+    var produits = props.produits || [];
+    var mvtsState = useState([]); var mvts = mvtsState[0]; var setMvts = mvtsState[1];
+    var loadingState = useState(true); var loading = loadingState[0]; var setLoading = loadingState[1];
+
+    useEffect(function() {
+        supaGet("mouvements", "order=created_at.desc&limit=200").then(function(r){
+            setMvts(Array.isArray(r) ? r : []);
+        }).catch(function(){}).finally(function(){ setLoading(false); });
+    }, []);
+
+    var totalArticles = produits.length;
+    var valeurTotale = produits.reduce(function(s, p){ return s + ((p.quantite||0) * (p.prix_unitaire||0)); }, 0);
+    var nbRuptures = produits.filter(function(p){ return getStatut(p) === "out"; }).length;
+    var nbStockBas = produits.filter(function(p){ return getStatut(p) === "low"; }).length;
+    var nbOk = produits.filter(function(p){ return getStatut(p) === "ok"; }).length;
+
+    // Top 5 articles les plus sortis (30 derniers jours)
+    var since30 = Date.now() - 30*24*3600*1000;
+    var sorties = mvts.filter(function(m){ return m.type === "sortie" && new Date(m.created_at).getTime() > since30; });
+    var sortiesMap = {};
+    sorties.forEach(function(m){ sortiesMap[m.produit_nom] = (sortiesMap[m.produit_nom]||0) + (m.quantite||0); });
+    var top5 = Object.keys(sortiesMap).map(function(k){ return {nom:k, qty:sortiesMap[k]}; })
+        .sort(function(a,b){ return b.qty - a.qty; }).slice(0, 5);
+
+    // Mouvements par jour (7 derniers jours)
+    var mvtsSemaine = mvts.filter(function(m){ return new Date(m.created_at).getTime() > Date.now() - 7*24*3600*1000; });
+    var entreesSemaine = mvtsSemaine.filter(function(m){ return m.type === "entree" || m.type === "creation"; }).length;
+    var sortiesSemaine = mvtsSemaine.filter(function(m){ return m.type === "sortie"; }).length;
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null, h("div", {className:"header-title"}, "📊 Statistiques"), h("div", {className:"header-sub"}, "Vue d'ensemble du stock"))
+        ),
+        h("div", {className:"stat-grid"},
+            h("div", {className:"stat-card"},
+                h("div", {className:"stat-value"}, totalArticles),
+                h("div", {className:"stat-label"}, "Références")
+            ),
+            h("div", {className:"stat-card", style:{borderColor: nbRuptures > 0 ? "var(--red)" : "var(--border)"}},
+                h("div", {className:"stat-value", style:{color: nbRuptures > 0 ? "var(--red)" : "var(--navy)"}}, nbRuptures),
+                h("div", {className:"stat-label"}, "Ruptures")
+            ),
+            h("div", {className:"stat-card", style:{borderColor: nbStockBas > 0 ? "var(--orange)" : "var(--border)"}},
+                h("div", {className:"stat-value", style:{color: nbStockBas > 0 ? "var(--orange)" : "var(--navy)"}}, nbStockBas),
+                h("div", {className:"stat-label"}, "Stock bas")
+            )
+        ),
+        valeurTotale > 0 ? h("div", {className:"card", style:{marginBottom:14, textAlign:"center"}},
+            h("div", {style:{fontSize:11, fontWeight:800, color:"var(--text3)", marginBottom:4}}, "💶 VALEUR TOTALE DU STOCK (HT)"),
+            h("div", {style:{fontSize:28, fontWeight:900, color:"var(--navy)"}}, valeurTotale.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " €"),
+            h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:4}}, "Basé sur " + produits.filter(function(p){return p.prix_unitaire;}).length + " articles avec prix renseigné")
+        ) : null,
+        h("div", {className:"stat-grid-2", style:{marginBottom:14}},
+            h("div", {className:"stat-card"},
+                h("div", {className:"stat-value", style:{color:"var(--green)"}}, "+" + entreesSemaine),
+                h("div", {className:"stat-label"}, "Entrées / 7j")
+            ),
+            h("div", {className:"stat-card"},
+                h("div", {className:"stat-value", style:{color:"var(--orange)"}}, "-" + sortiesSemaine),
+                h("div", {className:"stat-label"}, "Sorties / 7j")
+            )
+        ),
+        loading ? h("div", {style:{textAlign:"center", padding:20}}, h("div", {className:"spinner", style:{width:28, height:28, borderWidth:3}})) :
+        top5.length > 0 ? h("div", {className:"card"},
+            h("div", {className:"section-title"}, "🔥 TOP 5 LES PLUS UTILISÉS (30 JOURS)"),
+            top5.map(function(item, i) {
+                return h("div", {key:i, className:"top-item"},
+                    h("div", {className:"top-rank"}, i+1),
+                    h("div", {style:{flex:1, fontSize:13, fontWeight:700, color:"var(--navy)"}}, item.nom),
+                    h("div", {style:{fontSize:13, fontWeight:900, color:"var(--text2)"}}, item.qty + " sorties")
+                );
+            })
+        ) : null
+    );
+}
+
 // AlertesScreen — ruptures, stocks bas et activité récente
 function AlertesScreen(props) {
     var produits = props.produits || [];
@@ -2192,7 +3198,7 @@ function AlertesScreen(props) {
             h("div", {className:"mvt-icon " + iconClass}, icon),
             h("div", {style:{flex:1}},
                 h("div", {className:"mvt-nom"}, m.produit_nom || "—"),
-                h("div", {className:"mvt-meta"}, (m.user_nom||"") + " · " + formatDate(m.created_at))
+                h("div", {className:"mvt-meta"}, (m.user_nom||"") + " · " + formatDate(m.created_at) + (m.chantier ? " · 🏗️ " + m.chantier : ""))
             ),
             h("div", {className:"mvt-qty", style:{color: qtyColor}},
                 (isEntree ? "+" : "-") + (m.quantite||0)
@@ -2386,6 +3392,83 @@ function TutoScreen(props) {
 }
 
 // ProfilScreen
+function UsersScreen(props) {
+    var usersState = useState([]); var users = usersState[0]; var setUsers = usersState[1];
+    var loadingState = useState(true); var loading = loadingState[0]; var setLoading = loadingState[1];
+    var newNomState = useState(""); var newNom = newNomState[0]; var setNewNom = newNomState[1];
+    var newCodeState = useState(""); var newCode = newCodeState[0]; var setNewCode = newCodeState[1];
+    var newRoleState = useState("chantier"); var newRole = newRoleState[0]; var setNewRole = newRoleState[1];
+    var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
+
+    function loadUsers() {
+        setLoading(true);
+        supaGet("utilisateurs", "order=nom.asc").then(function(rows){
+            setUsers(Array.isArray(rows) ? rows : []);
+        }).catch(function(){ setUsers([]); }).finally(function(){ setLoading(false); });
+    }
+    useEffect(function(){ loadUsers(); }, []);
+
+    async function addUser() {
+        if(!newNom.trim() || newCode.length < 4) return;
+        setSaving(true);
+        try {
+            await supaPost("utilisateurs", {nom: newNom.trim(), code: newCode, role: newRole});
+            showToast("✅ Utilisateur ajouté", "success");
+            setNewNom(""); setNewCode(""); setNewRole("chantier");
+            loadUsers();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+        setSaving(false);
+    }
+
+    async function deleteUser(id, nom) {
+        if(!window.confirm("Supprimer " + nom + " ?")) return;
+        try {
+            await supaDelete("utilisateurs", id);
+            showToast("🗑️ Utilisateur supprimé", "success");
+            loadUsers();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+    }
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null, h("div", {className:"header-title"}, "👥 Utilisateurs"), h("div", {className:"header-sub"}, users.length + " compte(s)"))
+        ),
+        h("div", {className:"card space-y", style:{marginBottom:16}},
+            h("div", {className:"section-title"}, "➕ AJOUTER UN UTILISATEUR"),
+            h("div", {className:"input-group"},
+                h("label", {className:"input-label"}, "Prénom / Nom *"),
+                h("input", {className:"input", placeholder:"Ex: David Martin", value:newNom, onChange:function(e){setNewNom(e.target.value);}})
+            ),
+            h("div", {className:"grid-2"},
+                h("div", {className:"input-group"},
+                    h("label", {className:"input-label"}, "Code (4-6 chiffres) *"),
+                    h("input", {className:"input", type:"tel", maxLength:6, placeholder:"123456", value:newCode, onChange:function(e){setNewCode(e.target.value);}})
+                ),
+                h("div", {className:"input-group"},
+                    h("label", {className:"input-label"}, "Rôle"),
+                    h("select", {className:"select", value:newRole, onChange:function(e){setNewRole(e.target.value);}},
+                        h("option", {value:"chantier"}, "👷 Équipe terrain"),
+                        h("option", {value:"admin"}, "⚙️ Administrateur")
+                    )
+                )
+            ),
+            h("button", {className:"btn btn-navy btn-full", onClick:addUser, disabled:!newNom.trim()||newCode.length<4||saving}, saving ? "..." : "✅ Créer l'utilisateur")
+        ),
+        loading ? h("div", {style:{textAlign:"center", padding:24}}, h("div", {className:"spinner", style:{width:28, height:28, borderWidth:3}})) : null,
+        users.map(function(u) {
+            return h("div", {key:u.id, className:"user-row"},
+                h("div", {className:"user-code"}, u.code),
+                h("div", {style:{flex:1}},
+                    h("div", {style:{fontSize:14, fontWeight:800, color:"var(--navy)"}}, u.nom),
+                    h("div", {style:{fontSize:11, color:"var(--text3)"}}, u.role === "admin" ? "⚙️ Administrateur" : "👷 Terrain")
+                ),
+                h("button", {className:"btn btn-danger btn-sm", onClick:function(){deleteUser(u.id, u.nom);}}, "🗑️")
+            );
+        })
+    );
+}
+
 function ProfilScreen(props) {
     return h("div", {className:"screen"},
         h("div", {className:"header"},
@@ -2395,10 +3478,18 @@ function ProfilScreen(props) {
         h("div", {style:{textAlign:"center", padding:"20px 0"}},
             h("div", {className:"profil-avatar"}, "👷"),
             h("div", {className:"profil-name"}, props.user.name),
-            h("div", {className:"profil-role"}, props.user.role === "admin" ? "Administrateur" : "Equipe terrain")
+            h("div", {className:"profil-role"}, props.user.role === "admin" ? "⚙️ Administrateur" : "👷 Équipe terrain")
         ),
         h("div", {className:"card space-y"},
             h("button", {className:"btn btn-navy btn-full", onClick:props.onTutos}, "📚 Tutoriels"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onStats}, "📊 Statistiques"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onInventaire}, "📋 Inventaire physique"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onBonSortie}, "📋 Bon de sortie chantier"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onChantiers}, "🏗️ Vue par chantier"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onExport}, "📤 Export CSV du stock"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onImport}, "📥 Import CSV"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onFicheChantier}, "🏗️ Fiches chantier"),
+            props.user.role === "admin" ? h("button", {className:"btn btn-outline btn-full", onClick:props.onUsers}, "👥 Gérer les utilisateurs") : null,
             h("button", {className:"btn btn-danger btn-full", onClick:props.onLogout}, "Se déconnecter")
         )
     );
@@ -2556,7 +3647,7 @@ function App() {
         return h("div", {className:"app"}, GlobalHeader, h(LoginScreen, {onLogin: function(u){setUser(u);}}));
     }
     
-    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list" || screen === "tutos";
+    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list" || screen === "tutos" || screen === "users" || screen === "stats" || screen === "inventaire" || screen === "export" || screen === "bon_sortie" || screen === "chantiers" || screen === "fiches_chantiers" || screen === "import_csv";
     var currentScreen;
     
     switch(screen) {
@@ -2565,6 +3656,27 @@ function App() {
             break;
         case "alertes":
             currentScreen = h(AlertesScreen, {produits:produits, nav:nav, user:user});
+            break;
+        case "stats":
+            currentScreen = h(StatsScreen, {produits:produits, onBack:goBack});
+            break;
+        case "inventaire":
+            currentScreen = h(InventaireScreen, {produits:produits, onBack:goBack, onRefresh:loadData, user:user});
+            break;
+        case "export":
+            currentScreen = h(ExportScreen, {produits:produits, onBack:goBack});
+            break;
+        case "bon_sortie":
+            currentScreen = h(BonSortieScreen, {produits:produits, onBack:goBack, onRefresh:loadData, user:user});
+            break;
+        case "chantiers":
+            currentScreen = h(ChantiersScreen, {onBack:goBack});
+            break;
+        case "fiches_chantiers":
+            currentScreen = h(FichesChantiersScreen, {onBack:goBack});
+            break;
+        case "import_csv":
+            currentScreen = h(ImportCSVScreen, {onBack:goBack, onRefresh:loadData});
             break;
         case "corpsdetat":
             currentScreen = h(CorpsDetatScreen, {categorie:data.categorie, onBack:goBack, nav:nav, produits:produits});
@@ -2579,7 +3691,7 @@ function App() {
             currentScreen = h(PhotoScreen, {user:user, onBack:goBack, onRefresh:loadData});
             break;
         case "achat":
-            currentScreen = h(AchatScreen, {user:user, onBack:goBack, onRefresh:loadData});
+            currentScreen = h(AchatScreen, {user:user, onBack:goBack, onRefresh:loadData, produits:produits});
             break;
         case "besoin":
             currentScreen = h(BesoinScreen, {user:user, onBack:goBack});
@@ -2587,8 +3699,11 @@ function App() {
         case "tutos":
             currentScreen = h(TutoScreen, {onBack:goBack});
             break;
+        case "users":
+            currentScreen = h(UsersScreen, {onBack:goBack, user:user});
+            break;
         case "profil":
-            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onTutos:function(){nav("tutos", null);}, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
+            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onTutos:function(){nav("tutos", null);}, onStats:function(){nav("stats", null);}, onInventaire:function(){nav("inventaire", null);}, onBonSortie:function(){nav("bon_sortie", null);}, onChantiers:function(){nav("chantiers", null);}, onExport:function(){nav("export", null);}, onImport:function(){nav("import_csv", null);}, onFicheChantier:function(){nav("fiches_chantiers", null);}, onUsers:function(){nav("users", null);}, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
             break;
         default:
             currentScreen = h(HomeScreen, {user:user, nav:nav, produits:produits});
