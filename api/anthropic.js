@@ -11,33 +11,39 @@ module.exports = async function(req, res) {
     const apiKey = process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_KEY;
     if (!apiKey) return res.status(500).json({ error: 'Cle API manquante sur Vercel' });
 
-    const payload = JSON.stringify(req.body);
+    let body = req.body;
+    if (!body || typeof body === 'string') {
+        try { body = JSON.parse(body || '{}'); } catch(e) { body = {}; }
+    }
 
-    const result = await new Promise((resolve, reject) => {
-        const options = {
-            hostname: 'api.anthropic.com',
-            path: '/v1/messages',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01',
-                'Content-Length': Buffer.byteLength(payload)
-            }
-        };
-        const r = https.request(options, (resp) => {
-            let data = '';
-            resp.on('data', chunk => data += chunk);
-            resp.on('end', () => resolve({ status: resp.statusCode, body: data }));
-        });
-        r.on('error', reject);
-        r.write(payload);
-        r.end();
-    });
+    const payload = JSON.stringify(body);
 
     try {
-        return res.status(result.status).json(JSON.parse(result.body));
+        const result = await new Promise((resolve, reject) => {
+            const options = {
+                hostname: 'api.anthropic.com',
+                path: '/v1/messages',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'Content-Length': Buffer.byteLength(payload)
+                }
+            };
+            const r = https.request(options, (resp) => {
+                let data = '';
+                resp.on('data', chunk => data += chunk);
+                resp.on('end', () => resolve({ status: resp.statusCode, body: data }));
+            });
+            r.on('error', reject);
+            r.write(payload);
+            r.end();
+        });
+
+        const parsed = JSON.parse(result.body);
+        return res.status(result.status).json(parsed);
     } catch(e) {
-        return res.status(result.status).send(result.body);
+        return res.status(500).json({ error: e.message });
     }
 };
