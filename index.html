@@ -133,6 +133,11 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .chantier-statut-encours{background:#D4EDDA;color:#155724;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
 .chantier-statut-termine{background:#E2E3E5;color:#383d41;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
 .chantier-statut-pause{background:#FFF3CD;color:#856404;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
+.qr-modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:950;display:flex;align-items:center;justify-content:center;padding:20px}
+.qr-box{background:#fff;border-radius:24px;padding:24px;text-align:center;width:280px}
+.qr-img{width:200px;height:200px;border:1.5px solid var(--border);border-radius:12px;margin:12px auto}
+.budget-bar-bg{background:var(--surface2);border-radius:6px;height:10px;overflow:hidden;margin:6px 0}
+.budget-bar-fill{height:100%;border-radius:6px;transition:width 0.5s ease}
 .import-zone{border:2px dashed var(--border);border-radius:16px;padding:32px;text-align:center;cursor:pointer;background:var(--surface2)}
 .import-zone:hover{border-color:var(--navy);background:rgba(61,84,112,0.05)}
 .import-col-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
@@ -1538,6 +1543,8 @@ function ProduitDetail(props) {
     var chantier = chantierState[0]; var setChantier = chantierState[1];
     var chantiersState = useState([]);
     var chantiersSugg = chantiersState[0]; var setChantiersSugg = chantiersState[1];
+    var qrOpenState = useState(false);
+    var qrOpen = qrOpenState[0]; var setQrOpen = qrOpenState[1];
     var statut = getStatut(p);
 
     useEffect(function() {
@@ -1669,7 +1676,10 @@ function ProduitDetail(props) {
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
             h("div", null, h("div", {className:"header-title", style:{fontSize:18}}, p.nom), h("div", {className:"header-sub"}, p.corps_etat || p.famille || "")),
-            h("button", {style:{background:"none", border:"none", cursor:"pointer", fontSize:20, padding:"0 4px"}, onClick:function(){ setEditNom(p.nom||""); setEditCE(p.corps_etat||""); setEditFamille(p.famille||"MATERIAUX"); setEditUnite(p.unite||"piece"); setEditing(true); }}, "✏️")
+            h("div", {style:{display:"flex", gap:4}},
+                h("button", {style:{background:"none", border:"none", cursor:"pointer", fontSize:20, padding:"0 4px"}, onClick:function(){ setQrOpen(true); }}, "📱"),
+                h("button", {style:{background:"none", border:"none", cursor:"pointer", fontSize:20, padding:"0 4px"}, onClick:function(){ setEditNom(p.nom||""); setEditCE(p.corps_etat||""); setEditFamille(p.famille||"MATERIAUX"); setEditUnite(p.unite||"piece"); setEditing(true); }}, "✏️")
+            )
         ),
         h("div", {className:"product-hero"},
             p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📦")
@@ -1845,6 +1855,23 @@ function ProduitDetail(props) {
                     }
                 }, "Enregistrer")
             ),
+            h("button", {
+                className:"btn btn-outline btn-full",
+                style:{marginTop:8, fontSize:12},
+                onClick: async function() {
+                    try {
+                        var rows = await supaGet("mouvements", "produit_id=eq."+p.id+"&type=eq.sortie&order=created_at.desc&limit=100");
+                        if(!Array.isArray(rows)||rows.length===0) return showToast("Pas assez d'historique","error");
+                        var since30 = Date.now()-30*24*3600*1000;
+                        var recent = rows.filter(function(m){ return new Date(m.created_at).getTime()>since30; });
+                        if(recent.length===0) return showToast("Aucune sortie sur 30 jours","error");
+                        var totalSorti = recent.reduce(function(s,m){ return s+(m.quantite||0); },0);
+                        var seuilCalc = Math.ceil(totalSorti/30*7); // 7 jours de buffer
+                        document.getElementById("seuil-input-"+p.id).value = seuilCalc;
+                        showToast("💡 Seuil suggéré : "+seuilCalc+" "+( p.unite||"pièce")+" (7j de conso)", "success");
+                    } catch(e){ showToast("Erreur: "+e.message,"error"); }
+                }
+            }, "💡 Calculer automatiquement (basé sur 30 jours)"),
             h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:6}},
                 "Alerte si stock ≤ seuil. Actuellement : " + (p.quantite_min||0) + " " + (p.unite||"pièce")
             )
@@ -1921,6 +1948,27 @@ function ProduitDetail(props) {
                     h("button", {className:"btn btn-outline", style:{flex:1}, onClick:function(){setConfirmOpen(false);}}, "Annuler"),
                     h("button", {className:"btn btn-danger", style:{flex:2}, onClick:supprimer}, "🗑️ Confirmer la suppression")
                 )
+            )
+        ) : null,
+
+        // Modal QR Code
+        qrOpen ? h("div", {className:"qr-modal", onClick:function(){setQrOpen(false);}},
+            h("div", {className:"qr-box", onClick:function(e){e.stopPropagation();}},
+                h("div", {style:{fontSize:15, fontWeight:900, color:"var(--navy)", marginBottom:4}}, "📱 QR Code"),
+                h("div", {style:{fontSize:12, color:"var(--text3)", marginBottom:12}}, p.nom),
+                h("img", {
+                    className:"qr-img",
+                    src:"https://api.qrserver.com/v1/create-qr-code/?size=200x200&format=png&data=" + encodeURIComponent(
+                        "LRB STOCK\n" + p.nom +
+                        (p.corps_etat ? "\n" + p.corps_etat : "") +
+                        (p.emplacement ? "\nEmplacement: " + p.emplacement : "") +
+                        (p.reference ? "\nRef: " + p.reference : "") +
+                        "\nStock: " + (p.quantite||0) + " " + (p.unite||"pce")
+                    ),
+                    alt:"QR Code " + p.nom
+                }),
+                h("div", {style:{fontSize:11, color:"var(--text3)", marginBottom:16}}, "Faites une capture d'écran pour imprimer"),
+                h("button", {className:"btn btn-navy btn-full", onClick:function(){setQrOpen(false);}}, "Fermer")
             )
         ) : null,
 
@@ -2662,6 +2710,7 @@ function BonSortieScreen(props) {
 function FichesChantiersScreen(props) {
     var chantiersState = useState([]); var chantiers = chantiersState[0]; var setChantiers = chantiersState[1];
     var loadingState = useState(true); var loading = loadingState[0]; var setLoading = loadingState[1];
+    var depensesState = useState({}); var depenses = depensesState[0]; var setDepenses = depensesState[1];
     var showFormState = useState(false); var showForm = showFormState[0]; var setShowForm = showFormState[1];
     var selectedState = useState(null); var selected = selectedState[0]; var setSelected = selectedState[1];
     var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
@@ -2676,7 +2725,23 @@ function FichesChantiersScreen(props) {
             setChantiers(Array.isArray(r)?r:[]);
         }).catch(function(){setChantiers([]);}).finally(function(){setLoading(false);});
     }
-    useEffect(function(){ loadChantiers(); },[]);
+
+    function loadDepenses() {
+        supaGet("mouvements","type=eq.sortie&order=created_at.desc&limit=1000").then(function(rows){
+            if(!Array.isArray(rows)) return;
+            var map = {};
+            rows.forEach(function(m){
+                if(!m.chantier) return;
+                if(!map[m.chantier]) map[m.chantier] = {nb:0, valeur:0};
+                map[m.chantier].nb++;
+                // valeur approximative (quantite sans prix unitaire disponible)
+                map[m.chantier].valeur += (m.quantite||0);
+            });
+            setDepenses(map);
+        }).catch(function(){});
+    }
+
+    useEffect(function(){ loadChantiers(); loadDepenses(); },[]);
 
     async function saveChantier() {
         if(!form.nom.trim()) return;
@@ -2763,6 +2828,24 @@ function FichesChantiersScreen(props) {
                     c.date_fin?h("span",null,"→ "+new Date(c.date_fin).toLocaleDateString("fr-FR")):null,
                     c.budget_materiaux?h("span",{style:{color:"var(--navy)",fontWeight:700}},"💶 Budget : "+c.budget_materiaux+" €"):null
                 ),
+                (depenses[c.nom]) ? h("div", {style:{marginBottom:10}},
+                    h("div", {style:{display:"flex", justifyContent:"space-between", fontSize:12, marginBottom:4}},
+                        h("span", {style:{color:"var(--text3)", fontWeight:700}}, "📦 Matériaux sortis"),
+                        h("span", {style:{color:"var(--navy)", fontWeight:800}}, depenses[c.nom].nb + " mouvement(s)")
+                    ),
+                    c.budget_materiaux ? h("div", null,
+                        h("div", {style:{display:"flex", justifyContent:"space-between", fontSize:11, color:"var(--text3)", marginBottom:2}},
+                            h("span", null, "Budget consommé (estimation)"),
+                            h("span", {style:{fontWeight:800, color: "var(--green)"}}, "En cours")
+                        ),
+                        h("div", {className:"budget-bar-bg"},
+                            h("div", {className:"budget-bar-fill", style:{
+                                width: Math.min(100, (depenses[c.nom].nb / 10 * 100)) + "%",
+                                background: depenses[c.nom].nb > 8 ? "var(--orange)" : "var(--green)"
+                            }})
+                        )
+                    ) : null
+                ) : null,
                 h("div",{style:{display:"flex",gap:8}},
                     h("button",{className:"btn btn-outline btn-sm",style:{flex:1},onClick:function(){editChantier(c);}},"✏️ Modifier"),
                     h("button",{className:"btn btn-danger btn-sm",onClick:function(){deleteChantier(c.id,c.nom);}},"🗑️")
