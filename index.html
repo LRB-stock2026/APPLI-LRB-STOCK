@@ -129,6 +129,14 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .stat-label{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:0.07em;margin-top:4px;text-transform:uppercase}
 .stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
 .stat-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.chantier-card{background:#fff;border-radius:16px;border:1.5px solid var(--border);margin-bottom:10px;overflow:hidden}
+.chantier-card-header{display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer}
+.chantier-badge{background:var(--navy);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px}
+.bon-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.bon-item:last-child{border-bottom:none}
+.bon-qty{font-size:16px;font-weight:900;color:var(--navy);min-width:50px;text-align:right}
+.bon-input{width:60px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-weight:800;text-align:center;font-family:inherit}
+.bon-input:focus{border-color:var(--navy);outline:none}
 .top-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
 .top-item:last-child{border-bottom:none}
 .top-rank{width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -2452,6 +2460,243 @@ function BesoinScreen(props) {
 
 
 
+
+// ExportScreen — Export CSV du stock
+function ExportScreen(props) {
+    var produits = props.produits || [];
+    var exportingState = useState(false);
+    var exporting = exportingState[0]; var setExporting = exportingState[1];
+
+    function exportCSV() {
+        setExporting(true);
+        var headers = ["Nom","Famille","Corps d'état","Sous-famille","Quantite","Unite","Emplacement","Fournisseur","Reference","Prix HT","Seuil alerte","Statut"];
+        var rows = produits.map(function(p) {
+            var statut = getStatut(p) === "ok" ? "OK" : getStatut(p) === "low" ? "Stock bas" : "Rupture";
+            return [
+                p.nom||"", p.famille||"", p.corps_etat||"", p.sous_famille||"",
+                p.quantite||0, p.unite||"piece", p.emplacement||"",
+                p.fournisseur||"", p.reference||"",
+                p.prix_unitaire ? String(p.prix_unitaire).replace(".",",") : "",
+                p.quantite_min||0, statut
+            ].map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(";");
+        });
+        var csv = "\uFEFF" + headers.map(function(h){ return '"'+h+'"'; }).join(";") + "\n" + rows.join("\n");
+        var blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = "LRB_Stock_" + new Date().toISOString().slice(0,10) + ".csv";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setExporting(false);
+        showToast("✅ Export téléchargé — " + produits.length + " articles", "success");
+    }
+
+    var valeurTotale = produits.reduce(function(s,p){ return s + ((p.quantite||0)*(p.prix_unitaire||0)); },0);
+    var nbRuptures = produits.filter(function(p){ return getStatut(p) === "out"; }).length;
+    var nbBas = produits.filter(function(p){ return getStatut(p) === "low"; }).length;
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null, h("div", {className:"header-title"}, "📤 Export CSV"), h("div", {className:"header-sub"}, produits.length + " articles"))
+        ),
+        h("div", {className:"card space-y", style:{marginBottom:14}},
+            h("div", {className:"section-title"}, "CONTENU DE L'EXPORT"),
+            h("div", {style:{fontSize:13, color:"var(--text2)", lineHeight:1.8}},
+                "✅ " + produits.length + " références au total", h("br"),
+                "❌ " + nbRuptures + " rupture(s)", h("br"),
+                "⚠️ " + nbBas + " stock(s) bas", h("br"),
+                valeurTotale > 0 ? "💶 Valeur totale : " + valeurTotale.toFixed(2) + " € HT" : "💶 Prix non renseignés"
+            )
+        ),
+        h("div", {className:"card space-y", style:{marginBottom:14}},
+            h("div", {className:"section-title"}, "COLONNES EXPORTÉES"),
+            h("div", {style:{fontSize:12, color:"var(--text3)", lineHeight:2}},
+                "Nom · Famille · Corps d'état · Sous-famille · Quantité · Unité · Emplacement · Fournisseur · Référence · Prix HT · Seuil alerte · Statut"
+            )
+        ),
+        h("button", {className:"btn btn-navy btn-full", onClick:exportCSV, disabled:exporting},
+            exporting ? "Génération..." : "⬇️ Télécharger le fichier CSV"
+        ),
+        h("div", {style:{fontSize:11, color:"var(--text3)", textAlign:"center", marginTop:10}},
+            "Compatible Excel, Google Sheets, LibreOffice"
+        )
+    );
+}
+
+// BonSortieScreen — Bon de sortie pour un chantier
+function BonSortieScreen(props) {
+    var produits = props.produits || [];
+    var chantierState = useState(""); var chantier = chantierState[0]; var setChantier = chantierState[1];
+    var searchState = useState(""); var search = searchState[0]; var setSearch = searchState[1];
+    var lignesState = useState({}); var lignes = lignesState[0]; var setLignes = lignesState[1];
+    var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
+    var previewState = useState(false); var preview = previewState[0]; var setPreview = previewState[1];
+
+    var filtered = search.length >= 2 ? produits.filter(function(p){
+        return (p.nom||"").toLowerCase().includes(search.toLowerCase());
+    }).slice(0,10) : [];
+
+    var lignesArray = Object.keys(lignes).map(function(id){
+        var p = produits.find(function(x){ return String(x.id) === String(id); });
+        return p ? {p:p, qty:lignes[id]} : null;
+    }).filter(Boolean).filter(function(l){ return l.qty > 0; });
+
+    function setLigne(id, qty) {
+        var nl = Object.assign({}, lignes);
+        if(!qty || parseFloat(qty) <= 0) delete nl[id];
+        else nl[id] = parseFloat(qty);
+        setLignes(nl);
+    }
+
+    async function validerBon() {
+        if(!chantier.trim() || lignesArray.length === 0) return;
+        setSaving(true);
+        try {
+            for(var i=0; i<lignesArray.length; i++) {
+                var l = lignesArray[i];
+                var avant = l.p.quantite||0;
+                var apres = Math.max(0, avant - l.qty);
+                await supaPatch("produits", l.p.id, {quantite: apres});
+                await logMouvement({produit_id:l.p.id, produit_nom:l.p.nom, type:"sortie", quantite:l.qty, quantite_avant:avant, quantite_apres:apres, user_id:props.user.code, user_nom:props.user.name, chantier:chantier.trim()});
+            }
+            showToast("✅ Bon de sortie validé — " + lignesArray.length + " articles sortis", "success");
+            props.onRefresh();
+            setLignes({}); setChantier(""); setSearch(""); setPreview(false);
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+        setSaving(false);
+    }
+
+    function partagerWhatsApp() {
+        var txt = "📋 *BON DE SORTIE — LRB*\n";
+        txt += "🏗️ Chantier : *" + chantier + "*\n";
+        txt += "👷 " + props.user.name + " · " + new Date().toLocaleDateString("fr-FR") + "\n\n";
+        lignesArray.forEach(function(l){
+            txt += "• " + l.p.nom + " : *" + l.qty + " " + (l.p.unite||"pce") + "*\n";
+        });
+        txt += "\n— Les Rénovateurs Bretons";
+        window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+    }
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null, h("div", {className:"header-title"}, "📋 Bon de sortie"), h("div", {className:"header-sub"}, lignesArray.length + " article(s) sélectionné(s)"))
+        ),
+        h("div", {className:"input-group", style:{marginBottom:12}},
+            h("label", {className:"input-label"}, "🏗️ Chantier *"),
+            h("input", {className:"input", placeholder:"Ex: Brest — Rue de Siam", value:chantier, onChange:function(e){setChantier(e.target.value);}})
+        ),
+        h("div", {className:"search-box", style:{marginBottom:8}},
+            h("span", {style:{color:"var(--text3)"}}, "🔍"),
+            h("input", {placeholder:"Ajouter un article au bon...", value:search, onChange:function(e){setSearch(e.target.value);}})
+        ),
+        filtered.length > 0 ? h("div", {className:"search-results", style:{marginBottom:12}},
+            filtered.map(function(p) {
+                return h("div", {key:p.id, className:"search-result-item", onClick:function(){
+                    if(!lignes[p.id]) setLigne(p.id, 1);
+                    setSearch("");
+                }},
+                    h("div", {className:"product-thumb", style:{width:32, height:32, minWidth:32, fontSize:16}},
+                        p.photo_url ? h("img", {src:p.photo_url}) : "📦"
+                    ),
+                    h("div", {style:{flex:1}},
+                        h("div", {style:{fontSize:13, fontWeight:700, color:"var(--navy)"}}, p.nom),
+                        h("div", {style:{fontSize:11, color:"var(--text3)"}}, "Stock : " + (p.quantite||0) + " " + (p.unite||"pce"))
+                    ),
+                    lignes[p.id] ? h("span", {style:{fontSize:11, color:"var(--green)", fontWeight:800}}, "✓ Ajouté") : h("span", {style:{fontSize:18, color:"var(--text3)"}}, "＋")
+                );
+            })
+        ) : null,
+        lignesArray.length > 0 ? h("div", {className:"card", style:{marginBottom:12}},
+            h("div", {className:"section-title"}, "ARTICLES DU BON"),
+            lignesArray.map(function(l) {
+                return h("div", {key:l.p.id, className:"bon-item"},
+                    h("div", {style:{flex:1}},
+                        h("div", {style:{fontSize:13, fontWeight:700, color:"var(--navy)"}}, l.p.nom),
+                        h("div", {style:{fontSize:11, color:"var(--text3)"}}, "Dispo : " + (l.p.quantite||0) + " " + (l.p.unite||"pce"))
+                    ),
+                    h("input", {className:"bon-input", type:"number", value:l.qty, min:1, max:l.p.quantite||999,
+                        onChange:function(e){ setLigne(l.p.id, e.target.value); }
+                    }),
+                    h("span", {style:{fontSize:12, color:"var(--text3)", marginLeft:4, minWidth:30}}, l.p.unite||"pce"),
+                    h("button", {style:{background:"none", border:"none", cursor:"pointer", fontSize:18, color:"var(--red)", padding:"0 4px"},
+                        onClick:function(){ setLigne(l.p.id, 0); }
+                    }, "✕")
+                );
+            })
+        ) : null,
+        lignesArray.length > 0 && chantier.trim() ? h("div", {style:{display:"flex", gap:10}},
+            h("button", {className:"btn btn-outline", style:{flex:1}, onClick:partagerWhatsApp}, "📤 WhatsApp"),
+            h("button", {className:"btn btn-navy", style:{flex:2}, onClick:validerBon, disabled:saving}, saving ? "..." : "✅ Valider & Sortir du stock")
+        ) : null
+    );
+}
+
+// ChantiersScreen — Vue par chantier
+function ChantiersScreen(props) {
+    var mvtsState = useState([]); var mvts = mvtsState[0]; var setMvts = mvtsState[1];
+    var loadingState = useState(true); var loading = loadingState[0]; var setLoading = loadingState[1];
+    var openState = useState(null); var openChantier = openState[0]; var setOpenChantier = openState[1];
+
+    useEffect(function() {
+        supaGet("mouvements", "type=eq.sortie&order=created_at.desc&limit=500").then(function(r){
+            setMvts(Array.isArray(r) ? r : []);
+        }).catch(function(){}).finally(function(){ setLoading(false); });
+    }, []);
+
+    // Grouper par chantier
+    var grouped = {};
+    mvts.forEach(function(m) {
+        var k = m.chantier || "— Sans chantier —";
+        if(!grouped[k]) grouped[k] = {nom:k, mvts:[], total:0};
+        grouped[k].mvts.push(m);
+        grouped[k].total += (m.quantite||0);
+    });
+    var chantiers = Object.values(grouped).sort(function(a,b){
+        return new Date(b.mvts[0].created_at) - new Date(a.mvts[0].created_at);
+    });
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null, h("div", {className:"header-title"}, "🏗️ Chantiers"), h("div", {className:"header-sub"}, chantiers.length + " chantier(s)"))
+        ),
+        loading ? h("div", {style:{textAlign:"center", padding:32}}, h("div", {className:"spinner", style:{width:28, height:28, borderWidth:3}})) : null,
+        chantiers.length === 0 && !loading ? h("div", {className:"empty-state"},
+            h("div", {className:"empty-state-icon"}, "🏗️"),
+            h("div", {className:"empty-state-text"}, "Aucune sortie de stock associée à un chantier")
+        ) : null,
+        chantiers.map(function(c) {
+            var isOpen = openChantier === c.nom;
+            return h("div", {key:c.nom, className:"chantier-card"},
+                h("div", {className:"chantier-card-header", onClick:function(){setOpenChantier(isOpen ? null : c.nom);}},
+                    h("div", {style:{flex:1}},
+                        h("div", {style:{fontSize:15, fontWeight:800, color:"var(--navy)"}}, c.nom),
+                        h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:2}},
+                            c.mvts.length + " mouvement(s) · " + formatDate(c.mvts[0].created_at)
+                        )
+                    ),
+                    h("span", {className:"chantier-badge"}, c.mvts.length),
+                    h("span", {style:{fontSize:18, color:"var(--text3)", marginLeft:8}}, isOpen ? "▲" : "▼")
+                ),
+                isOpen ? h("div", {style:{padding:"0 14px 14px"}},
+                    c.mvts.map(function(m, i) {
+                        return h("div", {key:i, className:"mvt-row"},
+                            h("div", {className:"mvt-icon mvt-icon-sortie"}, "➖"),
+                            h("div", {style:{flex:1}},
+                                h("div", {className:"mvt-nom"}, m.produit_nom||"—"),
+                                h("div", {className:"mvt-meta"}, (m.user_nom||"") + " · " + formatDate(m.created_at))
+                            ),
+                            h("div", {className:"mvt-qty", style:{color:"var(--orange)"}}, "-" + (m.quantite||0))
+                        );
+                    })
+                ) : null
+            );
+        })
+    );
+}
+
 // InventaireScreen
 function InventaireScreen(props) {
     var produits = props.produits || [];
@@ -2959,6 +3204,9 @@ function ProfilScreen(props) {
             h("button", {className:"btn btn-navy btn-full", onClick:props.onTutos}, "📚 Tutoriels"),
             h("button", {className:"btn btn-outline btn-full", onClick:props.onStats}, "📊 Statistiques"),
             h("button", {className:"btn btn-outline btn-full", onClick:props.onInventaire}, "📋 Inventaire physique"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onBonSortie}, "📋 Bon de sortie chantier"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onChantiers}, "🏗️ Vue par chantier"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onExport}, "📤 Export CSV du stock"),
             props.user.role === "admin" ? h("button", {className:"btn btn-outline btn-full", onClick:props.onUsers}, "👥 Gérer les utilisateurs") : null,
             h("button", {className:"btn btn-danger btn-full", onClick:props.onLogout}, "Se déconnecter")
         )
@@ -3117,7 +3365,7 @@ function App() {
         return h("div", {className:"app"}, GlobalHeader, h(LoginScreen, {onLogin: function(u){setUser(u);}}));
     }
     
-    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list" || screen === "tutos" || screen === "users" || screen === "stats" || screen === "inventaire";
+    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list" || screen === "tutos" || screen === "users" || screen === "stats" || screen === "inventaire" || screen === "export" || screen === "bon_sortie" || screen === "chantiers";
     var currentScreen;
     
     switch(screen) {
@@ -3132,6 +3380,15 @@ function App() {
             break;
         case "inventaire":
             currentScreen = h(InventaireScreen, {produits:produits, onBack:goBack, onRefresh:loadData, user:user});
+            break;
+        case "export":
+            currentScreen = h(ExportScreen, {produits:produits, onBack:goBack});
+            break;
+        case "bon_sortie":
+            currentScreen = h(BonSortieScreen, {produits:produits, onBack:goBack, onRefresh:loadData, user:user});
+            break;
+        case "chantiers":
+            currentScreen = h(ChantiersScreen, {onBack:goBack});
             break;
         case "corpsdetat":
             currentScreen = h(CorpsDetatScreen, {categorie:data.categorie, onBack:goBack, nav:nav, produits:produits});
@@ -3158,7 +3415,7 @@ function App() {
             currentScreen = h(UsersScreen, {onBack:goBack, user:user});
             break;
         case "profil":
-            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onTutos:function(){nav("tutos", null);}, onStats:function(){nav("stats", null);}, onInventaire:function(){nav("inventaire", null);}, onUsers:function(){nav("users", null);}, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
+            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onTutos:function(){nav("tutos", null);}, onStats:function(){nav("stats", null);}, onInventaire:function(){nav("inventaire", null);}, onBonSortie:function(){nav("bon_sortie", null);}, onChantiers:function(){nav("chantiers", null);}, onExport:function(){nav("export", null);}, onUsers:function(){nav("users", null);}, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
             break;
         default:
             currentScreen = h(HomeScreen, {user:user, nav:nav, produits:produits});
