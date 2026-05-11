@@ -1890,11 +1890,24 @@ function ProduitDetail(props) {
                 )
             ),
             h("div", {style:{display:"flex", gap:8, alignItems:"flex-end"}},
-                h("div", {className:"input-group", style:{flex:1}},
+                h("div", {className:"input-group", style:{flex:2}},
                     h("label", {className:"input-label"}, "Prix unitaire HT (€)"),
                     h("input", {className:"input", type:"number", placeholder:"0.00", value:prixInput, onChange:function(e){setPrixInput(e.target.value);}})
                 ),
-                h("button", {className:"btn btn-outline", style:{whiteSpace:"nowrap"}, onClick:saveFournisseurPrix}, "Enregistrer")
+                h("div", {className:"input-group", style:{flex:2}},
+                    h("label", {className:"input-label"}, "Référence"),
+                    h("input", {className:"input", placeholder:"Ex: LM-4892", value:fournisseur.reference||"", id:"ref-input-"+p.id})
+                ),
+                h("button", {className:"btn btn-outline", style:{whiteSpace:"nowrap"}, onClick:async function(){
+                    var ref = (document.getElementById("ref-input-"+p.id)||{}).value||"";
+                    var patch = {};
+                    if(fournisseur.trim() !== (p.fournisseur||"")) patch.fournisseur = fournisseur.trim();
+                    var pv = parseFloat(prixInput); if(!isNaN(pv)) patch.prix_unitaire = pv;
+                    if(ref !== (p.reference||"")) patch.reference = ref;
+                    if(!Object.keys(patch).length) return showToast("Aucun changement","success");
+                    try { await supaPatch("produits",p.id,patch); showToast("✅ Enregistré","success"); props.onRefresh(); }
+                    catch(e){ showToast("Erreur: "+e.message,"error"); }
+                }}, "💾")
             )
         ),
 
@@ -1969,42 +1982,6 @@ function ProduitDetail(props) {
             h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:4}}, "L'alerte se déclenche uniquement en cas de rupture (0 unité).")
         ),
 
-        // Fournisseur / Référence / Prix
-        h("div", {className:"card", style:{marginTop:12}},
-            h("div", {className:"section-title"}, "🏪 FOURNISSEUR & PRIX"),
-            h("div", {className:"space-y"},
-                h("div", {className:"grid-2"},
-                    h("div", {className:"input-group"},
-                        h("label", {className:"input-label"}, "Fournisseur"),
-                        h("input", {className:"input", placeholder:"Ex: Leroy Merlin", id:"fourn-" + p.id, defaultValue: p.fournisseur || ""})
-                    ),
-                    h("div", {className:"input-group"},
-                        h("label", {className:"input-label"}, "Référence"),
-                        h("input", {className:"input", placeholder:"Ex: LM-4892", id:"ref-" + p.id, defaultValue: p.reference || ""})
-                    )
-                ),
-                h("div", {className:"input-group"},
-                    h("label", {className:"input-label"}, "Prix unitaire (€)"),
-                    h("input", {className:"input", type:"number", placeholder:"0.00", id:"prix-" + p.id, defaultValue: p.prix_unitaire || ""})
-                ),
-                h("button", {
-                    className:"btn btn-outline btn-full",
-                    onClick: async function() {
-                        var fourn = (document.getElementById("fourn-" + p.id)||{}).value || "";
-                        var ref   = (document.getElementById("ref-" + p.id)||{}).value || "";
-                        var prix  = parseFloat((document.getElementById("prix-" + p.id)||{}).value) || null;
-                        try {
-                            await supaPatch("produits", p.id, {fournisseur: fourn, reference: ref, prix_unitaire: prix});
-                            showToast("✅ Infos fournisseur enregistrées", "success");
-                            props.onRefresh();
-                        } catch(e) { showToast("Erreur: " + e.message, "error"); }
-                    }
-                }, "💾 Enregistrer")
-            ),
-            p.prix_unitaire ? h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:6}},
-                "Valeur stock : " + ((p.prix_unitaire * (p.quantite||0)).toFixed(2)) + " €"
-            ) : null
-        ),
 
         // Historique des mouvements
         h("div", {className:"card", style:{marginTop:12}},
