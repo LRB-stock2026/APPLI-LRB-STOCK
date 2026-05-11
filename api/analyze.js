@@ -17,15 +17,15 @@ module.exports = async function(req, res) {
     const apiKey = process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_KEY;
     if (!apiKey) return res.status(500).json({ error: 'Cle API manquante' });
 
-    // Prompt selon le mode
     const promptProduit = 'Analyse ce produit BTP. Reponds UNIQUEMENT en JSON sans markdown: {"nom":"nom","famille":"OUTILLAGE ou MATERIAUX","corps_etat":"corps etat","marque":null,"reference":null,"unite":"piece","quantite_estimee":null}';
-    const promptBon = 'Analyse ce bon de livraison de materiaux BTP. Extrais TOUS les articles. Reponds UNIQUEMENT en JSON sans markdown: {"articles":[{"nom":"...","quantite":1,"unite":"piece"}]}. Si pas de bon: {"articles":[]}';
+
+    const promptBon = 'Tu es un expert en lecture de documents BTP. Analyse cette image qui est un bon de livraison, une facture ou une liste de materiaux. Extrais TOUS les produits visibles meme si la photo est imparfaite. Cherche des noms de produits, references, designations, quantites dans tout le document. Reponds UNIQUEMENT en JSON valide sans markdown ni explication: {"articles":[{"nom":"designation complete du produit","quantite":1,"unite":"piece"}]}. Si tu vois du texte avec des produits, mets-les tous. Uniquement si image totalement illisible: {"articles":[]}';
 
     const prompt = mode === 'bon_livraison' ? promptBon : promptProduit;
 
     const payload = JSON.stringify({
       model: 'claude-opus-4-20250514',
-      max_tokens: 1000,
+      max_tokens: 1500,
       messages: [{
         role: 'user',
         content: [
@@ -60,13 +60,18 @@ module.exports = async function(req, res) {
     if (result.status !== 200) return res.status(result.status).json({ error: result.body });
 
     const data = JSON.parse(result.body);
-    let text = data.content[0].text.trim().replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    let text = data.content[0].text.trim()
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
 
     try {
       return res.status(200).json(JSON.parse(text));
     } catch(e) {
       const match = text.match(/\{[\s\S]*\}/);
-      if (match) return res.status(200).json(JSON.parse(match[0]));
+      if (match) {
+        try { return res.status(200).json(JSON.parse(match[0])); } catch(e2) {}
+      }
       if (mode === 'bon_livraison') return res.status(200).json({ articles: [] });
       return res.status(200).json({ nom: 'Produit', famille: 'MATERIAUX', corps_etat: 'Divers', unite: 'piece' });
     }
