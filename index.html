@@ -1521,6 +1521,23 @@ function ProduitDetail(props) {
     var lieux = lieuxState[0]; var setLieux = lieuxState[1];
     var lieuxLoadedState = useState(false);
     var lieuxLoaded = lieuxLoadedState[0]; var setLieuxLoaded = lieuxLoadedState[1];
+    var editingState = useState(false);
+    var editing = editingState[0]; var setEditing = editingState[1];
+    var editNomState = useState(p.nom || "");
+    var editNom = editNomState[0]; var setEditNom = editNomState[1];
+    var editCEState = useState(p.corps_etat || "");
+    var editCE = editCEState[0]; var setEditCE = editCEState[1];
+    var editFamilleState = useState(p.famille || "MATERIAUX");
+    var editFamille = editFamilleState[0]; var setEditFamille = editFamilleState[1];
+    var editUniteState = useState(p.unite || "piece");
+    var editUnite = editUniteState[0]; var setEditUnite = editUniteState[1];
+    var editSavingState = useState(false);
+    var editSaving = editSavingState[0]; var setEditSaving = editSavingState[1];
+    var editFileRef = useRef(null);
+    var chantierState = useState("");
+    var chantier = chantierState[0]; var setChantier = chantierState[1];
+    var chantiersState = useState([]);
+    var chantiersSugg = chantiersState[0]; var setChantiersSugg = chantiersState[1];
     var statut = getStatut(p);
 
     useEffect(function() {
