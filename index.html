@@ -133,6 +133,21 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .chantier-statut-encours{background:#D4EDDA;color:#155724;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
 .chantier-statut-termine{background:#E2E3E5;color:#383d41;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
 .chantier-statut-pause{background:#FFF3CD;color:#856404;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px}
+/* Print styles pour rapport PDF */
+@media print {
+    .navbar,.app-header-global,.offline-banner,.btn-danger,.btn-outline,.header-back{display:none!important}
+    .screen{padding:0!important}
+    .card{break-inside:avoid;box-shadow:none!important;border:1px solid #ccc!important}
+    body{background:#fff!important}
+    .print-header{display:block!important}
+    .no-print{display:none!important}
+}
+.print-header{display:none}
+.chart-container{width:100%;overflow-x:auto}
+.chart-svg{display:block;width:100%;min-width:280px}
+.fournisseur-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.fournisseur-row:last-child{border-bottom:none}
+.fournisseur-logo{width:40px;height:40px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .qr-modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:950;display:flex;align-items:center;justify-content:center;padding:20px}
 .qr-box{background:#fff;border-radius:24px;padding:24px;text-align:center;width:280px}
 .qr-img{width:200px;height:200px;border:1.5px solid var(--border);border-radius:12px;margin:12px auto}
@@ -1919,7 +1934,9 @@ function ProduitDetail(props) {
 
         // Historique des mouvements
         h("div", {className:"card", style:{marginTop:12}},
-            h("div", {className:"section-title"}, "📋 HISTORIQUE"),
+            h("div", {className:"section-title"}, "📈 ÉVOLUTION DU STOCK"),
+            !mvtLoading && mvts.length >= 2 ? h(GraphiqueStock, {mvts:mvts}) : null,
+            h("div", {className:"section-title", style:{marginTop:12}}, "📋 HISTORIQUE"),
             mvtLoading
                 ? h("div", {style:{textAlign:"center", padding:"16px 0"}}, h("div", {className:"spinner", style:{width:24, height:24, borderWidth:2}}))
                 : mvts.length === 0
@@ -2530,6 +2547,273 @@ function BesoinScreen(props) {
 
 
 
+
+
+// ============================================================
+// RapportPDFScreen — Impression / PDF mis en page
+// ============================================================
+function RapportPDFScreen(props) {
+    var produits = props.produits || [];
+    var filtreState = useState("all"); var filtre = filtreState[0]; var setFiltre = filtreState[1];
+    var typeState = useState("inventaire"); var type = typeState[0]; var setType = typeState[1];
+
+    var ruptures = produits.filter(function(p){ return getStatut(p)==="out"; });
+    var basFond  = produits.filter(function(p){ return getStatut(p)==="low"; });
+    var date = new Date().toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"});
+
+    var list = filtre==="alertes" ? ruptures.concat(basFond)
+             : filtre==="ruptures" ? ruptures
+             : produits;
+
+    // Grouper par corps d'état pour le rapport inventaire
+    var grouped = {};
+    list.forEach(function(p){
+        var k = p.corps_etat||"Divers";
+        if(!grouped[k]) grouped[k]=[];
+        grouped[k].push(p);
+    });
+
+    function imprimer() {
+        window.print();
+    }
+
+    return h("div", {className:"screen"},
+        h("div", {className:"header no-print"},
+            h("button", {className:"header-back", onClick:props.onBack}, "←"),
+            h("div", null, h("div", {className:"header-title"}, "📄 Rapport PDF"), h("div", {className:"header-sub"}, list.length+" articles"))
+        ),
+        // Options no-print
+        h("div", {className:"card no-print", style:{marginBottom:14}},
+            h("div", {className:"section-title"}, "OPTIONS"),
+            h("div", {className:"grid-2"},
+                h("div", {className:"input-group"},
+                    h("label", {className:"input-label"}, "Contenu"),
+                    h("select", {className:"select", value:filtre, onChange:function(e){setFiltre(e.target.value);}},
+                        h("option", {value:"all"}, "Tout le stock"),
+                        h("option", {value:"alertes"}, "Alertes uniquement"),
+                        h("option", {value:"ruptures"}, "Ruptures uniquement")
+                    )
+                ),
+                h("div", {className:"input-group"},
+                    h("label", {className:"input-label"}, "Mise en page"),
+                    h("select", {className:"select", value:type, onChange:function(e){setType(e.target.value);}},
+                        h("option", {value:"inventaire"}, "Inventaire par famille"),
+                        h("option", {value:"liste"}, "Liste simple")
+                    )
+                )
+            ),
+            h("button", {className:"btn btn-navy btn-full", style:{marginTop:8}, onClick:imprimer}, "🖨️ Imprimer / Enregistrer en PDF")
+        ),
+
+        // Contenu imprimable
+        h("div", {id:"rapport-print"},
+            // En-tête
+            h("div", {style:{display:"flex", alignItems:"center", gap:16, marginBottom:20, padding:"0 4px"}},
+                h("img", {src:LRB_LOGO, style:{width:60, height:60, borderRadius:10, objectFit:"contain"}}),
+                h("div", null,
+                    h("div", {style:{fontSize:18, fontWeight:900, color:"var(--navy)"}}, "LES RÉNOVATEURS BRETONS"),
+                    h("div", {style:{fontSize:12, color:"var(--text3)"}},
+                        (filtre==="alertes"?"Rapport alertes stock":filtre==="ruptures"?"Rapport ruptures":"Inventaire complet") + " — " + date
+                    ),
+                    h("div", {style:{fontSize:11, color:"var(--text3)"}}, list.length+" article(s) · "+ruptures.length+" rupture(s) · "+basFond.length+" stock bas")
+                )
+            ),
+
+            type==="inventaire" ? Object.keys(grouped).sort().map(function(ce){
+                return h("div", {key:ce, style:{marginBottom:16, breakInside:"avoid"}},
+                    h("div", {style:{fontSize:12, fontWeight:800, color:"var(--navy)", background:"rgba(61,84,112,0.08)", padding:"6px 12px", borderRadius:8, marginBottom:8}}, ce + " ("+grouped[ce].length+")"),
+                    h("table", {style:{width:"100%", borderCollapse:"collapse", fontSize:12}},
+                        h("thead", null,
+                            h("tr", {style:{borderBottom:"2px solid var(--navy)"}},
+                                h("th", {style:{textAlign:"left", padding:"4px 8px", color:"var(--navy)"}}, "Désignation"),
+                                h("th", {style:{textAlign:"left", padding:"4px 8px", color:"var(--navy)"}}, "Sous-famille"),
+                                h("th", {style:{textAlign:"center", padding:"4px 8px", color:"var(--navy)"}}, "Qté"),
+                                h("th", {style:{textAlign:"center", padding:"4px 8px", color:"var(--navy)"}}, "Unité"),
+                                h("th", {style:{textAlign:"left", padding:"4px 8px", color:"var(--navy)"}}, "Emplacement"),
+                                h("th", {style:{textAlign:"center", padding:"4px 8px", color:"var(--navy)"}}, "Statut")
+                            )
+                        ),
+                        h("tbody", null,
+                            grouped[ce].map(function(p, i){
+                                var s = getStatut(p);
+                                return h("tr", {key:p.id, style:{background:i%2===0?"transparent":"rgba(61,84,112,0.03)", borderBottom:"1px solid #eee"}},
+                                    h("td", {style:{padding:"4px 8px", fontWeight:600}}, p.nom),
+                                    h("td", {style:{padding:"4px 8px", color:"#666"}}, p.sous_famille||""),
+                                    h("td", {style:{textAlign:"center", padding:"4px 8px", fontWeight:800, color:s==="out"?"#c0392b":s==="low"?"#e67e22":"#27ae60"}}, p.quantite||0),
+                                    h("td", {style:{textAlign:"center", padding:"4px 8px", color:"#666"}}, p.unite||"pce"),
+                                    h("td", {style:{padding:"4px 8px", color:"#666"}}, p.emplacement||""),
+                                    h("td", {style:{textAlign:"center", padding:"4px 8px", fontSize:11, fontWeight:700, color:s==="out"?"#c0392b":s==="low"?"#e67e22":"#27ae60"}},
+                                        s==="out"?"❌ Rupture":s==="low"?"⚠️ Bas":"✅ OK"
+                                    )
+                                );
+                            })
+                        )
+                    )
+                );
+            }) : list.map(function(p, i){
+                var s = getStatut(p);
+                return h("div", {key:p.id, style:{display:"flex", gap:8, padding:"6px 0", borderBottom:"1px solid #eee", fontSize:12}},
+                    h("div", {style:{flex:2, fontWeight:600}}, p.nom),
+                    h("div", {style:{flex:1, color:"#666"}}, p.corps_etat||""),
+                    h("div", {style:{flex:1, textAlign:"center", fontWeight:800, color:s==="out"?"#c0392b":s==="low"?"#e67e22":"#27ae60"}}, (p.quantite||0)+" "+(p.unite||"pce")),
+                    h("div", {style:{flex:1, color:"#666"}}, p.emplacement||"")
+                );
+            }),
+
+            h("div", {style:{marginTop:24, paddingTop:12, borderTop:"1px solid #ccc", fontSize:10, color:"#999", textAlign:"center"}},
+                "Document généré le " + date + " · Les Rénovateurs Bretons · Application LRB Stock"
+            )
+        )
+    );
+}
+
+// ============================================================
+// GraphiqueStock — composant graphique SVG dans ProduitDetail
+// ============================================================
+function GraphiqueStock(props) {
+    var mvts = props.mvts || [];
+    if(mvts.length < 2) return h("div", {style:{fontSize:12, color:"var(--text3)", textAlign:"center", padding:"12px 0"}}, "Pas assez de données pour le graphique");
+
+    // Construire les points (date → quantite_apres)
+    var pts = mvts.slice().reverse().filter(function(m){ return m.quantite_apres !== undefined && m.quantite_apres !== null; });
+    if(pts.length < 2) return null;
+
+    var W = 280; var H = 80; var pad = 8;
+    var vals = pts.map(function(m){ return m.quantite_apres||0; });
+    var maxV = Math.max.apply(null, vals) || 1;
+    var minV = Math.min(0, Math.min.apply(null, vals));
+
+    function xPos(i){ return pad + (i/(pts.length-1))*(W-2*pad); }
+    function yPos(v){ return H-pad - ((v-minV)/(maxV-minV||1))*(H-2*pad); }
+
+    var pathD = pts.map(function(m,i){ return (i===0?"M":"L")+xPos(i).toFixed(1)+","+yPos(m.quantite_apres||0).toFixed(1); }).join(" ");
+    var areaD = pathD + " L"+xPos(pts.length-1).toFixed(1)+","+(H-pad)+" L"+xPos(0).toFixed(1)+","+(H-pad)+" Z";
+
+    return h("div", {className:"chart-container"},
+        h("svg", {className:"chart-svg", viewBox:"0 0 "+W+" "+H, xmlns:"http://www.w3.org/2000/svg"},
+            // Zone remplie
+            h("path", {d:areaD, fill:"rgba(61,84,112,0.1)", stroke:"none"}),
+            // Ligne
+            h("path", {d:pathD, fill:"none", stroke:"var(--navy)", strokeWidth:"2", strokeLinejoin:"round", strokeLinecap:"round"}),
+            // Points
+            pts.map(function(m,i){
+                var s = (m.quantite_apres||0) <= 0 ? "#c0392b" : "var(--navy)";
+                return h("circle", {key:i, cx:xPos(i).toFixed(1), cy:yPos(m.quantite_apres||0).toFixed(1), r:"3", fill:s});
+            }),
+            // Labels axes
+            h("text", {x:pad, y:H-1, fontSize:"9", fill:"var(--text3)"}, formatDate(pts[0].created_at)),
+            h("text", {x:W-pad, y:H-1, fontSize:"9", fill:"var(--text3)", textAnchor:"end"}, formatDate(pts[pts.length-1].created_at)),
+            h("text", {x:pad, y:pad+7, fontSize:"9", fill:"var(--text3)"}, maxV)
+        )
+    );
+}
+
+// ============================================================
+// FournisseursScreen — Gestion des fournisseurs
+// ============================================================
+function FournisseursScreen(props) {
+    var fournsState = useState([]); var fourns = fournsState[0]; var setFourns = fournsState[1];
+    var loadingState = useState(true); var loading = loadingState[0]; var setLoading = loadingState[1];
+    var showFormState = useState(false); var showForm = showFormState[0]; var setShowForm = showFormState[1];
+    var savingState = useState(false); var saving = savingState[0]; var setSaving = savingState[1];
+    var formState = useState({nom:"",contact:"",telephone:"",email:"",delai:"",remise:"",notes:""});
+    var form = formState[0]; var setForm = formState[1];
+    var editingState = useState(null); var editingId = editingState[0]; var setEditingId = editingState[1];
+
+    function upd(k){ return function(e){ var nf=Object.assign({},form); nf[k]=e.target.value; setForm(nf); }; }
+
+    function load() {
+        setLoading(true);
+        supaGet("fournisseurs","order=nom.asc").then(function(r){
+            setFourns(Array.isArray(r)?r:[]);
+        }).catch(function(){setFourns([]);}).finally(function(){setLoading(false);});
+    }
+    useEffect(function(){ load(); },[]);
+
+    async function save() {
+        if(!form.nom.trim()) return;
+        setSaving(true);
+        try {
+            var data = {nom:form.nom.trim(),contact:form.contact||null,telephone:form.telephone||null,
+                email:form.email||null,delai:form.delai||null,remise:parseFloat(form.remise)||null,notes:form.notes||null};
+            if(editingId) await supaPatch("fournisseurs",editingId,data);
+            else await supaPost("fournisseurs",data);
+            showToast("✅ Fournisseur "+(editingId?"mis à jour":"ajouté"),"success");
+            setShowForm(false); setEditingId(null);
+            setForm({nom:"",contact:"",telephone:"",email:"",delai:"",remise:"",notes:""});
+            load();
+        } catch(e){ showToast("Erreur: "+e.message,"error"); }
+        setSaving(false);
+    }
+
+    async function del(id,nom) {
+        if(!window.confirm("Supprimer "+nom+" ?")) return;
+        try { await supaDelete("fournisseurs",id); showToast("Supprimé","success"); load(); }
+        catch(e){ showToast("Erreur: "+e.message,"error"); }
+    }
+
+    function edit(f) {
+        setForm({nom:f.nom||"",contact:f.contact||"",telephone:f.telephone||"",
+            email:f.email||"",delai:f.delai||"",remise:f.remise||"",notes:f.notes||""});
+        setEditingId(f.id); setShowForm(true);
+    }
+
+    if(showForm) return h("div",{className:"screen"},
+        h("div",{className:"header"},
+            h("button",{className:"header-back",onClick:function(){setShowForm(false);setEditingId(null);}},"←"),
+            h("div",null,h("div",{className:"header-title"},editingId?"✏️ Modifier":"🏪 Nouveau fournisseur"))
+        ),
+        h("div",{className:"card space-y"},
+            h("div",{className:"input-group"},h("label",{className:"input-label"},"Nom *"),h("input",{className:"input",placeholder:"Ex: Point P Brest",value:form.nom,onChange:upd("nom")})),
+            h("div",{className:"input-group"},h("label",{className:"input-label"},"Contact"),h("input",{className:"input",placeholder:"Nom du commercial",value:form.contact,onChange:upd("contact")})),
+            h("div",{className:"grid-2"},
+                h("div",{className:"input-group"},h("label",{className:"input-label"},"Téléphone"),h("input",{className:"input",type:"tel",placeholder:"06...",value:form.telephone,onChange:upd("telephone")})),
+                h("div",{className:"input-group"},h("label",{className:"input-label"},"Délai livraison"),h("input",{className:"input",placeholder:"Ex: 48h",value:form.delai,onChange:upd("delai")}))
+            ),
+            h("div",{className:"grid-2"},
+                h("div",{className:"input-group"},h("label",{className:"input-label"},"Email"),h("input",{className:"input",type:"email",placeholder:"contact@...",value:form.email,onChange:upd("email")})),
+                h("div",{className:"input-group"},h("label",{className:"input-label"},"Remise négociée (%)"),h("input",{className:"input",type:"number",placeholder:"0",value:form.remise,onChange:upd("remise")}))
+            ),
+            h("div",{className:"input-group"},h("label",{className:"input-label"},"Notes"),h("input",{className:"input",placeholder:"Infos complémentaires",value:form.notes,onChange:upd("notes")})),
+            h("button",{className:"btn btn-navy btn-full",onClick:save,disabled:!form.nom.trim()||saving},saving?"...":(editingId?"✅ Enregistrer":"✅ Ajouter"))
+        )
+    );
+
+    return h("div",{className:"screen"},
+        h("div",{className:"header"},
+            h("button",{className:"header-back",onClick:props.onBack},"←"),
+            h("div",null,h("div",{className:"header-title"},"🏪 Fournisseurs"),h("div",{className:"header-sub"},fourns.length+" fournisseur(s)")),
+            h("button",{style:{background:"var(--gold)",color:"#fff",border:"none",borderRadius:10,padding:"6px 12px",fontWeight:800,fontSize:13,cursor:"pointer"},
+                onClick:function(){setForm({nom:"",contact:"",telephone:"",email:"",delai:"",remise:"",notes:""});setEditingId(null);setShowForm(true);}
+            },"＋ Nouveau")
+        ),
+        loading?h("div",{style:{textAlign:"center",padding:32}},h("div",{className:"spinner",style:{width:28,height:28,borderWidth:3}})):null,
+        fourns.length===0&&!loading?h("div",{className:"empty-state"},h("div",{className:"empty-state-icon"},"🏪"),h("div",{className:"empty-state-text"},"Aucun fournisseur enregistré")):null,
+        fourns.map(function(f){
+            return h("div",{key:f.id,className:"card",style:{marginBottom:10}},
+                h("div",{className:"fournisseur-row",style:{border:"none",paddingBottom:0}},
+                    h("div",{className:"fournisseur-logo"},"🏪"),
+                    h("div",{style:{flex:1}},
+                        h("div",{style:{fontSize:15,fontWeight:900,color:"var(--navy)"}},f.nom),
+                        f.contact?h("div",{style:{fontSize:12,color:"var(--text3)"}},"👤 "+f.contact):null
+                    ),
+                    f.remise?h("span",{style:{background:"rgba(39,174,96,0.15)",color:"var(--green)",fontSize:11,fontWeight:800,padding:"2px 8px",borderRadius:8}},"-"+f.remise+"%"):null
+                ),
+                h("div",{style:{display:"flex",gap:16,fontSize:12,color:"var(--text3)",margin:"8px 0",flexWrap:"wrap"}},
+                    f.telephone?h("a",{href:"tel:"+f.telephone,style:{color:"var(--navy)",fontWeight:700,textDecoration:"none"}},"📞 "+f.telephone):null,
+                    f.email?h("a",{href:"mailto:"+f.email,style:{color:"var(--navy)",fontWeight:700,textDecoration:"none"}},"✉️ "+f.email):null,
+                    f.delai?h("span",null,"🚚 "+f.delai):null
+                ),
+                f.notes?h("div",{style:{fontSize:11,color:"var(--text3)",marginBottom:8,background:"var(--surface2)",padding:"6px 10px",borderRadius:8}},f.notes):null,
+                h("div",{style:{display:"flex",gap:8}},
+                    h("button",{className:"btn btn-outline btn-sm",style:{flex:1},onClick:function(){edit(f);}},"✏️ Modifier"),
+                    f.telephone?h("a",{href:"tel:"+f.telephone,className:"btn btn-navy btn-sm",style:{flex:1,textAlign:"center",textDecoration:"none"}},"📞 Appeler"):null,
+                    h("button",{className:"btn btn-danger btn-sm",onClick:function(){del(f.id,f.nom);}},"🗑️")
+                )
+            );
+        })
+    );
+}
 
 // ExportScreen — Export CSV du stock
 function ExportScreen(props) {
@@ -3569,6 +3853,8 @@ function ProfilScreen(props) {
             h("button", {className:"btn btn-outline btn-full", onClick:props.onBonSortie}, "📋 Bon de sortie chantier"),
             h("button", {className:"btn btn-outline btn-full", onClick:props.onChantiers}, "🏗️ Vue par chantier"),
             h("button", {className:"btn btn-outline btn-full", onClick:props.onExport}, "📤 Export CSV du stock"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onRapportPDF}, "📄 Rapport PDF"),
+            h("button", {className:"btn btn-outline btn-full", onClick:props.onFournisseurs}, "🏪 Fournisseurs"),
             h("button", {className:"btn btn-outline btn-full", onClick:props.onImport}, "📥 Import CSV"),
             h("button", {className:"btn btn-outline btn-full", onClick:props.onFicheChantier}, "🏗️ Fiches chantier"),
             props.user.role === "admin" ? h("button", {className:"btn btn-outline btn-full", onClick:props.onUsers}, "👥 Gérer les utilisateurs") : null,
@@ -3729,7 +4015,7 @@ function App() {
         return h("div", {className:"app"}, GlobalHeader, h(LoginScreen, {onLogin: function(u){setUser(u);}}));
     }
     
-    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list" || screen === "tutos" || screen === "users" || screen === "stats" || screen === "inventaire" || screen === "export" || screen === "bon_sortie" || screen === "chantiers" || screen === "fiches_chantiers" || screen === "import_csv";
+    var noNav = screen === "photo" || screen === "produit" || screen === "corpsdetat" || screen === "produits_list" || screen === "tutos" || screen === "users" || screen === "stats" || screen === "inventaire" || screen === "export" || screen === "bon_sortie" || screen === "chantiers" || screen === "fiches_chantiers" || screen === "import_csv" || screen === "rapport_pdf" || screen === "fournisseurs";
     var currentScreen;
     
     switch(screen) {
@@ -3747,6 +4033,12 @@ function App() {
             break;
         case "export":
             currentScreen = h(ExportScreen, {produits:produits, onBack:goBack});
+            break;
+        case "rapport_pdf":
+            currentScreen = h(RapportPDFScreen, {produits:produits, onBack:goBack});
+            break;
+        case "fournisseurs":
+            currentScreen = h(FournisseursScreen, {onBack:goBack});
             break;
         case "bon_sortie":
             currentScreen = h(BonSortieScreen, {produits:produits, onBack:goBack, onRefresh:loadData, user:user});
@@ -3785,7 +4077,7 @@ function App() {
             currentScreen = h(UsersScreen, {onBack:goBack, user:user});
             break;
         case "profil":
-            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onTutos:function(){nav("tutos", null);}, onStats:function(){nav("stats", null);}, onInventaire:function(){nav("inventaire", null);}, onBonSortie:function(){nav("bon_sortie", null);}, onChantiers:function(){nav("chantiers", null);}, onExport:function(){nav("export", null);}, onImport:function(){nav("import_csv", null);}, onFicheChantier:function(){nav("fiches_chantiers", null);}, onUsers:function(){nav("users", null);}, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
+            currentScreen = h(ProfilScreen, {user:user, onBack:goBack, onTutos:function(){nav("tutos", null);}, onStats:function(){nav("stats", null);}, onInventaire:function(){nav("inventaire", null);}, onBonSortie:function(){nav("bon_sortie", null);}, onChantiers:function(){nav("chantiers", null);}, onExport:function(){nav("export", null);}, onRapportPDF:function(){nav("rapport_pdf", null);}, onFournisseurs:function(){nav("fournisseurs", null);}, onImport:function(){nav("import_csv", null);}, onFicheChantier:function(){nav("fiches_chantiers", null);}, onUsers:function(){nav("users", null);}, onLogout:function(){setUser(null); setScreen("home"); historyStack.current = []; localStorage.removeItem("lrb_remembered_code");}});
             break;
         default:
             currentScreen = h(HomeScreen, {user:user, nav:nav, produits:produits});
