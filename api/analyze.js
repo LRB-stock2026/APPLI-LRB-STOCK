@@ -7,21 +7,30 @@ module.exports = async function(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    const image = req.body && req.body.image;
-    const mediaType = (req.body && req.body.mediaType) || 'image/jpeg';
+    const body = req.body || {};
+    const image = body.image;
+    const mediaType = body.mediaType || 'image/jpeg';
+    const mode = body.mode || 'produit';
+
     if (!image) return res.status(400).json({ error: 'Image manquante' });
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_KEY;
     if (!apiKey) return res.status(500).json({ error: 'Cle API manquante' });
 
+    // Prompt selon le mode
+    const promptProduit = 'Analyse ce produit BTP. Reponds UNIQUEMENT en JSON sans markdown: {"nom":"nom","famille":"OUTILLAGE ou MATERIAUX","corps_etat":"corps etat","marque":null,"reference":null,"unite":"piece","quantite_estimee":null}';
+    const promptBon = 'Analyse ce bon de livraison de materiaux BTP. Extrais TOUS les articles. Reponds UNIQUEMENT en JSON sans markdown: {"articles":[{"nom":"...","quantite":1,"unite":"piece"}]}. Si pas de bon: {"articles":[]}';
+
+    const prompt = mode === 'bon_livraison' ? promptBon : promptProduit;
+
     const payload = JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 800,
+      model: 'claude-opus-4-20250514',
+      max_tokens: 1000,
       messages: [{
         role: 'user',
         content: [
           { type: 'image', source: { type: 'base64', media_type: mediaType, data: image } },
-          { type: 'text', text: 'Analyse ce produit BTP. Reponds UNIQUEMENT en JSON sans markdown: {"nom":"nom","famille":"OUTILLAGE ou MATERIAUX","corps_etat":"corps etat","marque":null,"reference":null,"unite":"piece","quantite_estimee":null}' }
+          { type: 'text', text: prompt }
         ]
       }]
     });
@@ -48,9 +57,7 @@ module.exports = async function(req, res) {
       r.end();
     });
 
-    if (result.status !== 200) {
-      return res.status(result.status).json({ error: result.body });
-    }
+    if (result.status !== 200) return res.status(result.status).json({ error: result.body });
 
     const data = JSON.parse(result.body);
     let text = data.content[0].text.trim().replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
@@ -60,10 +67,10 @@ module.exports = async function(req, res) {
     } catch(e) {
       const match = text.match(/\{[\s\S]*\}/);
       if (match) return res.status(200).json(JSON.parse(match[0]));
-      return res.status(200).json({ nom: 'Produit', famille: 'MATERIAUX', corps_etat: 'Divers', marque: null, reference: null, unite: 'piece', quantite_estimee: null });
+      if (mode === 'bon_livraison') return res.status(200).json({ articles: [] });
+      return res.status(200).json({ nom: 'Produit', famille: 'MATERIAUX', corps_etat: 'Divers', unite: 'piece' });
     }
-
   } catch(error) {
     return res.status(500).json({ error: error.message });
   }
-}
+};
