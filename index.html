@@ -59,7 +59,7 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .btn-full{width:100%}
 .card{background:#fff;border-radius:16px;border:1.5px solid var(--border);padding:14px}
 .home-buttons{display:flex;flex-direction:column;gap:16px;margin-top:16px}
-.home-btn{padding:48px 24px;border-radius:28px;border:none;display:flex;align-items:center;justify-content:center;gap:20px;cursor:pointer}
+.home-btn{padding:40px 28px;border-radius:28px;border:none;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;cursor:pointer}
 .home-btn-icon{font-size:64px}
 .home-btn-label{font-size:32px;font-weight:900;color:#fff}
 .btn-gros{background:linear-gradient(135deg,#2d3f55,#1a2a3a)}
@@ -1287,14 +1287,14 @@ function HomeScreen(props) {
         ) : null,
         h("div", {className:"home-buttons"},
             h("button", {className:"home-btn btn-gros", onClick:function(){props.nav("corpsdetat", {categorie:"gros"});}},
-                h("span", {className:"home-btn-icon"}, "🏗️"),
+                
                 h("div", {style:{display:"flex", flexDirection:"column", alignItems:"flex-start"}},
                     h("span", {className:"home-btn-label"}, "GROS OEUVRE"),
                     h("span", {style:{fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.7)", marginTop:2}}, countGros + " référence" + (countGros > 1 ? "s" : ""))
                 )
             ),
             h("button", {className:"home-btn btn-second", onClick:function(){props.nav("corpsdetat", {categorie:"second"});}},
-                h("span", {className:"home-btn-icon"}, "🪟"),
+                
                 h("div", {style:{display:"flex", flexDirection:"column", alignItems:"flex-start"}},
                     h("span", {className:"home-btn-label"}, "SECOND OEUVRE"),
                     h("span", {style:{fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.7)", marginTop:2}}, countSecond + " référence" + (countSecond > 1 ? "s" : ""))
