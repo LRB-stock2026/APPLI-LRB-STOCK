@@ -113,6 +113,7 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .lieu-chip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;border:2px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;white-space:nowrap}
 .lieu-chip.selected{background:var(--navy);color:#fff;border-color:var(--navy)}
 .lieu-chip.none{background:var(--surface2);color:var(--text3);border-color:var(--border)}
+.sous-fam-tag{display:inline-block;background:rgba(201,151,58,0.13);color:var(--gold-dim);font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;margin-top:2px}
 .lieu-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(61,84,112,0.10);color:var(--navy);font-size:12px;font-weight:800;padding:4px 10px;border-radius:10px;margin-bottom:10px}
 .product-card-actions{display:flex;gap:8px;margin-top:10px}
 .product-ok{border-left:3px solid var(--green)}
@@ -187,6 +188,31 @@ var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 var USERS_LOCAL = {284916:{name:"David",role:"chantier"},651973:{name:"Jacques",role:"chantier"},908257:{name:"Mathys",role:"chantier"},739482:{name:"Administration",role:"admin"}};
 var CORPS_ETAT_GROS = [{id:"maconnerie",label:"Maconnerie",icon:"🧱"},{id:"demolition",label:"Demolition",icon:"⛏️"},{id:"terrassement",label:"Terrassement",icon:"🚜"},{id:"beton",label:"Beton",icon:"🏗️"},{id:"charpente",label:"Charpente",icon:"🪵"},{id:"couverture",label:"Couverture",icon:"🏠"}];
 var CORPS_ETAT_SECOND = [{id:"platrerie",label:"Platrerie",icon:"🪣"},{id:"peinture",label:"Peinture",icon:"🎨"},{id:"menuiserie",label:"Menuiserie",icon:"🪚"},{id:"carrelage",label:"Carrelage",icon:"🟦"},{id:"electricite",label:"Electricite",icon:"⚡"},{id:"plomberie",label:"Plomberie",icon:"🚿"},{id:"isolation",label:"Isolation",icon:"🌡️"},{id:"sols",label:"Sols",icon:"🦶"},{id:"quincaillerie",label:"Quincaillerie",icon:"🔩"},{id:"consommables",label:"Consommables",icon:"📦"},{id:"finitions",label:"Finitions",icon:"✨"},{id:"securite",label:"Securite",icon:"🦺"},{id:"nettoyage",label:"Nettoyage",icon:"🧹"},{id:"divers",label:"Divers",icon:"📦"}];
+
+// Sous-familles par corps d'état
+var SOUS_FAMILLES = {
+    "Peinture":    ["Toile de verre","Peinture mat","Peinture velours","Peinture satiné","Peinture brillant","Sous-couche","Enduit lissage","Enduit décoratif","Primaire accrochage","Lasure","Vernis","Badigeon chaux","Ravalement"],
+    "Electricite": ["Prises 16A","Prises 20A","Tableau électrique","Disjoncteurs / DDR","VMC","Éclairage","Câblage / Gaines","Interrupteurs","Domotique","Alarme","Interphone","Borne VE","Chauffage élec"],
+    "Plomberie":   ["Alimentation eau froide","Alimentation eau chaude","Évacuation PVC","Sanitaires","Robinetterie","Chauffe-eau / Ballon","Douche / Baignoire","Lave-linge / LV","Raccords / Jonctions","Isolation canalisations"],
+    "Platrerie":   ["Plaque BA13","Plaque BA18","Plaque BA25","Plaque feu / FU","Rails & montants","Enduit de jointement","Bandes à joint","Visserie","Cornières / Profils","Doublage complexe","Cloison phonique"],
+    "Carrelage":   ["Carrelage sol intérieur","Carrelage mural","Carrelage extérieur","Plinthes & barres","Colle à carrelage","Joints","Natte anti-fissure","Ragréage","Décoration & mosaïque"],
+    "Isolation":   ["Isolation combles","Isolation murs","Isolation plancher","Isolation toiture","Isolation phonique","Pare-vapeur","Membrane HPV","Complexe PSE","Laine de verre","Laine de roche","PIR / PUR","Ouate cellulose"],
+    "Menuiserie":  ["Fenêtres PVC","Fenêtres ALU","Portes extérieures","Portes intérieures","Volets roulants","Volets battants","Véranda / Pergola","Garde-corps","Escaliers","Quincaillerie menuiserie"],
+    "Maconnerie":  ["Parpaing","Brique monomur","Carreaux de plâtre","Béton / Mortier","Enduit façade","Gobetis","Linteau / Appui","Chaînage","Pierre naturelle","Chaux"],
+    "Charpente":   ["Chevrons","Pannes","Sablières","Fermettes","Bois traité","Connecteurs métalliques","Contreventement","OSB / Volige","Liteaux"],
+    "Couverture":  ["Tuiles terre cuite","Tuiles béton","Ardoises naturelles","Ardoises fibrociment","Zinc / Joint debout","Bac acier","Shingle","Faîtage","Rive & égout","Noue & solin","Gouttières & EEP","Membrane EPDM"],
+    "Sols":        ["Parquet massif","Parquet contrecollé","Stratifié","PVC / Vinyle","Carrelage sol","Béton ciré","Moquette","Sous-couche","Plinthes","Seuils & barres de seuil"],
+    "Quincaillerie":["Visserie bois","Visserie métal","Chevilles béton","Chevilles creux","Fixations spéciales","Ancrages chimiques","Serrures","Pentures / Paumelles","Poignées / Crémones"],
+    "Consommables":["Masques & protection","Gants","Disques meule","Lames scie","Abrasifs / Papier","Adhésifs & scotch","Bâches & film","Sac poubelle","Produits nettoyage","Solvants","Lubrifiant"],
+    "Securite":    ["Casques","Chaussures sécu","Harnais","Gilets haute visi","Lunettes","Bouchons oreilles","Signalisation","Échafaudage","Filets de protection","Extincteurs"],
+    "Finitions":   ["Silicone sanitaire","Silicone façade","Mastic","Couvre-joints","Baguettes & profiles","Plinthes","Rosaces","Quart de rond","Baguettes de coin"],
+    "Demolition":  ["Outillage demolition","Marteau piqueur","Meuleuse","Disques béton","Protection & sécurité","Big-bag","Benne / évacuation"],
+    "Terrassement":["Terrassement manuel","Engins de chantier","Remblai / GNT","Géotextile","Drainage","Béton de propreté"],
+    "Beton":       ["Béton prêt à l'emploi","Béton sac","Ferraillage HA","Coffrage","Adjuvants","Cure béton","Ragréage"],
+    "Nettoyage":   ["Nettoyage chantier","Produits dégraissants","Aspirateurs","Balais & raclettes","Lessiviel","Anti-moisissure","Désinfectant"],
+    "Divers":      ["Outillage général","Consommables divers","Accessoires","Non classé"]
+};
+
 var UNITES = ["piece","boite","sac","rouleau","cartouche","litre","m2","ml","kg","palette","lot"];
 
 // Cle Anthropic pour l'IA photo (a remplir)
@@ -852,22 +878,24 @@ function LoginScreen(props) {
         if(code.length < 4) return;
         setLoading(true);
         setErr("");
+        var userFound = null;
+        // 1. Essai Supabase
         try {
             var rows = await supaGet("utilisateurs", "code=eq." + code + "&limit=1");
-            if(rows && rows.length > 0) {
-                if(rememberMe) localStorage.setItem("lrb_remembered_code", code);
-                else localStorage.removeItem("lrb_remembered_code");
-                props.onLogin({code: code, name: rows[0].nom, role: rows[0].role || "chantier"});
-                setLoading(false);
-                return;
+            if(rows && rows.length > 0 && rows[0].nom) {
+                userFound = {code: code, name: rows[0].nom, role: rows[0].role || "chantier"};
             }
         } catch(e) {}
-        if(USERS_LOCAL[code]) {
+        // 2. Fallback USERS_LOCAL si Supabase n'a rien donné
+        if(!userFound && USERS_LOCAL[code]) {
+            userFound = Object.assign({code: code}, USERS_LOCAL[code]);
+        }
+        if(userFound) {
             if(rememberMe) localStorage.setItem("lrb_remembered_code", code);
             else localStorage.removeItem("lrb_remembered_code");
-            props.onLogin(Object.assign({code: code}, USERS_LOCAL[code]));
+            props.onLogin(userFound);
         } else {
-            setErr("Code incorrect");
+            setErr("Code incorrect — vérifie le code saisi");
         }
         setLoading(false);
     }
@@ -1004,6 +1032,8 @@ function ProduitsListScreen(props) {
     var famille = familleState[0]; var setFamille = familleState[1];
     var tabState = useState("articles");
     var tab = tabState[0]; var setTab = tabState[1];
+    var sousFamState = useState("all");
+    var sousFam = sousFamState[0]; var setSousFam = sousFamState[1];
     var openRessState = useState(null);
     var openRess = openRessState[0]; var setOpenRess = openRessState[1];
     var ce = props.ce;
@@ -1011,6 +1041,7 @@ function ProduitsListScreen(props) {
     var list = props.produits.filter(function(p) {
         if(!(p.corps_etat || "").toLowerCase().includes(ce.label.toLowerCase())) return false;
         if(famille !== "all" && (p.famille || "") !== famille) return false;
+        if(sousFam !== "all" && (p.sous_famille || "") !== sousFam) return false;
         if(search && !(p.nom || "").toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
@@ -1060,10 +1091,19 @@ function ProduitsListScreen(props) {
         // Onglet Articles
         tab === "articles" ? h("div", null,
             h("div", {className:"chips"},
-                h("button", {className:"chip" + (famille==="all"?" active":""), onClick:function(){setFamille("all");}}, "Tout (" + (countMat+countOut) + ")"),
-                h("button", {className:"chip" + (famille==="MATERIAUX"?" active":""), onClick:function(){setFamille("MATERIAUX");}}, "🧱 Matériaux (" + countMat + ")"),
-                h("button", {className:"chip" + (famille==="OUTILLAGE"?" active":""), onClick:function(){setFamille("OUTILLAGE");}}, "🔧 Outillage (" + countOut + ")")
+                h("button", {className:"chip" + (famille==="all"?" active":""), onClick:function(){setFamille("all");setSousFam("all");}}, "Tout (" + (countMat+countOut) + ")"),
+                h("button", {className:"chip" + (famille==="MATERIAUX"?" active":""), onClick:function(){setFamille("MATERIAUX");setSousFam("all");}}, "🧱 Matériaux (" + countMat + ")"),
+                h("button", {className:"chip" + (famille==="OUTILLAGE"?" active":""), onClick:function(){setFamille("OUTILLAGE");setSousFam("all");}}, "🔧 Outillage (" + countOut + ")")
             ),
+            (SOUS_FAMILLES[ce.label] || []).length > 0 ? h("div", {className:"chips"},
+                h("button", {className:"chip" + (sousFam==="all"?" active":""), onClick:function(){setSousFam("all");}}, "Tout"),
+                (SOUS_FAMILLES[ce.label] || []).map(function(sf) {
+                    var cnt = props.produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && (p.sous_famille||"") === sf; }).length;
+                    return h("button", {key:sf, className:"chip" + (sousFam===sf?" active":""), onClick:function(){setSousFam(sf);}},
+                        sf + (cnt > 0 ? " (" + cnt + ")" : "")
+                    );
+                })
+            ) : null,
             h("div", {className:"search-box"},
                 h("span", {style:{color:"var(--text3)"}}, "🔍"),
                 h("input", {placeholder:"Rechercher un produit...", value:search, onChange:function(e){setSearch(e.target.value);}})
@@ -1323,6 +1363,26 @@ function ProduitDetail(props) {
         ),
 
         h("div", {className:"card", style:{marginBottom:12}},
+            h("div", {className:"section-title"}, "🏷️ SOUS-FAMILLE"),
+            h("select", {
+                className:"select",
+                value: p.sous_famille || "",
+                onChange: async function(e) {
+                    var val = e.target.value;
+                    try {
+                        await supaPatch("produits", p.id, {sous_famille: val});
+                        showToast("✅ Sous-famille mise à jour", "success");
+                        props.onRefresh();
+                    } catch(err) { showToast("Erreur: " + err.message, "error"); }
+                }
+            },
+                h("option", {value:""}, "— Non classé —"),
+                (SOUS_FAMILLES[p.corps_etat] || []).map(function(sf){
+                    return h("option", {key:sf, value:sf}, sf);
+                })
+            )
+        ),
+        h("div", {className:"card", style:{marginBottom:12}},
             h("div", {className:"section-title"}, "🏪 FOURNISSEUR & PRIX"),
             h("div", {style:{display:"flex", gap:8, marginBottom:8}},
                 p.fournisseur ? h("span", {className:"fournisseur-badge"}, "🏪 " + p.fournisseur) : null,
@@ -1515,6 +1575,7 @@ function PhotoScreen(props) {
                 nom: result.nom,
                 famille: result.famille,
                 corps_etat: result.corps_etat,
+                sous_famille: result.sous_famille || null,
                 unite: result.unite || "piece",
                 quantite: parseFloat(qty) || 1,
                 photo_url: pu,
@@ -1644,6 +1705,15 @@ function PhotoScreen(props) {
                         )
                     )
                 ),
+                (SOUS_FAMILLES[result.corps_etat] || []).length > 0 ? h("div", {className:"input-group"},
+                    h("label", {className:"input-label"}, "Sous-famille"),
+                    h("select", {className:"select", value:result.sous_famille || "", onChange:upd("sous_famille")},
+                        h("option", {value:""}, "— Non classé —"),
+                        (SOUS_FAMILLES[result.corps_etat] || []).map(function(sf){
+                            return h("option", {key:sf, value:sf}, sf);
+                        })
+                    )
+                ) : null,
                 h("div", {className:"grid-2"},
                     h("div", {className:"input-group"},
                         h("label", {className:"input-label"}, "Quantite *"),
@@ -2172,18 +2242,23 @@ function App() {
     
     useEffect(function() {
         var savedCode = localStorage.getItem("lrb_remembered_code");
-        if(savedCode && !user) {
-            if(USERS_LOCAL[savedCode]) {
+        if(!savedCode || user) return;
+        // Essai Supabase d'abord
+        supaGet("utilisateurs", "code=eq." + savedCode + "&limit=1").then(function(rows) {
+            if(rows && rows.length > 0 && rows[0].nom) {
+                setUser({code: savedCode, name: rows[0].nom, role: rows[0].role || "chantier"});
+            } else if(USERS_LOCAL[savedCode]) {
                 setUser(Object.assign({code: savedCode}, USERS_LOCAL[savedCode]));
             } else {
-                supaGet("utilisateurs", "code=eq." + savedCode + "&limit=1").then(function(rows) {
-                    if(rows && rows.length > 0) {
-                        setUser({code: savedCode, name: rows[0].nom, role: rows[0].role || "chantier"});
-                    }
-                }).catch(function() {});
+                localStorage.removeItem("lrb_remembered_code");
             }
-        }
-    }, [user]);
+        }).catch(function() {
+            // Supabase inaccessible → fallback local
+            if(USERS_LOCAL[savedCode]) {
+                setUser(Object.assign({code: savedCode}, USERS_LOCAL[savedCode]));
+            }
+        });
+    }, []);
     
     function nav(dest, d) {
         historyStack.current.push({screen: screen, data: data});
