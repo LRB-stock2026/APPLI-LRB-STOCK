@@ -274,227 +274,25 @@ var CORPS_ETAT_SECOND = [{id:"platrerie",label:"Platrerie",icon:"🪣"},{id:"pei
 
 // Sous-familles par corps d'état
 var SOUS_FAMILLES = {
-    "Peinture": [
-        "Peinture mat","Peinture velours","Peinture satiné","Peinture brillant",
-        "Peinture plafond","Peinture façade","Peinture sol","Peinture boiseries",
-        "Peinture radiateur","Peinture antirouille","Peinture béton","Peinture anti-humidité",
-        "Toile de verre fine","Toile de verre renforcée","Papier peint",
-        "Sous-couche universelle","Sous-couche garnissante","Sous-couche isolante",
-        "Enduit de lissage","Enduit garnissant","Enduit de rebouchage","Enduit décoratif",
-        "Primaire accrochage","Primaire anti-rouille","Primaire façade",
-        "Lasure bois intérieur","Lasure bois extérieur","Vernis bois","Saturateur",
-        "Badigeon chaux","Teinture bois","Résine de sol","Peinture époxy sol",
-        "Outillage","Consommables"
-    ],
-    "Electricite": [
-        "Prises 16A","Prises 20A","Prises 32A","Prises étanches","Prises RJ45","Prises TV",
-        "Interrupteurs simples","Va-et-vient","Variateurs","Télérupteurs","Minuteries","Détecteurs présence",
-        "Tableau électrique","Disjoncteurs","DDR 30mA","Coffrets de distribution",
-        "VMC simple flux","VMC double flux","Bouches VMC","Gaines VMC",
-        "Câble 1,5mm²","Câble 2,5mm²","Câble 4mm²","Câble 6mm²","Câble 10mm²",
-        "Gaines ICTA 16","Gaines ICTA 20","Gaines ICTA 25","Gaines ICTA 32","Goulottes / moulures",
-        "Boîtes encastrement","Boîtes dérivation",
-        "Spots LED","Dalles LED","Éclairage extérieur",
-        "Borne recharge VE","Domotique","Alarme","Interphone / Visiophone",
-        "Convecteurs","Radiateurs inertie","Plancher chauffant électrique",
-        "Outillage","Consommables"
-    ],
-    "Plomberie": [
-        "Tube PER","Tube multicouche","Tube cuivre","Tube PVC pression","Tube PVC évacuation",
-        "Raccords à sertir","Raccords PVC","Raccords cuivre","Vannes & robinets",
-        "Mitigeurs lavabo","Mitigeurs douche","Mitigeurs évier","Mitigeurs thermostatiques",
-        "Robinetterie baignoire","Douchettes & flexibles",
-        "WC suspendu","WC à poser","Bâti-support","Mécanisme WC","Abattant",
-        "Lavabo & vasque","Receveur de douche","Paroi de douche","Baignoire",
-        "Évier cuisine","Siphons & bondes",
-        "Chauffe-eau électrique","Chauffe-eau thermodynamique","Chaudière gaz","Pompe à chaleur",
-        "Groupe sécurité","Vase expansion","Collecteurs","Circulateur",
-        "Évacuation PVC 32","Évacuation PVC 40","Évacuation PVC 50","Évacuation PVC 100",
-        "Isolation canalisation","Adoucisseur & filtration",
-        "Outillage","Consommables"
-    ],
-    "Platrerie": [
-        "Plaque BA13","Plaque BA18 (humide)","Plaque BA25 (acoustique)","Plaque Feu FU",
-        "Rail R48","Rail R70","Rail R100","Montant M48","Montant M70","Montant M100",
-        "Bande à joint papier","Bande armée polyester",
-        "Enduit de jointoiement","Enduit de finition","Enduit allégé",
-        "Vis TF 25","Vis TF 35","Vis TF 45",
-        "Complexe doublage PSE","Complexe doublage laine",
-        "Laine phonique","Bande résiliente",
-        "Carreau de plâtre 70","Carreau de plâtre 100",
-        "Cornière métallique","Baguette de finition",
-        "Membrane SPEC","Primaire SPEC","Colle à plaques",
-        "Outillage","Consommables"
-    ],
-    "Carrelage": [
-        "Grès cérame mat","Grès cérame poli","Grès cérame antidérapant",
-        "Grand format (60×60 et +)","Moyen format (30×60)","Petit format",
-        "Imitation bois","Imitation béton","Imitation pierre","Imitation marbre",
-        "Faïence murale","Mosaïque","Carrelage extérieur","Carrelage piscine",
-        "Plinthe","Barre de seuil","Nez de marche",
-        "Colle C1","Colle C2","Colle C2S1 (déformable)","Colle C2S2","Colle blanche",
-        "Joint de pose","Joint époxy","Joint silicone",
-        "Natte anti-fissure","Membrane étanchéité","Ragréage autolissant","Primaire accrochage",
-        "Outillage","Consommables"
-    ],
-    "Isolation": [
-        "Laine de verre rouleau","Laine de verre panneau","Laine de roche rouleau","Laine de roche panneau",
-        "PSE blanc","PSE graphité","XPS extrudé","PIR / PUR panneau","Mousse PU projetée",
-        "Ouate de cellulose soufflée","Ouate de cellulose panneau","Fibre de bois","Liège","Laine de mouton",
-        "Complexe doublage collé","Complexe doublage ossature",
-        "Pare-vapeur hygrorégulant","Pare-vapeur PE","Membrane HPV",
-        "Isolation combles perdus","Isolation rampants","Isolation plancher","Isolation murs ITE","Isolation murs ITI",
-        "Rupteur pont thermique","Cheviilles isolation","Scotch & ruban étanchéité",
-        "Outillage","Consommables"
-    ],
-    "Menuiserie": [
-        "Fenêtre PVC","Fenêtre ALU","Fenêtre bois","Porte-fenêtre","Baie coulissante",
-        "Porte d'entrée","Porte de service","Porte de garage",
-        "Porte intérieure pleine","Porte intérieure vitrée","Porte coulissante","Porte galandage",
-        "Volet battant bois","Volet roulant","Volet coulissant","Store extérieur",
-        "Véranda","Pergola","Garde-corps","Escalier",
-        "Huisserie","Paumelles & charnières","Serrures & verrous","Poignées",
-        "Vitrage double","Vitrage triple","Vitrage sécurit",
-        "Parquet massif","Parquet contrecollé","Stratifié","Seuils & barres",
-        "Outillage","Consommables"
-    ],
-    "Maconnerie": [
-        "Parpaing 20cm","Parpaing 15cm","Parpaing 10cm",
-        "Brique monomur","Brique pleine","Brique creuse","Brique de parement",
-        "Béton prêt à l'emploi","Béton en sac","Béton cellulaire",
-        "Mortier de maçonnerie","Mortier joints minces","Mortier colle",
-        "Enduit façade","Gobetis","Enduit de finition",
-        "Linteau béton","Appui de baie","Chaînage","Ferraillage HA",
-        "Pierre naturelle","Moellon","Parpaing décoratif",
-        "Chaux aérienne","Chaux hydraulique","Ciment","Sable",
-        "Outillage","Consommables"
-    ],
-    "Charpente": [
-        "Chevron 63×75","Chevron 63×100","Chevron 75×100","Panne 63×175","Panne 75×225",
-        "Sablière","Faîtière bois","Arêtier","Noue",
-        "Fermette industrielle","Poutre lamellé-collé","Poutre en I bois",
-        "OSB 10mm","OSB 18mm","Volige","Lambris",
-        "Liteaux 27×40","Liteaux 40×60",
-        "Bois traité classe 2","Bois traité classe 3",
-        "Connecteurs métalliques","Sabots","Équerres","Boulons","Pointes",
-        "Membrane HPV","Écran de sous-toiture",
-        "Outillage","Consommables"
-    ],
-    "Couverture": [
-        "Tuile terre cuite canal","Tuile terre cuite mécanique","Tuile béton",
-        "Ardoise naturelle","Ardoise fibrociment",
-        "Zinc joint debout","Zinc à tasseaux","Zinc prépatine",
-        "Bac acier","Bac acier laqué","Panneau sandwich toiture",
-        "Shingle","Membrane EPDM","Membrane bitumineuse",
-        "Faîtière","Tuile de rive","Tuile d'égout","Chatière ventilation",
-        "Solin plomb","Solin zinc","Bavette","Noue zinc","Arêtier",
-        "Gouttière PVC","Gouttière zinc","Gouttière ALU",
-        "Descente EP","Naissance","Crapaudine","Coude EP",
-        "Crochet tuile","Agrafe ardoise","Vis inox toiture",
-        "Outillage","Consommables"
-    ],
-    "Sols": [
-        "Parquet massif chêne","Parquet massif autres essences","Parquet contrecollé",
-        "Stratifié 7mm","Stratifié 10mm","Stratifié 12mm",
-        "PVC clipsable","PVC à coller","PVC en rouleau","LVT vinyle",
-        "Carrelage sol","Béton ciré","Résine époxy sol","Béton imprimé",
-        "Moquette","Jonc de mer","Liège sol",
-        "Sous-couche acoustique","Sous-couche thermique","Sous-couche universelle",
-        "Plinthes MDF","Plinthes chêne","Plinthes PVC","Quart de rond",
-        "Barre de seuil droite","Barre de seuil recouvrement","Seuil de porte",
-        "Outillage","Consommables"
-    ],
-    "Quincaillerie": [
-        "Vis bois 3mm","Vis bois 4mm","Vis bois 5mm","Vis bois 6mm",
-        "Vis métal / autotaraudeuse","Vis inox","Vis béton / parpaing",
-        "Cheville plastique","Cheville métal","Cheville chimique","Cheville frapper",
-        "Pointe / clou","Agrafe","Boulon & écrou","Tige filetée",
-        "Plaque de jonction","Équerre de renfort","Serre-câble","Collier de fixation",
-        "Serrure encastrée","Serrure en applique","Cylindre","Verrou",
-        "Paumelle 3D","Charnière simple","Pivot","Glissière",
-        "Poignée de porte","Béquille","Heurtoir","Judas",
-        "Rail de glissement","Crémone","Espagnolette","Ferme-porte",
-        "Outillage","Consommables"
-    ],
-    "Consommables": [
-        "Masque FFP1","Masque FFP2","Masque FFP3","Masque anti-poussière",
-        "Gants maçonnerie","Gants étanchéité","Gants coupants",
-        "Disque meule métal","Disque meule béton","Disque diamant","Disque tronçonner",
-        "Lame scie bois","Lame scie métal","Lame scie carrelage",
-        "Papier abrasif 40","Papier abrasif 80","Papier abrasif 120","Papier abrasif 220",
-        "Scotch masquage","Scotch double face","Ruban adhésif","Bolduc",
-        "Bâche PE","Film de protection","Carton de protection",
-        "Sac poubelle","Big-bag","Sac ciment","Sac à gravats",
-        "Silicone tous usages","Mastic","Mousse expansive",
-        "Solvant","Dégraissant","White spirit","Acétone",
-        "Crayon chantier","Cordeau à tracer","Plomb de fil"
-    ],
-    "Securite": [
-        "Casque de chantier","Casque anti-bruit",
-        "Chaussures de sécurité S1","Chaussures de sécurité S3","Bottes de chantier",
-        "Gilet haute visibilité","Combinaison de travail","Genouillères",
-        "Lunettes de protection","Écran facial",
-        "Harnais antichute","Longe","Antichute à rappel automatique","Ligne de vie",
-        "Bouchons d'oreille","Casque antibruit",
-        "Panneau signalisation","Rubalise","Barrière chantier","Cônes","Balise",
-        "Filet de protection","Filet anti-chute","Platelage","Pied de biche",
-        "Extincteur CO2","Extincteur poudre","Couverture anti-feu",
-        "Trousse de secours","Rince-œil","Kit déversement",
-        "Outillage","Consommables"
-    ],
-    "Finitions": [
-        "Silicone sanitaire blanc","Silicone sanitaire coloris","Silicone façade","Silicone colle",
-        "Mastic acrylique","Mastic polyuréthane","Mastic silicone",
-        "Joint de dilatation","Joint mousse","Joint caoutchouc",
-        "Couvre-joint plat","Couvre-joint en T","Couvre-joint d'angle",
-        "Baguette d'angle métal","Baguette d'angle PVC","Cornière inox",
-        "Plinthe MDF peinte","Plinthe chêne","Plinthe carrelage","Quart de rond",
-        "Rosace plafond","Cache-vis","Cache-tuyau","Plaque de propreté",
-        "Nez de marche","Barre de seuil","Profil de transition",
-        "Outillage","Consommables"
-    ],
-    "Demolition": [
-        "Marteau piqueur","Burin","Ciseau à froid","Masse",
-        "Disque de découpe béton","Disque de découpe métal","Disque de ponçage",
-        "Meuleuse d'angle","Disqueuse","Scie sabre",
-        "Casque","Lunettes anti-projection","Masque poussière démolition",
-        "Big-bag démolition","Benne évacuation","Sac à gravats",
-        "Étançon / étai","Chevêtre","Poutre de reprise en sous-œuvre",
-        "Outillage","Consommables"
-    ],
-    "Terrassement": [
-        "Pelle","Pioche","Binette","Brouette",
-        "Géotextile non tissé","Géotextile tissé","Grille avertisseuse",
-        "Remblai GNT 0/31","Remblai GNT 0/60","Sable de dressage",
-        "Drains PVC","Drain annelé","Regard de visite","Grille avaloir",
-        "Béton de propreté","Béton maigre",
-        "Clôture de chantier","Pieux de délimitation",
-        "Outillage","Consommables"
-    ],
-    "Beton": [
-        "Béton prêt à l'emploi C25/30","Béton prêt à l'emploi C30/37","Béton fibré","Béton sac",
-        "Acier HA 8mm","Acier HA 10mm","Acier HA 12mm","Acier HA 14mm","Acier HA 16mm",
-        "Treillis soudé ST25","Treillis soudé ST40",
-        "Coffrage bois","Coffrage plastique","Coffrage perdu","Éléments de coffrage",
-        "Cales d'enrobage","Fil de ligature","Pinces à ligature",
-        "Adjuvants plastifiant","Adjuvant accélérateur","Adjuvant retardateur","Hydrofuge",
-        "Cure béton","Décoffrant","Ragréage ciment",
-        "Outillage","Consommables"
-    ],
-    "Nettoyage": [
-        "Nettoyant carrelage","Dégraissant sol","Décapant peinture","Détartrant",
-        "Nettoyant façade","Nettoyant toiture","Anti-mousse","Démoussant",
-        "Nettoyant inox","Nettoyant aluminium","Nettoyant PVC",
-        "Aspirateur chantier","Aspirateur eau & poussière","Balayeuse",
-        "Balai chantier","Raclette","Serpillière","Chiffons",
-        "Sac aspirateur","Filtre HEPA","Brosse métallique",
-        "Lessiviel","Désinfectant","Anti-moisissure","Javellisant",
-        "Outillage","Consommables"
-    ],
-    "Divers": [
-        "Outillage général","Consommables non classés","Accessoires divers",
-        "Produits en attente de classement"
-    ]
+    "Peinture":     ["Peinture murale","Peinture plafond","Peinture sol","Peinture boiseries","Peinture façade","Peinture spéciale","Sous-couche & primaire","Enduit de lissage","Enduit décoratif","Revêtement mural","Lasure & vernis","Outillage","Consommables"],
+    "Electricite":  ["Prises & interrupteurs","Tableau & protection","Câblage & gaines","Éclairage","VMC & ventilation","Chauffage électrique","Domotique & alarme","Borne recharge VE","Outillage","Consommables"],
+    "Plomberie":    ["Alimentation eau froide","Alimentation eau chaude","Évacuation","Sanitaires","Robinetterie","Chauffe-eau & ballon","Chauffage & radiateurs","Raccords & raccordement","Outillage","Consommables"],
+    "Platrerie":    ["Plaques de plâtre","Ossature métallique","Enduits & joints","Doublage & isolation","Carreaux de plâtre","Outillage","Consommables"],
+    "Carrelage":    ["Sol intérieur","Mural","Extérieur","Pose & joints","Finitions & accessoires","Préparation support","Outillage","Consommables"],
+    "Isolation":    ["Combles & toiture","Murs intérieur (ITI)","Murs extérieur (ITE)","Plancher","Phonique","Pare-vapeur & membrane","Outillage","Consommables"],
+    "Menuiserie":   ["Fenêtres & baies","Portes extérieures","Portes intérieures","Volets & stores","Garde-corps & escaliers","Parquet & stratifié","Quincaillerie menuiserie","Outillage","Consommables"],
+    "Maconnerie":   ["Parpaing & brique","Béton & mortier","Enduit façade","Structures & ferraillage","Pierre naturelle","Outillage","Consommables"],
+    "Charpente":    ["Bois de structure","Panneaux & volige","Fixations métalliques","Sous-toiture & liteaux","Outillage","Consommables"],
+    "Couverture":   ["Tuiles & ardoises","Zinc & bac acier","Faîtage & rives","Étanchéité","Gouttières & EEP","Outillage","Consommables"],
+    "Sols":         ["Parquet","Stratifié","PVC & vinyle","Carrelage sol","Sous-couche","Finitions & plinthes","Outillage","Consommables"],
+    "Quincaillerie":["Visserie","Chevilles & ancrages","Serrurerie","Pentures & charnières","Fixations spéciales","Outillage","Consommables"],
+    "Securite":     ["EPI & protection","Signalisation","Échafaudage & travail en hauteur","Incendie","Outillage","Consommables"],
+    "Finitions":    ["Silicone & mastic","Couvre-joints & baguettes","Plinthes & quarts de rond","Rosaces & cache","Outillage","Consommables"],
+    "Demolition":   ["Outillage démolition","Protection & sécurité","Évacuation & gravats","Consommables"],
+    "Terrassement": ["Terrassement & nivellement","Drainage & géotextile","Remblai & granulats","Béton de propreté","Outillage","Consommables"],
+    "Beton":        ["Béton & ciment","Ferraillage","Coffrage","Adjuvants & cure","Ragréage","Outillage","Consommables"],
+    "Nettoyage":    ["Nettoyants & dégraissants","Anti-moisissure & traitement","Matériel de nettoyage","Consommables"],
+    "Divers":       ["Non classé","Outillage","Consommables"]
 };
 
 var UNITES = ["piece","boite","sac","rouleau","cartouche","litre","m2","ml","kg","palette","lot"];
