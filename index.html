@@ -1097,7 +1097,7 @@ function HomeScreen(props) {
                             h("div", {style:{fontSize:14, fontWeight:700, color:"var(--navy)"}}, p.nom),
                             h("div", {style:{fontSize:11, color:"var(--text3)"}}, (p.corps_etat||"") + (p.sous_famille ? " · " + p.sous_famille : ""))
                         ),
-                        h("span", {className:"badge badge-"+statut, style:{fontSize:11}}, (p.quantite||0) + " " + (p.unite||"pce"))
+                        h("span", {className:"badge badge-"+getStatut(p), style:{fontSize:11}}, (p.quantite||0) + " " + (p.unite||"pce"))
                     );
                 })
         ) : null,
@@ -1879,11 +1879,11 @@ function ProduitDetail(props) {
                         h("select", {className:"select", value:editUnite, onChange:function(e){setEditUnite(e.target.value);}},
                             UNITES.map(function(u){ return h("option", {key:u, value:u}, u); })
                         )
-                    ),
-                    h("div", {style:{display:"flex", gap:10, marginTop:8}},
-                        h("button", {className:"btn btn-outline", style:{flex:1}, onClick:function(){setEditing(false);}}, "Annuler"),
-                        h("button", {className:"btn btn-navy", style:{flex:2}, onClick:saveEdit, disabled:!editNom.trim()||editSaving}, editSaving ? "..." : "✅ Enregistrer")
                     )
+                ),
+                h("div", {style:{display:"flex", gap:10, marginTop:16, position:"sticky", bottom:0, background:"#fff", paddingTop:10, paddingBottom:4}},
+                    h("button", {className:"btn btn-outline", style:{flex:1}, onClick:function(){setEditing(false);}}, "Annuler"),
+                    h("button", {className:"btn btn-navy", style:{flex:2}, onClick:saveEdit, disabled:!editNom.trim()||editSaving}, editSaving ? "⏳ Enregistrement..." : "✅ Enregistrer")
                 )
             )
         ) : null
