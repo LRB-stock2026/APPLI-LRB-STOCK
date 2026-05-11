@@ -42,6 +42,15 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .checkbox-group{display:flex;align-items:center;gap:12px;margin:12px 0}
 .checkbox-group input{width:20px;height:20px;cursor:pointer}
 .checkbox-group label{font-size:14px;font-weight:600;color:var(--navy);cursor:pointer}
+.splash{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.6s ease, transform 0.6s ease}
+.splash.hide{opacity:0;transform:scale(1.05);pointer-events:none}
+.splash-logo{width:200px;border-radius:20px;animation:splashPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both}
+.splash-sub{color:rgba(255,255,255,0.5);font-size:12px;font-weight:700;letter-spacing:0.15em;margin-top:16px;animation:fadeIn 0.8s 0.3s both}
+.splash-bar{width:160px;height:3px;background:rgba(255,255,255,0.15);border-radius:4px;margin-top:40px;overflow:hidden;animation:fadeIn 0.5s 0.4s both}
+.splash-progress{height:100%;background:var(--gold);border-radius:4px;animation:progress 1.8s 0.3s ease forwards}
+@keyframes splashPop{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes progress{from{width:0%}to{width:100%}}
 .btn{display:flex;align-items:center;justify-content:center;gap:6px;border:none;font-weight:700;cursor:pointer;border-radius:14px;font-size:15px;padding:12px 20px}
 .btn:active{transform:scale(0.96)}
 .btn-navy{background:var(--navy);color:#fff}
@@ -144,6 +153,26 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .ressource-body ul{margin:8px 0 0 16px}
 .ressource-body li{font-size:12px;color:var(--text2);line-height:1.8}
 .ressource-ref{font-size:11px;font-weight:700;color:var(--navy);background:rgba(61,84,112,0.08);padding:4px 10px;border-radius:8px;display:inline-block;margin-top:8px}
+.prix-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(39,174,96,0.12);color:var(--green);font-size:13px;font-weight:800;padding:5px 12px;border-radius:10px}
+.fournisseur-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(61,84,112,0.08);color:var(--navy);font-size:12px;font-weight:700;padding:4px 10px;border-radius:10px}
+.statut-chip{padding:5px 12px;border-radius:16px;font-size:11px;font-weight:800;border:none;cursor:pointer}
+.statut-pending{background:#FFF3CD;color:#856404}
+.statut-ordered{background:#CCE5FF;color:#004085}
+.statut-received{background:#D4EDDA;color:#155724}
+.statut-cancelled{background:#F8D7DA;color:#721c24}
+.scanner-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.scanner-frame{width:260px;height:160px;border:3px solid var(--gold);border-radius:16px;position:relative;overflow:hidden}
+.scanner-frame video{width:100%;height:100%;object-fit:cover}
+.scanner-line{position:absolute;left:0;right:0;height:2px;background:var(--gold);animation:scanline 1.8s ease-in-out infinite}
+@keyframes scanline{0%{top:10%}50%{top:85%}100%{top:10%}}
+.offline-banner{background:var(--orange);color:#fff;text-align:center;font-size:12px;font-weight:700;padding:6px;position:fixed;top:0;left:0;right:0;z-index:500}
+.statut-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:800;border:2px solid transparent;cursor:pointer;white-space:nowrap}
+.statut-attente{background:var(--orange-bg);color:var(--orange);border-color:var(--orange)}
+.statut-commande{background:#E8F0FE;color:#1a5cb5;border-color:#1a5cb5}
+.statut-recu{background:var(--green-bg);color:var(--green);border-color:var(--green)}
+.statut-annule{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+.achat-row{background:#fff;border-radius:14px;border:1.5px solid var(--border);padding:12px 14px;margin-bottom:8px}
+.offline-bar{background:var(--orange);color:#fff;font-size:11px;font-weight:700;text-align:center;padding:4px;letter-spacing:0.05em}
 </style>
 </head>
 <body>
@@ -700,6 +729,16 @@ async function logMouvement(data) {
     } catch(e) { console.warn("Log mouvement échoué:", e.message); }
 }
 
+// ============ CACHE HORS-LIGNE ============
+var CACHE_KEY = "lrb_cache_produits";
+function saveCache(produits) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ts: Date.now(), data: produits})); } catch(e) {}
+}
+function loadCache() {
+    try { var c = JSON.parse(localStorage.getItem(CACHE_KEY)||"null"); return c ? c.data : []; } catch(e) { return []; }
+}
+function isOnline() { return navigator.onLine !== false; }
+
 function formatDate(iso) {
     if(!iso) return "";
     var d = new Date(iso);
@@ -764,6 +803,26 @@ function getStatut(p) {
     if(p.famille === "OUTILLAGE") return "ok";   // 1 outil = OK
     if((p.quantite||0) <= (p.quantite_min||0)) return "low";
     return "ok";
+}
+
+// SplashScreen
+function SplashScreen(props) {
+    var hideState = useState(false);
+    var hide = hideState[0]; var setHide = hideState[1];
+
+    useEffect(function() {
+        var t1 = setTimeout(function() { setHide(true); }, 1900);
+        var t2 = setTimeout(function() { props.onDone(); }, 2500);
+        return function() { clearTimeout(t1); clearTimeout(t2); };
+    }, []);
+
+    return h("div", {className:"splash" + (hide ? " hide" : "")},
+        h("img", {src:LRB_LOGO, className:"splash-logo"}),
+        h("div", {className:"splash-sub"}, "GESTION DE STOCK"),
+        h("div", {className:"splash-bar"},
+            h("div", {className:"splash-progress"})
+        )
+    );
 }
 
 // LoginScreen
@@ -1082,6 +1141,10 @@ function ProduitDetail(props) {
     var mvtLoadingState = useState(true);
     var mvtLoading = mvtLoadingState[0]; var setMvtLoading = mvtLoadingState[1];
     var emplacementState = useState(p.emplacement || "");
+    var fournisseurState = useState(p.fournisseur || "");
+    var fournisseur = fournisseurState[0]; var setFournisseur = fournisseurState[1];
+    var prixState = useState(p.prix_unitaire ? String(p.prix_unitaire) : "");
+    var prixInput = prixState[0]; var setPrixInput = prixState[1];
     var emplacement = emplacementState[0]; var setEmplacement = emplacementState[1];
     var newLieuState = useState("");
     var newLieu = newLieuState[0]; var setNewLieu = newLieuState[1];
@@ -1142,6 +1205,19 @@ function ProduitDetail(props) {
             setLieuxLoaded(true);
         });
     }, []);
+
+    async function saveFournisseurPrix() {
+        var patch = {};
+        if(fournisseur.trim() !== (p.fournisseur||"")) patch.fournisseur = fournisseur.trim();
+        var pv = parseFloat(prixInput);
+        if(!isNaN(pv) && pv !== (p.prix_unitaire||0)) patch.prix_unitaire = pv;
+        if(Object.keys(patch).length === 0) return showToast("Aucun changement", "success");
+        try {
+            await supaPatch("produits", p.id, patch);
+            showToast("✅ Infos fournisseur mises à jour", "success");
+            props.onRefresh();
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+    }
 
     async function saveEmplacement(val) {
         try {
@@ -1246,6 +1322,25 @@ function ProduitDetail(props) {
             )
         ),
 
+        h("div", {className:"card", style:{marginBottom:12}},
+            h("div", {className:"section-title"}, "🏪 FOURNISSEUR & PRIX"),
+            h("div", {style:{display:"flex", gap:8, marginBottom:8}},
+                p.fournisseur ? h("span", {className:"fournisseur-badge"}, "🏪 " + p.fournisseur) : null,
+                p.prix_unitaire ? h("span", {className:"prix-badge"}, "💶 " + Number(p.prix_unitaire).toFixed(2) + " € / " + (p.unite||"pièce")) : null
+            ),
+            h("div", {className:"input-group", style:{marginBottom:8}},
+                h("label", {className:"input-label"}, "Fournisseur / Référence"),
+                h("input", {className:"input", placeholder:"Ex: Point P — REF 45821", value:fournisseur, onChange:function(e){setFournisseur(e.target.value);}})
+            ),
+            h("div", {style:{display:"flex", gap:8, alignItems:"flex-end"}},
+                h("div", {className:"input-group", style:{flex:1}},
+                    h("label", {className:"input-label"}, "Prix unitaire HT (€)"),
+                    h("input", {className:"input", type:"number", placeholder:"0.00", value:prixInput, onChange:function(e){setPrixInput(e.target.value);}})
+                ),
+                h("button", {className:"btn btn-outline", style:{whiteSpace:"nowrap"}, onClick:saveFournisseurPrix}, "Enregistrer")
+            )
+        ),
+
         h("div", {className:"grid-2"},
             h("div", {className:"card"},
                 h("div", {className:"section-title"}, "➕ AJOUTER"),
@@ -1288,6 +1383,43 @@ function ProduitDetail(props) {
             h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:4}}, "L'alerte se déclenche uniquement en cas de rupture (0 unité).")
         ),
 
+        // Fournisseur / Référence / Prix
+        h("div", {className:"card", style:{marginTop:12}},
+            h("div", {className:"section-title"}, "🏪 FOURNISSEUR & PRIX"),
+            h("div", {className:"space-y"},
+                h("div", {className:"grid-2"},
+                    h("div", {className:"input-group"},
+                        h("label", {className:"input-label"}, "Fournisseur"),
+                        h("input", {className:"input", placeholder:"Ex: Leroy Merlin", id:"fourn-" + p.id, defaultValue: p.fournisseur || ""})
+                    ),
+                    h("div", {className:"input-group"},
+                        h("label", {className:"input-label"}, "Référence"),
+                        h("input", {className:"input", placeholder:"Ex: LM-4892", id:"ref-" + p.id, defaultValue: p.reference || ""})
+                    )
+                ),
+                h("div", {className:"input-group"},
+                    h("label", {className:"input-label"}, "Prix unitaire (€)"),
+                    h("input", {className:"input", type:"number", placeholder:"0.00", id:"prix-" + p.id, defaultValue: p.prix_unitaire || ""})
+                ),
+                h("button", {
+                    className:"btn btn-outline btn-full",
+                    onClick: async function() {
+                        var fourn = (document.getElementById("fourn-" + p.id)||{}).value || "";
+                        var ref   = (document.getElementById("ref-" + p.id)||{}).value || "";
+                        var prix  = parseFloat((document.getElementById("prix-" + p.id)||{}).value) || null;
+                        try {
+                            await supaPatch("produits", p.id, {fournisseur: fourn, reference: ref, prix_unitaire: prix});
+                            showToast("✅ Infos fournisseur enregistrées", "success");
+                            props.onRefresh();
+                        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+                    }
+                }, "💾 Enregistrer")
+            ),
+            p.prix_unitaire ? h("div", {style:{fontSize:11, color:"var(--text3)", marginTop:6}},
+                "Valeur stock : " + ((p.prix_unitaire * (p.quantite||0)).toFixed(2)) + " €"
+            ) : null
+        ),
+
         // Historique des mouvements
         h("div", {className:"card", style:{marginTop:12}},
             h("div", {className:"section-title"}, "📋 HISTORIQUE"),
@@ -1310,6 +1442,10 @@ function ProduitDetail(props) {
 // PhotoScreen
 function PhotoScreen(props) {
     var stepState = useState("capture");
+    var scannerState = useState(false);
+    var scanning = scannerState[0]; var setScanning = scannerState[1];
+    var videoRef = useRef(null);
+    var streamRef = useRef(null);
     var step = stepState[0];
     var setStep = stepState[1];
     var previewState = useState(null);
@@ -1424,6 +1560,35 @@ function PhotoScreen(props) {
                 h("input", {ref:fileRef, type:"file", accept:"image/*", capture:"environment", style:{display:"none"}, onChange:handleFile}),
                 h("button", {className:"btn btn-navy btn-full", style:{marginBottom:10}, onClick:function(){if(fileRef.current) fileRef.current.click();}}, "📷 Prendre une photo"),
                 h("button", {className:"btn btn-outline btn-full", onClick:function(){if(fileRef.current){fileRef.current.removeAttribute("capture"); fileRef.current.click();}}}, "📁 Depuis la galerie"),
+                h("button", {className:"btn btn-outline btn-full", style:{marginTop:10}, onClick:async function(){
+                    if(!("BarcodeDetector" in window)){ showToast("Scanner non supporté sur ce navigateur", "error"); return; }
+                    var stream;
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+                        var video = document.createElement("video");
+                        video.srcObject = stream; video.play();
+                        var detector = new BarcodeDetector({formats:["ean_13","ean_8","code_128","qr_code"]});
+                        var found = false;
+                        var tries = 0;
+                        var interval = setInterval(async function(){
+                            tries++;
+                            if(tries > 40){ clearInterval(interval); stream.getTracks().forEach(function(t){t.stop();}); showToast("Code-barres non détecté", "error"); return; }
+                            try {
+                                var codes = await detector.detect(video);
+                                if(codes.length > 0){
+                                    clearInterval(interval);
+                                    stream.getTracks().forEach(function(t){t.stop();});
+                                    found = true;
+                                    var code = codes[0].rawValue;
+                                    showToast("Code détecté : " + code, "success");
+                                    setStep("result");
+                                    setResult({nom:"Code " + code, famille:"MATERIAUX", corps_etat:"", unite:"piece"});
+                                    setQty("1");
+                                }
+                            } catch(e){}
+                        }, 250);
+                    } catch(e){ if(stream) stream.getTracks().forEach(function(t){t.stop();}); showToast("Caméra inaccessible", "error"); }
+                }}, "📷 Scanner code-barres"),
                 h("button", {className:"btn btn-outline btn-full", style:{marginTop:10}, onClick:handleManualEntry}, "⌨️ Saisie Manuelle")
             )
         );
@@ -1502,64 +1667,103 @@ function PhotoScreen(props) {
 }
 
 // AchatScreen
+var STATUTS_ACHAT = [
+    {id:"en_attente", label:"En attente", cls:"statut-attente", icon:"⏳"},
+    {id:"commande",   label:"Commandé",   cls:"statut-commande", icon:"📦"},
+    {id:"recu",       label:"Reçu ✓",     cls:"statut-recu",     icon:"✅"},
+    {id:"annule",     label:"Annulé",     cls:"statut-annule",   icon:"❌"}
+];
 function AchatScreen(props) {
-    var nomState = useState("");
-    var nom = nomState[0];
-    var setNom = nomState[1];
-    var qtyState = useState("");
-    var qty = qtyState[0];
-    var setQty = qtyState[1];
-    var uniteState = useState("piece");
-    var unite = uniteState[0];
-    var setUnite = uniteState[1];
-    var noteState = useState("");
-    var note = noteState[0];
-    var setNote = noteState[1];
-    var loadingState = useState(false);
-    var loading = loadingState[0];
-    var setLoading = loadingState[1];
-    
+    var nomState = useState(""); var nom = nomState[0]; var setNom = nomState[1];
+    var qtyState = useState(""); var qty = qtyState[0]; var setQty = qtyState[1];
+    var uniteState = useState("piece"); var unite = uniteState[0]; var setUnite = uniteState[1];
+    var noteState = useState(""); var note = noteState[0]; var setNote = noteState[1];
+    var loadingState = useState(false); var loading = loadingState[0]; var setLoading = loadingState[1];
+    var achatsState = useState([]); var achats = achatsState[0]; var setAchats = achatsState[1];
+    var showFormState = useState(false); var showForm = showFormState[0]; var setShowForm = showFormState[1];
+
+    function loadAchats() {
+        supaGet("achats", "order=created_at.desc&limit=30").then(function(r){ setAchats(Array.isArray(r)?r:[]); }).catch(function(){});
+    }
+    useEffect(function(){ loadAchats(); }, []);
+
     async function create() {
         if(!nom || !qty) return;
         setLoading(true);
         try {
-            await supaPost("achats", {nom: nom, quantite: parseFloat(qty), unite: unite, commentaire: note, user_id: props.user.code});
-            showToast("✅ Achat cree", "success");
-            setNom(""); setQty(""); setNote(""); setUnite("piece");
-            if(props.onRefresh) props.onRefresh();
-            props.onBack();
+            await supaPost("achats", {nom:nom, quantite:parseFloat(qty), unite:unite, commentaire:note, user_id:props.user.code, statut:"en_attente"});
+            showToast("✅ Achat créé", "success");
+            setNom(""); setQty(""); setNote(""); setUnite("piece"); setShowForm(false);
+            loadAchats();
         } catch(e) { showToast("❌ Erreur: " + e.message, "error"); }
         setLoading(false);
     }
-    
+
+    async function changeStatut(id, statut) {
+        try {
+            await supaPatch("achats", id, {statut: statut});
+            loadAchats();
+            if(statut === "recu") showToast("✅ Marqué reçu — pense à mettre à jour le stock !", "success");
+        } catch(e) { showToast("Erreur: " + e.message, "error"); }
+    }
+
     return h("div", {className:"screen"},
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null, h("div", {className:"header-title"}, "🛒 Nouvel achat"))
+            h("div", null,
+                h("div", {className:"header-title"}, "🛒 Achats"),
+                h("div", {className:"header-sub"}, achats.length + " commande(s)")
+            ),
+            h("button", {style:{marginLeft:"auto", background:"var(--gold)", color:"#fff", border:"none", borderRadius:10, padding:"6px 12px", fontWeight:800, fontSize:13, cursor:"pointer"}, onClick:function(){setShowForm(!showForm);}}, showForm ? "✕" : "＋ Nouveau")
         ),
-        h("div", {className:"card space-y"},
+
+        showForm ? h("div", {className:"card space-y", style:{marginBottom:14}},
             h("div", {className:"input-group"},
                 h("label", {className:"input-label"}, "Produit *"),
                 h("input", {className:"input", placeholder:"Nom du produit", value:nom, onChange:function(e){setNom(e.target.value);}})
             ),
             h("div", {className:"grid-2"},
                 h("div", {className:"input-group"},
-                    h("label", {className:"input-label"}, "Quantite *"),
+                    h("label", {className:"input-label"}, "Quantité *"),
                     h("input", {className:"input", type:"number", placeholder:"0", value:qty, onChange:function(e){setQty(e.target.value);}})
                 ),
                 h("div", {className:"input-group"},
-                    h("label", {className:"input-label"}, "Unite"),
+                    h("label", {className:"input-label"}, "Unité"),
                     h("select", {className:"select", value:unite, onChange:function(e){setUnite(e.target.value);}},
                         UNITES.map(function(u){ return h("option", {key:u}, u); })
                     )
                 )
             ),
             h("div", {className:"input-group"},
-                h("label", {className:"input-label"}, "Note / Raison"),
+                h("label", {className:"input-label"}, "Note / Fournisseur"),
                 h("input", {className:"input", placeholder:"Optionnel", value:note, onChange:function(e){setNote(e.target.value);}})
             ),
-            h("button", {className:"btn btn-gold btn-full", onClick:create, disabled:!nom||!qty||loading}, loading ? "..." : "🛒 Creer l'achat")
-        )
+            h("button", {className:"btn btn-gold btn-full", onClick:create, disabled:!nom||!qty||loading}, loading ? "..." : "🛒 Créer l'achat")
+        ) : null,
+
+        achats.length === 0 ? h("div", {className:"empty-state"},
+            h("div", {className:"empty-state-icon"}, "🛒"),
+            h("div", {className:"empty-state-text"}, "Aucun achat enregistré")
+        ) : null,
+
+        achats.map(function(a) {
+            var s = STATUTS_ACHAT.find(function(x){ return x.id === (a.statut||"en_attente"); }) || STATUTS_ACHAT[0];
+            return h("div", {key:a.id, className:"achat-row"},
+                h("div", {style:{display:"flex", alignItems:"center", gap:8, marginBottom:6}},
+                    h("div", {style:{flex:1}},
+                        h("div", {style:{fontSize:14, fontWeight:800, color:"var(--navy)"}}, a.nom),
+                        h("div", {style:{fontSize:11, color:"var(--text3)"}}, (a.quantite||0) + " " + (a.unite||"pièce") + (a.commentaire ? " · " + a.commentaire : "") + " · " + formatDate(a.created_at))
+                    ),
+                    h("span", {className:"statut-chip " + s.cls}, s.icon + " " + s.label)
+                ),
+                h("div", {style:{display:"flex", gap:6, flexWrap:"wrap"}},
+                    STATUTS_ACHAT.map(function(st) {
+                        if(st.id === (a.statut||"en_attente")) return null;
+                        return h("button", {key:st.id, className:"statut-chip " + st.cls, style:{opacity:0.6, fontSize:10, padding:"3px 8px"}, onClick:function(){changeStatut(a.id, st.id);}}, st.icon + " " + st.label);
+                    })
+                )
+            );
+        })
     );
 }
 
@@ -1636,17 +1840,30 @@ function BesoinScreen(props) {
         ),
         besoins.length === 0 ? h("div", {className:"empty-state"}, h("div", {className:"empty-state-icon"}, "📋"), h("div", {className:"empty-state-text"}, "Aucun besoin en cours")) : null,
         besoins.map(function(b, i) {
-            return h("div", {key:b.id||i, className:"card", style:{marginBottom:8, display:"flex", alignItems:"center", gap:12}},
-                h("div", {style:{flex:1}},
-                    h("div", {style:{fontSize:15, fontWeight:800, color:"var(--navy)"}}, b.nom),
-                    h("div", {style:{fontSize:12, color:"var(--text3)"}},
-                        (b.quantite||"?") + " " + (b.unite||"piece") + (b.commentaire ? " · " + b.commentaire : "")
-                    )
+            var s = STATUTS_ACHAT.find(function(x){ return x.id === (b.statut||"en_attente"); }) || STATUTS_ACHAT[0];
+            return h("div", {key:b.id||i, className:"achat-row", style:{marginBottom:8}},
+                h("div", {style:{display:"flex", alignItems:"center", gap:8, marginBottom:6}},
+                    h("div", {style:{flex:1}},
+                        h("div", {style:{fontSize:14, fontWeight:800, color:"var(--navy)"}}, b.nom),
+                        h("div", {style:{fontSize:11, color:"var(--text3)"}},
+                            (b.quantite||"?") + " " + (b.unite||"pièce") + (b.commentaire ? " · " + b.commentaire : "")
+                        )
+                    ),
+                    h("span", {className:"statut-chip " + s.cls}, s.icon + " " + s.label),
+                    (props.user.role === "admin") ? h("button", {
+                        className:"btn btn-danger btn-sm",
+                        style:{marginLeft:4},
+                        onClick:function(){supprBesoin(b.id);}
+                    }, "🗑️") : null
                 ),
-                (props.user.role === "admin") ? h("button", {
-                    className:"btn btn-danger btn-sm",
-                    onClick:function(){supprBesoin(b.id);}
-                }, "🗑️") : null
+                props.user.role === "admin" ? h("div", {style:{display:"flex", gap:6, flexWrap:"wrap"}},
+                    STATUTS_ACHAT.map(function(st) {
+                        if(st.id === (b.statut||"en_attente")) return null;
+                        return h("button", {key:st.id, className:"statut-chip " + st.cls, style:{opacity:0.6, fontSize:10, padding:"3px 8px"}, onClick:async function(){
+                            try { await supaPatch("besoins", b.id, {statut: st.id}); loadBesoins(); } catch(e){}
+                        }}, st.icon + " " + st.label);
+                    })
+                ) : null
             );
         })
     );
@@ -1926,11 +2143,27 @@ function App() {
     var setProduits = produitsState[1];
     var historyStack = useRef([]);
     
+    var offlineState = useState(false);
+    var offline = offlineState[0]; var setOffline = offlineState[1];
+    var splashState = useState(false);
+    var splashDone = splashState[0]; var setSplashDone = splashState[1];
+
     var loadData = useCallback(async function() {
         try {
             var p = await supaGet("produits", "order=nom.asc");
-            setProduits(Array.isArray(p) ? p : []);
-        } catch(e) { setProduits([]); }
+            var arr = Array.isArray(p) ? p : [];
+            setProduits(arr);
+            setOffline(false);
+            // Mettre en cache
+            try { localStorage.setItem("lrb_cache_produits", JSON.stringify(arr)); } catch(e){}
+        } catch(e) {
+            // Fallback cache hors-ligne
+            try {
+                var cached = localStorage.getItem("lrb_cache_produits");
+                if(cached) { setProduits(JSON.parse(cached)); setOffline(true); }
+                else { setProduits([]); }
+            } catch(e2) { setProduits([]); }
+        }
     }, []);
     
     useEffect(function() {
@@ -2001,15 +2234,42 @@ function App() {
         return function() { window.removeEventListener("popstate", handlePopState); };
     }, []);
     
-    var GlobalHeader = h("div", {className:"app-header-global"},
-        h("img", {src:LRB_LOGO, className:"app-header-global-logo"}),
-        h("div", {className:"app-header-global-title"},
-            h("h1", null, "LES RENOVATEURS BRETONS"),
-            h("p", null, "STOCK")
-        ),
-        user ? h("div", {style:{width:38}}) : null
+    // Toast confirmation connexion automatique
+    useEffect(function() {
+        var savedCode = localStorage.getItem("lrb_remembered_code");
+        if(savedCode && user) {
+            showToast("👋 Connecté en tant que " + user.name, "success");
+        }
+    }, []); // Une seule fois au montage
+
+    var GlobalHeader = h("div", null,
+        offline ? h("div", {className:"offline-bar"}, "📵 MODE HORS-LIGNE — données en cache") : null,
+        h("div", {className:"app-header-global"},
+            h("img", {src:LRB_LOGO, className:"app-header-global-logo"}),
+            h("div", {className:"app-header-global-title"},
+                h("h1", null, "LES RENOVATEURS BRETONS"),
+                h("p", null, "STOCK")
+            ),
+            user ? h("button", {
+                style:{background:"none", border:"none", cursor:"pointer", fontSize:11, color:"rgba(255,255,255,0.6)", fontWeight:700, textAlign:"right", lineHeight:1.3, padding:0},
+                onClick:function(){
+                    localStorage.removeItem("lrb_remembered_code");
+                    setUser(null);
+                    setScreen("home");
+                    historyStack.current = [];
+                    window.history.pushState({lrb:true, idx:0}, "");
+                }
+            },
+                h("div", null, user.name.split(" ")[0]),
+                h("div", {style:{fontSize:9, opacity:0.7}}, "Changer ↩")
+            ) : null
+        )
     );
     
+    if(!splashDone) {
+        return h(SplashScreen, {onDone: function(){ setSplashDone(true); }});
+    }
+
     if(!user) {
         return h("div", {className:"app"}, GlobalHeader, h(LoginScreen, {onLogin: function(u){setUser(u);}}));
     }
@@ -2052,7 +2312,11 @@ function App() {
             currentScreen = h(HomeScreen, {user:user, nav:nav, produits:produits});
     }
     
-    return h("div", {className:"app"}, GlobalHeader, currentScreen, !noNav ? h(NavBar, {screen:screen, onNav:onNav, produits:produits}) : null);
+    return h("div", {className:"app"},
+        offline ? h("div", {className:"offline-banner"}, "📶 Mode hors-ligne — données en cache") : null,
+        GlobalHeader, currentScreen,
+        !noNav ? h(NavBar, {screen:screen, onNav:onNav, produits:produits}) : null
+    );
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(h(App));
