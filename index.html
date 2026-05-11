@@ -1572,6 +1572,7 @@ function ProduitDetail(props) {
     var editSavingState = useState(false);
     var editSaving = editSavingState[0]; var setEditSaving = editSavingState[1];
     var editFileRef = useRef(null);
+    var photoFileRef = useRef(null);
     var chantierState = useState("");
     var chantier = chantierState[0]; var setChantier = chantierState[1];
     var chantiersState = useState([]);
@@ -1640,14 +1641,19 @@ function ProduitDetail(props) {
         setEditSaving(false);
     }
 
+    var uploadState = useState(false);
+    var uploading = uploadState[0]; var setUploading = uploadState[1];
+
     async function changePhoto(file) {
         if(!file) return;
+        setUploading(true);
         try {
             var pu = await uploadPhoto(file, (p.nom||"produit").replace(/[^a-z0-9]/gi,"_").slice(0,15) + "_edit");
             await supaPatch("produits", p.id, {photo_url: pu});
             showToast("✅ Photo mise à jour", "success");
             props.onRefresh();
-        } catch(e) { showToast("Erreur photo: " + e.message, "error"); }
+        } catch(e) { showToast("❌ Erreur photo: " + e.message, "error"); }
+        setUploading(false);
     }
 
     useEffect(function() {
@@ -1729,19 +1735,20 @@ function ProduitDetail(props) {
         h("div", {
             className:"product-hero",
             style:{cursor:"pointer", position:"relative"},
-            onClick:function(){ editFileRef.current && editFileRef.current.click(); },
+            onClick:function(){ photoFileRef.current && photoFileRef.current.click(); },
             title:"Appuyer pour changer la photo"
         },
             p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📦"),
             h("div", {style:{
                 position:"absolute", bottom:8, right:8,
-                background:"rgba(0,0,0,0.55)", color:"#fff",
-                fontSize:11, fontWeight:700, padding:"4px 10px",
-                borderRadius:20, display:"flex", alignItems:"center", gap:4
-            }}, "📷 Changer")
+                background: uploading ? "rgba(61,84,112,0.8)" : "rgba(0,0,0,0.55)",
+                color:"#fff", fontSize:11, fontWeight:700,
+                padding:"4px 10px", borderRadius:20,
+                display:"flex", alignItems:"center", gap:4
+            }}, uploading ? "⏳ Upload..." : "📷 Changer")
         ),
         h("div", {style:{display:"flex", alignItems:"center", gap:10, marginBottom:12}},
-            h("input", {ref:editFileRef, type:"file", accept:"image/*", capture:"environment", style:{display:"none"}, onChange:function(e){ changePhoto(e.target.files[0]); }}),
+            h("input", {ref:photoFileRef, type:"file", accept:"image/*", capture:"environment", style:{display:"none"}, onChange:function(e){ changePhoto(e.target.files[0]); }}),
             h("span", {className:"badge badge-" + statut, style:{display:"inline-flex"}},
                 (statut==="ok"?"✅ En stock":statut==="low"?"⚠️ Stock bas":statut==="unknown"?"❓ Stock non renseigné":"❌ Rupture") + (statut!=="unknown"?" — " + (p.quantite||0) + " " + (p.unite||"piece"):"")
             ),
