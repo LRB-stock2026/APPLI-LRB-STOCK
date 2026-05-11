@@ -73,6 +73,8 @@ html,body{height:100%;font-family:"League Spartan",sans-serif;background:var(--b
 .product-meta{font-size:12px;color:var(--text3)}
 .badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;margin-top:4px}
 .badge-ok{background:var(--green-bg);color:var(--green)}
+.badge-unknown{background:rgba(150,150,150,0.12);color:#888}
+.product-unknown{border-left:3px solid #ccc}
 .badge-low{background:var(--orange-bg);color:var(--orange)}
 .badge-out{background:var(--red-bg);color:var(--red)}
 .search-box{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--border);border-radius:14px;padding:11px 14px;margin-bottom:14px}
@@ -1107,9 +1109,10 @@ async function uploadPhoto(file, name) {
 
 // Calcul statut selon famille : outillage = jamais "stock bas", seulement rupture
 function getStatut(p) {
-    if((p.quantite||0) <= 0) return "out";
-    if(p.famille === "OUTILLAGE") return "ok";   // 1 outil = OK
-    if((p.quantite||0) <= (p.quantite_min||0)) return "low";
+    if(p.quantite === null || p.quantite === undefined) return "unknown"; // stock non renseigné
+    if(p.quantite <= 0) return "out";
+    if(p.famille === "OUTILLAGE") return "ok";
+    if(p.quantite <= (p.quantite_min||0)) return "low";
     return "ok";
 }
 
@@ -1209,7 +1212,7 @@ function LoginScreen(props) {
 // NavBar
 function NavBar(props) {
     var produits = props.produits || [];
-    var nbAlertes = produits.filter(function(p){ return getStatut(p) !== "ok"; }).length;
+    var nbAlertes = produits.filter(function(p){ var s=getStatut(p); return s==="out"||s==="low"; }).length;
 
     var items = [
         {id:"home",    icon:"🏠", label:"Accueil"},
@@ -1251,7 +1254,7 @@ function HomeScreen(props) {
     var countGros = produits.filter(function(p){ return grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
     var countSecond = produits.filter(function(p){ return !grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
 
-    var nbAlertes = produits.filter(function(p){ return getStatut(p) !== "ok"; }).length;
+    var nbAlertes = produits.filter(function(p){ var s=getStatut(p); return s==="out"||s==="low"; }).length;
     var heure = new Date().getHours();
     var salut = heure < 12 ? "Bonjour" : heure < 18 ? "Bon après-midi" : "Bonsoir";
     var prenom = (props.user.name||"").split(" ")[0];
@@ -1488,7 +1491,7 @@ function ProduitsListScreen(props) {
                             }}, p.famille === "OUTILLAGE" ? "🔧" : "🧱"),
                             p.emplacement ? h("span", {style:{background:"rgba(61,84,112,0.08)", color:"var(--navy)", padding:"1px 6px", borderRadius:6, fontSize:10, fontWeight:700}}, "📍 " + p.emplacement) : h("span", {style:{color:"var(--text3)", fontSize:10}}, "Non localisé")
                         ),
-                        h("span", {className:"badge badge-" + statut}, (statut==="ok"?"✅":statut==="low"?"⚠️":"❌") + " " + (p.quantite||0) + " " + (p.unite||"piece"))
+                        h("span", {className:"badge badge-" + statut}, (statut==="ok"?"✅":statut==="low"?"⚠️":statut==="unknown"?"❓":"❌") + (statut!=="unknown"?" "+(p.quantite||0)+" "+(p.unite||"pce"):""))
                     )
                 );
             })
@@ -1705,18 +1708,42 @@ function ProduitDetail(props) {
     return h("div", {className:"screen"},
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null, h("div", {className:"header-title", style:{fontSize:18}}, p.nom), h("div", {className:"header-sub"}, p.corps_etat || p.famille || "")),
+            h("div", null,
+                h("div", {className:"header-title", style:{fontSize:18}}, p.nom),
+                h("div", {style:{display:"flex", gap:6, flexWrap:"wrap", marginTop:3}},
+                    p.corps_etat ? h("span", {
+                        style:{fontSize:11, fontWeight:700, color:"var(--navy)", background:"rgba(61,84,112,0.1)", padding:"2px 8px", borderRadius:6, cursor:"pointer"},
+                        onClick:function(){
+                            var ce = CORPS_ETAT_GROS.concat(CORPS_ETAT_SECOND).find(function(c){ return c.label===p.corps_etat; });
+                            if(ce) { props.onBack(); setTimeout(function(){ props.navToCE && props.navToCE(ce); },100); }
+                        }
+                    }, p.corps_etat) : null,
+                    p.famille ? h("span", {style:{fontSize:11, fontWeight:700, color:"var(--gold-dim)", background:"rgba(201,151,58,0.1)", padding:"2px 8px", borderRadius:6}}, p.famille) : null
+                )
+            ),
             h("div", {style:{display:"flex", gap:4}},
                 h("button", {style:{background:"none", border:"none", cursor:"pointer", fontSize:20, padding:"0 4px"}, onClick:function(){ setQrOpen(true); }}, "📱"),
                 h("button", {style:{background:"none", border:"none", cursor:"pointer", fontSize:20, padding:"0 4px"}, onClick:function(){ setEditNom(p.nom||""); setEditCE(p.corps_etat||""); setEditFamille(p.famille||"MATERIAUX"); setEditUnite(p.unite||"piece"); setEditing(true); }}, "✏️")
             )
         ),
-        h("div", {className:"product-hero"},
-            p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📦")
+        h("div", {
+            className:"product-hero",
+            style:{cursor:"pointer", position:"relative"},
+            onClick:function(){ editFileRef.current && editFileRef.current.click(); },
+            title:"Appuyer pour changer la photo"
+        },
+            p.photo_url ? h("img", {src:p.photo_url}) : h("span", null, "📦"),
+            h("div", {style:{
+                position:"absolute", bottom:8, right:8,
+                background:"rgba(0,0,0,0.55)", color:"#fff",
+                fontSize:11, fontWeight:700, padding:"4px 10px",
+                borderRadius:20, display:"flex", alignItems:"center", gap:4
+            }}, "📷 Changer")
         ),
         h("div", {style:{display:"flex", alignItems:"center", gap:10, marginBottom:12}},
+            h("input", {ref:editFileRef, type:"file", accept:"image/*", capture:"environment", style:{display:"none"}, onChange:function(e){ changePhoto(e.target.files[0]); }}),
             h("span", {className:"badge badge-" + statut, style:{display:"inline-flex"}},
-                (statut==="ok"?"✅ En stock":statut==="low"?"⚠️ Stock bas":"❌ Rupture") + " — " + (p.quantite||0) + " " + (p.unite||"piece")
+                (statut==="ok"?"✅ En stock":statut==="low"?"⚠️ Stock bas":statut==="unknown"?"❓ Stock non renseigné":"❌ Rupture") + (statut!=="unknown"?" — " + (p.quantite||0) + " " + (p.unite||"piece"):"")
             ),
             h("button", {
                 style:{marginLeft:"auto", background:"#25D366", color:"#fff", border:"none", borderRadius:10, padding:"6px 14px", fontSize:12, fontWeight:800, cursor:"pointer", display:"flex", alignItems:"center", gap:5},
@@ -1738,7 +1765,9 @@ function ProduitDetail(props) {
         // Bloc emplacement
         h("div", {className:"card", style:{marginBottom:12}},
             h("div", {className:"section-title"}, "📍 EMPLACEMENT"),
-            emplacement ? h("div", {className:"lieu-badge"}, "📍 " + emplacement) : h("div", {style:{fontSize:12, color:"var(--text3)", marginBottom:8}}, "Non localisé"),
+            emplacement ? h("div", {className:"lieu-badge", style:{cursor:"pointer"}, title:"Cliquer pour copier",
+            onClick:function(){ navigator.clipboard && navigator.clipboard.writeText(emplacement).then(function(){ showToast("📍 Emplacement copié : "+emplacement,"success"); }); }
+        }, "📍 " + emplacement) : h("div", {style:{fontSize:12, color:"var(--text3)", marginBottom:8}}, "Non localisé"),
             h("div", {style:{display:"flex", gap:6, flexWrap:"wrap", marginBottom:10}},
                 h("button", {
                     className:"lieu-chip" + (!emplacement ? " selected" : " none"),
@@ -1815,15 +1844,25 @@ function ProduitDetail(props) {
                 }
             },
                 h("option", {value:""}, "— Non classé —"),
-                (SOUS_FAMILLES[p.corps_etat] || []).map(function(sf){
-                    return h("option", {key:sf, value:sf}, sf);
-                })
+                (function(){
+                    // Recherche insensible à la casse et aux accents
+                    var ce = p.corps_etat || "";
+                    var key = Object.keys(SOUS_FAMILLES).find(function(k){
+                        return k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"") ===
+                               ce.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+                    });
+                    return (SOUS_FAMILLES[key] || SOUS_FAMILLES[ce] || []).map(function(sf){
+                        return h("option", {key:sf, value:sf}, sf);
+                    });
+                })()
             )
         ),
         h("div", {className:"card", style:{marginBottom:12}},
             h("div", {className:"section-title"}, "🏪 FOURNISSEUR & PRIX"),
             h("div", {style:{display:"flex", gap:8, marginBottom:8}},
-                p.fournisseur ? h("span", {className:"fournisseur-badge"}, "🏪 " + p.fournisseur) : null,
+                p.fournisseur ? h("span", {className:"fournisseur-badge", style:{cursor:"pointer"},
+                    onClick:function(){ navigator.clipboard && navigator.clipboard.writeText(p.fournisseur).then(function(){ showToast("📋 Fournisseur copié : "+p.fournisseur,"success"); }); }
+                }, "🏪 " + p.fournisseur) : null,
                 p.prix_unitaire ? h("span", {className:"prix-badge"}, "💶 " + Number(p.prix_unitaire).toFixed(2) + " € / " + (p.unite||"pièce")) : null
             ),
             h("div", {className:"input-group", style:{marginBottom:8}},
