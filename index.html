@@ -915,6 +915,74 @@ function getStatut(p) {
     return "ok";
 }
 
+// Recherche floue — tolère fautes de frappe et variantes
+var SYNONYMES = {
+    "placo":["platrerie","plaque","ba13","ba18","cloison","doublage"],
+    "paco":["platrerie","plaque","ba13"],
+    "elec":["electricite","electrique","tableau","prise","interrupteur"],
+    "plomb":["plomberie","eau","robinet","tuyau","evacuation"],
+    "carrel":["carrelage","faience","gres","joint"],
+    "isol":["isolation","laine","psе","pir","combles"],
+    "menuise":["menuiserie","porte","fenetre","volet"],
+    "peintu":["peinture","enduit","lasure","vernis"],
+    "beton":["beton","mortier","ciment","ferraillage"],
+    "serrur":["serrurerie","soudure","metallerie"],
+    "charpent":["charpente","bois","chevron","fermette"]
+};
+
+function normalize(s) {
+    return (s||"").toLowerCase()
+        .normalize("NFD").replace(/[̀-ͯ]/g,"")
+        .replace(/[^a-z0-9 ]/g," ")
+        .trim();
+}
+
+function fuzzyMatch(text, query) {
+    if(!text || !query) return false;
+    var t = normalize(text);
+    var q = normalize(query);
+    if(!q) return true;
+
+    // 1. Correspondance exacte (sous-chaîne)
+    if(t.includes(q)) return true;
+
+    // 2. Chaque mot de la requête doit apparaître dans le texte
+    var words = q.split(/\s+/).filter(Boolean);
+    var allFound = words.every(function(w) {
+        if(t.includes(w)) return true;
+        // 3. Correspondance partielle — les 4 premiers caractères suffisent
+        if(w.length >= 4 && t.includes(w.slice(0,4))) return true;
+        // 4. Synonymes
+        var syns = SYNONYMES[w] || [];
+        return syns.some(function(s){ return t.includes(s); });
+    });
+    if(allFound) return true;
+
+    // 5. Distance de Levenshtein simplifiée pour 1 mot court
+    if(words.length === 1 && q.length >= 3) {
+        var tWords = t.split(/\s+/);
+        return tWords.some(function(tw) {
+            if(Math.abs(tw.length - q.length) > 2) return false;
+            var diff = 0;
+            var min = Math.min(tw.length, q.length);
+            for(var i=0; i<min; i++) { if(tw[i] !== q[i]) diff++; }
+            diff += Math.abs(tw.length - q.length);
+            return diff <= 2 && q.length >= 4;
+        });
+    }
+    return false;
+}
+
+function searchProduit(p, query) {
+    if(!query || query.length < 2) return true;
+    return fuzzyMatch(p.nom, query)
+        || fuzzyMatch(p.corps_etat, query)
+        || fuzzyMatch(p.sous_famille, query)
+        || fuzzyMatch(p.fournisseur, query)
+        || fuzzyMatch(p.reference, query)
+        || fuzzyMatch(p.emplacement, query);
+}
+
 // Trouver les sous-familles pour un corps d'état — tolérant aux accents/casse/variantes
 function getSousFamilles(corpsEtat) {
     if(!corpsEtat) return SOUS_FAMILLES["Divers"] || [];
@@ -1070,12 +1138,7 @@ function HomeScreen(props) {
     var prenom = (props.user.name||"").split(" ")[0];
 
     var results = search.length >= 2 ? produits.filter(function(p){
-        var q = search.toLowerCase();
-        return (p.nom||"").toLowerCase().includes(q)
-            || (p.corps_etat||"").toLowerCase().includes(q)
-            || (p.sous_famille||"").toLowerCase().includes(q)
-            || (p.fournisseur||"").toLowerCase().includes(q)
-            || (p.reference||"").toLowerCase().includes(q);
+        return searchProduit(p, search);
     }).slice(0, 12) : [];
 
     return h("div", {className:"screen"},
@@ -1144,7 +1207,7 @@ function CorpsDetatScreen(props) {
         var count = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()); }).length;
         var countMat = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "MATERIAUX"; }).length;
         var countOut = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "OUTILLAGE"; }).length;
-        if(search && !ce.label.toLowerCase().includes(search.toLowerCase())) return null;
+        if(search && !fuzzyMatch(ce.label, search) && !fuzzyMatch(ce.id, search)) return null;
         return h("button", {key:ce.id, className:"ce-btn", onClick:function(){props.nav("produits_list", {categorie:categorie, ce:ce});}},
             h("span", {className:"ce-icon"}, ce.icon),
             h("div", {style:{flex:1}},
@@ -1205,7 +1268,7 @@ function ProduitsListScreen(props) {
         if(!(p.corps_etat || "").toLowerCase().includes(ce.label.toLowerCase())) return false;
         if(famille !== "all" && (p.famille || "") !== famille) return false;
         if(sousFam !== "all" && (p.sous_famille || "") !== sousFam) return false;
-        if(search && !(p.nom || "").toLowerCase().includes(search.toLowerCase())) return false;
+        if(search && !searchProduit(p, search)) return false;
         return true;
     }).slice().sort(function(a, b) {
         if(tri === "az") return (a.nom||"").localeCompare(b.nom||"", "fr");
@@ -2872,7 +2935,7 @@ function BonSortieScreen(props) {
     var previewState = useState(false); var preview = previewState[0]; var setPreview = previewState[1];
 
     var filtered = search.length >= 2 ? produits.filter(function(p){
-        return (p.nom||"").toLowerCase().includes(search.toLowerCase());
+        return searchProduit(p, search);
     }).slice(0,10) : [];
 
     var lignesArray = Object.keys(lignes).map(function(id){
@@ -3336,7 +3399,7 @@ function InventaireScreen(props) {
 
     var list = produits.filter(function(p){
         if(!search) return true;
-        return (p.nom||"").toLowerCase().includes(search.toLowerCase());
+        return searchProduit(p, search);
     });
 
     function setVal(id, v) {
