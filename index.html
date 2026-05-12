@@ -272,7 +272,7 @@ var SUPABASE_URL = "https://kiomcpwjveppgragajyv.supabase.co";
 var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpb21jcHdqdmVwcGdyYWdhanl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNzYyMDksImV4cCI6MjA5MzY1MjIwOX0.RHBrIC7Hz_5U91R6ZZTpoq8q925gcvN5d3UL5I8QAGU";
 var USERS_LOCAL = {284916:{name:"David",role:"chantier"},651973:{name:"Jacques",role:"chantier"},908257:{name:"Mathys",role:"chantier"},739482:{name:"Administration",role:"admin"}};
 var CORPS_ETAT_GROS = [{id:"maconnerie",label:"Maconnerie",icon:"🧱"},{id:"demolition",label:"Demolition",icon:"⛏️"},{id:"terrassement",label:"Terrassement",icon:"🚜"},{id:"beton",label:"Beton",icon:"🏗️"},{id:"charpente",label:"Charpente",icon:"🪵"},{id:"couverture",label:"Couverture",icon:"🏠"}];
-var CORPS_ETAT_SECOND = [{id:"platrerie",label:"Platrerie",icon:"🪣"},{id:"peinture",label:"Peinture",icon:"🎨"},{id:"menuiserie",label:"Menuiserie",icon:"🪚"},{id:"carrelage",label:"Carrelage",icon:"🟦"},{id:"electricite",label:"Electricite",icon:"⚡"},{id:"plomberie",label:"Plomberie",icon:"🚿"},{id:"isolation",label:"Isolation",icon:"🌡️"},{id:"sols",label:"Sols",icon:"🦶"},{id:"quincaillerie",label:"Quincaillerie",icon:"🔩"},{id:"consommables",label:"Consommables",icon:"📦"},{id:"finitions",label:"Finitions",icon:"✨"},{id:"securite",label:"Securite",icon:"🦺"},{id:"serrurerie",label:"Serrurerie",icon:"🔧"},{id:"nettoyage",label:"Nettoyage",icon:"🧹"},{id:"divers",label:"Divers",icon:"📦"}];
+var CORPS_ETAT_SECOND = [{id:"platrerie",label:"Platrerie",icon:"🪣"},{id:"peinture",label:"Peinture",icon:"🎨"},{id:"menuiserie",label:"Menuiserie",icon:"🪚"},{id:"carrelage",label:"Carrelage",icon:"🟦"},{id:"electricite",label:"Electricite",icon:"⚡"},{id:"plomberie",label:"Plomberie",icon:"🚿"},{id:"isolation",label:"Isolation",icon:"🌡️"},{id:"sols",label:"Sols",icon:"🦶"},{id:"quincaillerie",label:"Quincaillerie",icon:"🔩"},{id:"consommables",label:"Consommables",icon:"📦"},{id:"finitions",label:"Finitions",icon:"✨"},{id:"securite",label:"Securite",icon:"🦺"},{id:"serrurerie",label:"Serrurerie",icon:"🔧"},{id:"agencement",label:"Agencement",icon:"🪑"},{id:"nettoyage",label:"Nettoyage",icon:"🧹"},{id:"divers",label:"Divers",icon:"📦"}];
 
 // Sous-familles par corps d'état
 var SOUS_FAMILLES = {
@@ -293,6 +293,7 @@ var SOUS_FAMILLES = {
     "Demolition":   ["Outillage démolition","Protection & sécurité","Évacuation & gravats","Consommables"],
     "Terrassement": ["Terrassement & nivellement","Drainage & géotextile","Remblai & granulats","Béton de propreté","Outillage","Consommables"],
     "Beton":        ["Béton & ciment","Ferraillage","Coffrage","Adjuvants & cure","Ragréage","Outillage","Consommables"],
+    "Agencement":   ["Mobilier","Placards & rangements","Cuisine","Salle de bain","Dressing","Escaliers & garde-corps","Verrières intérieures","Outillage","Consommables"],
     "Serrurerie":   ["Soudure & découpe","Serrurerie fine","Métallerie & structures","Grilles & garde-corps","Portails & clôtures","Fixations métalliques","Outillage","Consommables"],
     "Nettoyage":    ["Nettoyants & dégraissants","Anti-moisissure & traitement","Matériel de nettoyage","Consommables"],
     "Divers":       ["Non classé","Outillage","Consommables"]
@@ -1131,7 +1132,12 @@ function HomeScreen(props) {
                     h("span", {style:{fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.7)", marginTop:2}}, countSecond + " référence" + (countSecond > 1 ? "s" : ""))
                 )
             ),
-            h("div", {className:"stock-counter"}, "📊 " + totalArticles + " référence" + (totalArticles > 1 ? "s" : "") + " en stock")
+            h("div", {className:"stock-counter"}, "📊 " + totalArticles + " référence" + (totalArticles > 1 ? "s" : "") + " en stock"),
+            h("button", {
+                className:"btn btn-gold btn-full",
+                style:{marginTop:12, fontSize:16, padding:"16px"},
+                onClick:function(){ props.nav("photo", null); }
+            }, "➕ Ajouter un article au stock")
         )
     );
 }
@@ -1240,7 +1246,7 @@ function ProduitsListScreen(props) {
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
             h("div", null, h("div", {className:"header-title"}, ce.icon + " " + ce.label), h("div", {className:"header-sub"}, list.length + " produit(s)")),
-            tab === "articles" ? h("button", {style:{marginLeft:"auto", background:"transparent", border:"none", fontSize:22, cursor:"pointer"}, onClick:function(){props.nav("photo", null);}}, "➕") : null
+            tab === "articles" ? h("button", {style:{marginLeft:"auto", background:"transparent", border:"none", fontSize:22, cursor:"pointer"}, onClick:function(){props.nav("photo", {preFillCE: ce.label, preFillFamille:"MATERIAUX"});}}, "➕") : null
         ),
 
         h("div", {className:"tab-bar"},
@@ -1920,6 +1926,8 @@ function PhotoScreen(props) {
     var resultState = useState(null);
     var result = resultState[0];
     var setResult = resultState[1];
+    var preFillCE = (props.data && props.data.preFillCE) || "";
+    var preFillFamille = (props.data && props.data.preFillFamille) || "MATERIAUX";
     var qtyState = useState("");
     var qty = qtyState[0];
     var setQty = qtyState[1];
@@ -1945,8 +1953,9 @@ function PhotoScreen(props) {
             analyzeImageWithClaude(base64, mediaType).then(function(res) {
                 setResult({
                     nom: res.nom || "",
-                    famille: res.famille || "MATERIAUX",
-                    corps_etat: res.corps_etat || "",
+                    famille: res.famille || preFillFamille,
+                    corps_etat: res.corps_etat || preFillCE,
+                    sous_famille: res.sous_famille || null,
                     unite: res.unite || "piece"
                 });
                 setQty("1");
@@ -1954,7 +1963,7 @@ function PhotoScreen(props) {
             }).catch(function(err) {
                 // Fallback saisie manuelle si pas de cle ou erreur
                 showToast("IA indisponible — saisie manuelle", "error");
-                setResult({nom:"", famille:"MATERIAUX", corps_etat:"", unite:"piece"});
+                setResult({nom:"", famille:preFillFamille, corps_etat:preFillCE, unite:"piece"});
                 setQty("1");
                 setStep("result");
             });
@@ -4068,7 +4077,7 @@ function App() {
             currentScreen = h(ProduitDetail, {produit:data, onBack:goBack, onRefresh:loadData, isAdmin:user.role==="admin", user:user});
             break;
         case "photo":
-            currentScreen = h(PhotoScreen, {user:user, onBack:goBack, onRefresh:loadData});
+            currentScreen = h(PhotoScreen, {user:user, onBack:goBack, onRefresh:loadData, data:data});
             break;
         case "achat":
             currentScreen = h(AchatScreen, {user:user, onBack:goBack, onRefresh:loadData, produits:produits});
