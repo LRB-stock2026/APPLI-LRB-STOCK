@@ -1113,26 +1113,19 @@ function HomeScreen(props) {
                 })
         ) : null,
         h("div", {className:"home-buttons"},
-            h("button", {className:"home-btn btn-gros", onClick:function(){props.nav("corpsdetat", {categorie:"gros"});}},
-                
-                h("div", {style:{display:"flex", flexDirection:"column", alignItems:"flex-start"}},
-                    h("span", {className:"home-btn-label"}, "GROS OEUVRE"),
-                    h("span", {style:{fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.7)", marginTop:2}}, countGros + " référence" + (countGros > 1 ? "s" : ""))
+            h("button", {className:"home-btn btn-gros", style:{padding:"32px 28px"},
+                onClick:function(){props.nav("corpsdetat", {categorie:"all"});}},
+                h("span", {className:"home-btn-label", style:{fontSize:22}}, "📦 STOCK"),
+                h("span", {style:{fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.7)", marginTop:6}},
+                    totalArticles + " référence" + (totalArticles>1?"s":"") +
+                    (nbAlertes>0 ? " · ⚠️ "+nbAlertes+" alerte"+(nbAlertes>1?"s":"") : " · ✅ Tout OK")
                 )
             ),
-            h("button", {className:"home-btn btn-second", onClick:function(){props.nav("corpsdetat", {categorie:"second"});}},
-                
-                h("div", {style:{display:"flex", flexDirection:"column", alignItems:"flex-start"}},
-                    h("span", {className:"home-btn-label"}, "SECOND OEUVRE"),
-                    h("span", {style:{fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.7)", marginTop:2}}, countSecond + " référence" + (countSecond > 1 ? "s" : ""))
-                )
-            ),
-            h("div", {className:"stock-counter"}, "📊 " + totalArticles + " référence" + (totalArticles > 1 ? "s" : "") + " en stock"),
-            h("button", {
-                className:"btn btn-gold btn-full",
-                style:{marginTop:12, fontSize:16, padding:"16px"},
-                onClick:function(){ props.nav("photo", null); }
-            }, "➕ Ajouter un article au stock")
+            h("button", {className:"home-btn btn-second", style:{padding:"32px 28px"},
+                onClick:function(){props.nav("photo", null);}},
+                h("span", {className:"home-btn-label", style:{fontSize:22}}, "➕ AJOUTER"),
+                h("span", {style:{fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.7)", marginTop:6}}, "Enregistrer un article")
+            )
         )
     );
 }
