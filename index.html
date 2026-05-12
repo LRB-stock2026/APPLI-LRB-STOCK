@@ -1064,10 +1064,6 @@ function HomeScreen(props) {
     var searchState = useState("");
     var search = searchState[0]; var setSearch = searchState[1];
 
-    var grossIds = CORPS_ETAT_GROS.map(function(c){ return c.label.toLowerCase(); });
-    var countGros = produits.filter(function(p){ return grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
-    var countSecond = produits.filter(function(p){ return !grossIds.some(function(g){ return (p.corps_etat||"").toLowerCase().includes(g); }); }).length;
-
     var nbAlertes = produits.filter(function(p){ var s=getStatut(p); return s==="out"||s==="low"; }).length;
     var heure = new Date().getHours();
     var salut = heure < 12 ? "Bonjour" : heure < 18 ? "Bon après-midi" : "Bonsoir";
@@ -1095,12 +1091,11 @@ function HomeScreen(props) {
         ),
         h("div", {className:"search-global"},
             h("span", {className:"icon"}, "🔍"),
-            h("input", {
-                placeholder:"Rechercher dans tout le stock...",
-                value:search,
+            h("input", {placeholder:"Rechercher dans tout le stock...", value:search,
                 onChange:function(e){ setSearch(e.target.value); }
             })
         ),
+
         search.length >= 2 ? h("div", {className:"search-results"},
             results.length === 0
                 ? h("div", {style:{padding:"16px", textAlign:"center", color:"var(--text3)", fontSize:13}}, "Aucun résultat : " + search)
@@ -1144,37 +1139,55 @@ function HomeScreen(props) {
 
 // CorpsDetatScreen
 function CorpsDetatScreen(props) {
-    var ces = props.categorie === "gros" ? CORPS_ETAT_GROS : CORPS_ETAT_SECOND;
-    var title = props.categorie === "gros" ? "GROS OEUVRE" : "SECOND OEUVRE";
     var produits = props.produits || [];
+    var searchState = useState(""); var search = searchState[0]; var setSearch = searchState[1];
+
+    // "all" = tout, sinon filtrer
+    var showAll = props.categorie === "all" || !props.categorie;
+    var cesSecond = CORPS_ETAT_SECOND;
+    var cesGros = CORPS_ETAT_GROS;
+
+    function CeBtn(ce, categorie) {
+        var count = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()); }).length;
+        var countMat = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "MATERIAUX"; }).length;
+        var countOut = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "OUTILLAGE"; }).length;
+        if(search && !ce.label.toLowerCase().includes(search.toLowerCase())) return null;
+        return h("button", {key:ce.id, className:"ce-btn", onClick:function(){props.nav("produits_list", {categorie:categorie, ce:ce});}},
+            h("span", {className:"ce-icon"}, ce.icon),
+            h("div", {style:{flex:1}},
+                h("span", {className:"ce-label"}, ce.label),
+                count > 0 ? h("div", {style:{display:"flex", gap:6, marginTop:4}},
+                    h("span", {style:{fontSize:10, fontWeight:700, background:"rgba(61,84,112,0.1)", color:"var(--navy)", padding:"2px 7px", borderRadius:8}}, "🧱 " + countMat),
+                    h("span", {style:{fontSize:10, fontWeight:700, background:"rgba(201,151,58,0.12)", color:"var(--gold-dim)", padding:"2px 7px", borderRadius:8}}, "🔧 " + countOut)
+                ) : h("div", {style:{fontSize:10, color:"var(--text3)", marginTop:2}}, "Aucun article")
+            ),
+            h("span", {style:{marginLeft:"auto", minWidth:28, height:28, borderRadius:14,
+                background: count > 0 ? "var(--navy)" : "var(--border)",
+                color: count > 0 ? "#fff" : "var(--text3)",
+                fontSize:13, fontWeight:800, display:"flex", alignItems:"center", justifyContent:"center"
+            }}, count)
+        );
+    }
 
     return h("div", {className:"screen"},
         h("div", {className:"header"},
             h("button", {className:"header-back", onClick:props.onBack}, "←"),
-            h("div", null, h("div", {className:"header-title"}, title), h("div", {className:"header-sub"}, "Choisissez un corps d'état"))
+            h("div", null,
+                h("div", {className:"header-title"}, "📦 Stock"),
+                h("div", {className:"header-sub"}, produits.length + " article(s)")
+            ),
+            h("button", {style:{background:"var(--gold)", color:"#fff", border:"none", borderRadius:10, padding:"6px 12px", fontWeight:800, fontSize:13, cursor:"pointer"},
+                onClick:function(){props.nav("photo", null);}
+            }, "➕")
         ),
-        ces.map(function(ce) {
-            var count = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()); }).length;
-            var countMat = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "MATERIAUX"; }).length;
-            var countOut = produits.filter(function(p){ return (p.corps_etat||"").toLowerCase().includes(ce.label.toLowerCase()) && p.famille === "OUTILLAGE"; }).length;
-            return h("button", {key:ce.id, className:"ce-btn", onClick:function(){props.nav("produits_list", {categorie:props.categorie, ce:ce});}},
-                h("span", {className:"ce-icon"}, ce.icon),
-                h("div", {style:{flex:1}},
-                    h("span", {className:"ce-label"}, ce.label),
-                    count > 0 ? h("div", {style:{display:"flex", gap:6, marginTop:4}},
-                        h("span", {style:{fontSize:10, fontWeight:700, background:"rgba(61,84,112,0.1)", color:"var(--navy)", padding:"2px 7px", borderRadius:8}}, "🧱 " + countMat),
-                        h("span", {style:{fontSize:10, fontWeight:700, background:"rgba(201,151,58,0.12)", color:"var(--gold-dim)", padding:"2px 7px", borderRadius:8}}, "🔧 " + countOut)
-                    ) : h("div", {style:{fontSize:10, color:"var(--text3)", marginTop:2}}, "Aucun article")
-                ),
-                h("span", {style:{
-                    marginLeft:"auto", minWidth:28, height:28, borderRadius:14,
-                    background: count > 0 ? "var(--navy)" : "var(--border)",
-                    color: count > 0 ? "#fff" : "var(--text3)",
-                    fontSize:13, fontWeight:800,
-                    display:"flex", alignItems:"center", justifyContent:"center"
-                }}, count)
-            );
-        })
+        h("div", {className:"search-box", style:{marginBottom:12}},
+            h("span", {style:{color:"var(--text3)"}}, "🔍"),
+            h("input", {placeholder:"Rechercher une famille...", value:search, onChange:function(e){setSearch(e.target.value);}})
+        ),
+        h("div", {style:{fontSize:10, fontWeight:800, color:"var(--text3)", letterSpacing:"0.08em", marginBottom:8}}, "SECOND OEUVRE"),
+        cesSecond.map(function(ce){ return CeBtn(ce, "second"); }),
+        h("div", {style:{fontSize:10, fontWeight:800, color:"var(--text3)", letterSpacing:"0.08em", margin:"16px 0 8px"}}, "GROS OEUVRE"),
+        cesGros.map(function(ce){ return CeBtn(ce, "gros"); })
     );
 }
 
@@ -4068,7 +4081,7 @@ function App() {
             currentScreen = h(ImportCSVScreen, {onBack:goBack, onRefresh:loadData});
             break;
         case "corpsdetat":
-            currentScreen = h(CorpsDetatScreen, {categorie:data.categorie, onBack:goBack, nav:nav, produits:produits});
+            currentScreen = h(CorpsDetatScreen, {categorie:(data&&data.categorie)||"all", onBack:goBack, nav:nav, produits:produits});
             break;
         case "produits_list":
             currentScreen = h(ProduitsListScreen, {produits:produits, ce:data.ce, onBack:goBack, nav:nav});
