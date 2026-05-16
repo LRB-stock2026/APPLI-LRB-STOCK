@@ -1473,6 +1473,8 @@ function ProduitDetail(props) {
     var editFamille = editFamilleState[0]; var setEditFamille = editFamilleState[1];
     var editUniteState = useState(p.unite || "piece");
     var editUnite = editUniteState[0]; var setEditUnite = editUniteState[1];
+    var editVetusteState = useState(p.vetuste || "Bon état");
+    var editVetuste = editVetusteState[0]; var setEditVetuste = editVetusteState[1];
     var editSavingState = useState(false);
     var editSaving = editSavingState[0]; var setEditSaving = editSavingState[1];
     var editFileRef = useRef(null);
@@ -1538,7 +1540,7 @@ function ProduitDetail(props) {
         if(!editNom.trim()) return;
         setEditSaving(true);
         try {
-            var patch = {nom: editNom.trim(), corps_etat: editCE, famille: editFamille, unite: editUnite};
+            var patch = {nom: editNom.trim(), corps_etat: editCE, famille: editFamille, unite: editUnite, vetuste: editVetuste};
             await supaPatch("produits", p.id, patch);
             showToast("✅ Article mis à jour", "success");
             setEditing(false);
@@ -1702,6 +1704,27 @@ function ProduitDetail(props) {
             h("div", {style:{flex:1, fontSize:13, color:"var(--text3)", fontWeight:600}}, "Emplacement non défini"),
             h("div", {style:{fontSize:11, color:"var(--text3)"}}, "Voir ci-dessous ↓")
         ),
+
+        // Badge vétusté
+        (function(){
+            var v = p.vetuste || "Bon état";
+            var vColors = {"Neuf":"#2196F3","Bon état":"#4CAF50","Usé":"#FF9800","À remplacer":"#F44336","Hors service":"#9E9E9E"};
+            var vIcons = {"Neuf":"🆕","Bon état":"✅","Usé":"🟡","À remplacer":"🔴","Hors service":"⛔"};
+            var col = vColors[v] || "#4CAF50";
+            return h("div", {
+                style:{display:"flex", alignItems:"center", gap:10, background:"rgba(0,0,0,0.04)", borderRadius:12, padding:"10px 14px", marginBottom:14}
+            },
+                h("span", {style:{fontSize:20}}, vIcons[v] || "✅"),
+                h("div", null,
+                    h("div", {style:{fontSize:10, fontWeight:800, color:"var(--text3)", letterSpacing:"0.1em", marginBottom:2}}, "ÉTAT DE L'ARTICLE"),
+                    h("div", {style:{fontSize:15, fontWeight:900, color:col}}, v)
+                ),
+                h("button", {
+                    style:{marginLeft:"auto", background:"none", border:"1.5px solid var(--border)", borderRadius:8, padding:"4px 10px", fontSize:11, cursor:"pointer", color:"var(--text3)"},
+                    onClick:function(){ setEditVetuste(p.vetuste||"Bon état"); setEditNom(p.nom||""); setEditCE(p.corps_etat||""); setEditFamille(p.famille||"MATERIAUX"); setEditUnite(p.unite||"piece"); setEditing(true); }
+                }, "modifier")
+            );
+        })(),
 
         // Bloc emplacement
         h("div", {className:"card", style:{marginBottom:12}},
@@ -2001,6 +2024,16 @@ function ProduitDetail(props) {
                                 h("option", {value:"MATERIAUX"}, "🧱 Matériaux"),
                                 h("option", {value:"OUTILLAGE"}, "🔧 Outillage")
                             )
+                        )
+                    ),
+                    h("div", {className:"input-group"},
+                        h("label", {className:"input-label"}, "État de l'article"),
+                        h("select", {className:"select", value:editVetuste, onChange:function(e){setEditVetuste(e.target.value);}},
+                            h("option", {value:"Neuf"}, "🆕 Neuf"),
+                            h("option", {value:"Bon état"}, "✅ Bon état"),
+                            h("option", {value:"Usé"}, "🟡 Usé"),
+                            h("option", {value:"À remplacer"}, "🔴 À remplacer"),
+                            h("option", {value:"Hors service"}, "⛔ Hors service")
                         )
                     ),
                     h("div", {className:"input-group"},
